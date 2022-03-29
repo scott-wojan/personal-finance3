@@ -10,26 +10,28 @@ export default function Home({ user }) {
   }
   return (
     <Application>
+      <ResponsiveGrid>
+        <Text>Net worth</Text>
+      </ResponsiveGrid>
       <ResponsiveGrid columns={2}>
         <Text>Stacked bar chart</Text>
         <Text>Categories</Text>
-        <Text>Categories</Text>
-        <Text>Categories</Text>
+        <Text>Recent Transactions</Text>
+        <Text>Budget</Text>
       </ResponsiveGrid>
     </Application>
   );
 }
 
-function ResponsiveGrid({ columns, children }) {
+function ResponsiveGrid({ columns = undefined, children }) {
   if (!children) return null;
-  //12 columns max that I want to limit to 3 with 4 children
-  // 12/3 = 4
+  const childComponents = Array.isArray(children) ? children : [children];
   const numberOfChildren = React.Children.count(children) ?? 0;
   const largeCloumnSize = columns ? 12 / columns : 12 / numberOfChildren ?? 1;
 
   return (
     <Grid>
-      {children.map((child, index) => {
+      {childComponents.map((child, index) => {
         return (
           <Grid.Col key={index} md={12} lg={largeCloumnSize}>
             <Paper shadow="xs" p="md" style={{ flex: 1 }}>

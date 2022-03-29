@@ -1,4 +1,4 @@
-import { getCookie, setCookies } from "cookies-next";
+import { getCookie, setCookies, removeCookies } from "cookies-next";
 
 function getUserFromCookie(req, res) {
   const cookie = getCookie("user", { req, res });
@@ -10,6 +10,11 @@ function getUserFromCookie(req, res) {
   } catch (error) {
     throw new Error("Error parsing user cookie");
   }
+}
+
+function removeUserCookie(req, res) {
+  removeCookies("user", { req, res });
+  removeCookies("user");
 }
 
 function setUserCookie(req, res, user) {
@@ -26,4 +31,4 @@ function setUserCookie(req, res, user) {
   );
 }
 
-export { getUserFromCookie, setUserCookie };
+export { getUserFromCookie, setUserCookie, removeUserCookie };

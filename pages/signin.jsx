@@ -25,12 +25,16 @@ export default function Login() {
     }
     if (!user) alert("User not found");
   };
-
+  //mantine-Paper-root mantine-Modal-modal mantine-hzreum
   return (
     <>
       <Modal
         size={700}
-        style={{}}
+        sx={(theme) => ({
+          ".mantine-Modal-modal": {
+            padding: 0,
+          },
+        })}
         centered={true}
         withCloseButton={false}
         closeOnEscape={false}
@@ -39,7 +43,14 @@ export default function Login() {
       >
         <Grid style={{}}>
           <Grid.Col md={12} lg={6} style={{}}>
-            <Center style={{ height: "100%" }}>
+            <Center
+              style={{
+                height: "100%",
+                backgroundImage: "url(/background.png)",
+                backgroundSize: "cover",
+                backgroundRepeat: "no-repeat",
+              }}
+            >
               <div>img</div>
             </Center>
           </Grid.Col>

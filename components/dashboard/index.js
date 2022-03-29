@@ -9,7 +9,7 @@ import { getUserFromCookie } from "cookies/user";
 import React, { useState } from "react";
 import { Calendar, Filter } from "tabler-icons-react";
 
-export default function Home({ user }) {
+export default function Dashboard({ user }) {
   if (!user?.has_accounts) {
     return <LinkFirstAccount />;
   }

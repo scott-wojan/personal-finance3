@@ -1,6 +1,8 @@
 import { Grid, Paper, Text } from "@mantine/core";
 import LinkFirstAccount from "components/accounts/LinkFirstAccount";
 import { Application } from "components/app/Application";
+import { NetWorthLineChart } from "components/networth/NetWorthLineChart";
+
 import { getUserFromCookie } from "cookies/user";
 import React from "react";
 
@@ -11,7 +13,13 @@ export default function Home({ user }) {
   return (
     <Application>
       <ResponsiveGrid>
-        <Text>Net worth</Text>
+        <div>
+          <div>
+            <Text>Net worth</Text>
+          </div>
+
+          <NetWorthLineChart />
+        </div>
       </ResponsiveGrid>
       <ResponsiveGrid columns={2}>
         <Text>Stacked bar chart</Text>

@@ -15,10 +15,10 @@ import { PrimaryButton } from "components/buttons";
 import axios from "axios";
 import router from "next/router";
 
-export default function Login() {
+export default function SignIn() {
   const [email, setEmail] = useState(null);
-  const login = async () => {
-    const response = await axios.post("/api/auth/login", { email: email });
+  const signIn = async () => {
+    const response = await axios.post("/api/auth/signin", { email: email });
     const { status, data: user } = response;
     if (user && status === 200) {
       router.push("/home");
@@ -102,7 +102,7 @@ export default function Login() {
                     required
                   />
                   <Checkbox label="Remember Me" />
-                  <PrimaryButton disabled={!email} onClick={login}>
+                  <PrimaryButton disabled={!email} onClick={signIn}>
                     Sign In
                   </PrimaryButton>
                 </form>

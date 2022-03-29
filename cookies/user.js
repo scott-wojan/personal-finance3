@@ -14,7 +14,6 @@ function getUserFromCookie(req, res) {
 
 function removeUserCookie(req, res) {
   removeCookies("user", { req, res });
-  removeCookies("user");
 }
 
 function setUserCookie(req, res, user) {

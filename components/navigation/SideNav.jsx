@@ -115,11 +115,7 @@ export default function SideNav({ opened }) {
         {links}
       </Navbar.Section>
       <Navbar.Section>
-        <a
-          href="#"
-          className={classes.link}
-          onClick={(event) => event.preventDefault()}
-        >
+        <a href="/signout" className={classes.link}>
           <Logout className={classes.linkIcon} />
           <span>Logout</span>
         </a>

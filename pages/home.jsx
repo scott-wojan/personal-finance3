@@ -1,7 +1,8 @@
 import { Grid, Paper, Select, Text } from "@mantine/core";
 import LinkFirstAccount from "components/accounts/LinkFirstAccount";
 import { Application } from "components/app/Application";
-import { NetWorthLineChart } from "components/networth/NetWorthLineChart";
+import { NetWorthLineChart } from "components/charts/NetWorthLineChart";
+import StackedBarChart from "components/charts/StackedBarChart";
 
 import { getUserFromCookie } from "cookies/user";
 import React, { useState } from "react";
@@ -13,11 +14,11 @@ export default function Home({ user }) {
   }
   return (
     <Application>
-      <ResponsiveGrid>
+      <ResponsiveGrid columns={1}>
         <NetWorthCard />
+        <IncomeAndExpensesCard />
       </ResponsiveGrid>
       <ResponsiveGrid columns={2}>
-        <Text>Stacked bar chart</Text>
         <Text>Categories</Text>
         <Text>Recent Transactions</Text>
         <Text>Budget</Text>
@@ -26,30 +27,55 @@ export default function Home({ user }) {
   );
 }
 
+function IncomeAndExpensesCard() {
+  return (
+    <>
+      <div style={{ display: "flex", justifyContent: "space-between" }}>
+        <Text>Income vs Expenses</Text>
+        <ChartRangeDropDown />
+      </div>
+      <StackedBarChart />
+    </>
+  );
+}
+
 function NetWorthCard() {
   const [numberofMonths, setNumberofMonths] = useState("12");
   return (
-    <div>
+    <>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <Text>Net worth</Text>
-        <Select
-          style={{ width: 145, textAlign: "right" }}
-          size="xs"
-          variant="unstyled"
-          onChange={setNumberofMonths}
-          value={numberofMonths}
-          icon={<Calendar size={14} />}
-          placeholder="Pick one"
-          data={[
-            { value: "12", label: "Last 12 months" },
-            { value: "18", label: "Last 18 months" },
-            { value: "24", label: "Last 24 months" },
-          ]}
-        />
+        <ChartRangeDropDown onChange={setNumberofMonths} />
       </div>
 
       <NetWorthLineChart numberofMonths={numberofMonths} />
-    </div>
+    </>
+  );
+}
+
+function ChartRangeDropDown({ value = "12", onChange = undefined }) {
+  const [numberOfMonths, setNumberofMonths] = useState(value);
+  const updateValue = (val) => {
+    setNumberofMonths(val);
+    onChange?.(val);
+  };
+  return (
+    <Select
+      style={{ width: 145, textAlign: "right" }}
+      size="xs"
+      variant="unstyled"
+      onChange={updateValue}
+      value={numberOfMonths}
+      icon={<Calendar size={14} />}
+      placeholder="Pick one"
+      data={[
+        { value: "3", label: "Last 3 months" },
+        { value: "6", label: "Last 6 months" },
+        { value: "12", label: "Last 12 months" },
+        { value: "18", label: "Last 18 months" },
+        { value: "24", label: "Last 24 months" },
+      ]}
+    />
   );
 }
 

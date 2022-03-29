@@ -15,7 +15,7 @@ import {
 
 import { Line } from "react-chartjs-2";
 import { useMantineTheme } from "@mantine/core";
-import moment from "moment";
+import { getFormattedCurrency, getFormattedDate } from "formatting";
 
 ChartJS.register(
   CategoryScale,
@@ -28,17 +28,6 @@ ChartJS.register(
   Filler,
   TimeSeriesScale
 );
-
-function getFormattedCurrency(val) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(val);
-}
-
-function getFormattedDate(val) {
-  return moment(val).format("MMM DD YYYY");
-}
 
 export function NetWorthLineChart({ numberofMonths }) {
   const theme = useMantineTheme();
@@ -87,7 +76,7 @@ export function NetWorthLineChart({ numberofMonths }) {
         ticks: {
           // Include a dollar sign in the ticks
           callback: function (value, index, ticks) {
-            return "$" + value;
+            return getFormattedCurrency(value);
           },
         },
       },
@@ -132,16 +121,22 @@ export function NetWorthLineChart({ numberofMonths }) {
 
   return (
     <div>
-      <Line ref={chartRef} height={30} options={options} data={chartData} />
+      <Line
+        ref={chartRef}
+        height={30}
+        // @ts-ignore
+        options={options}
+        data={chartData}
+      />
     </div>
   );
 }
 
 const dollarAmounts = [
-  { date: "01/01/2021", amount: 200 },
-  { date: "02/01/2021", amount: 300 },
-  { date: "03/01/2021", amount: 400 },
-  { date: "04/01/2021", amount: 200 },
-  { date: "05/01/2021", amount: 600 },
-  { date: "06/01/2021", amount: 800 },
+  { date: "01/01/2021", amount: 5000 },
+  { date: "02/01/2021", amount: 12000 },
+  { date: "03/01/2021", amount: 18000 },
+  { date: "04/01/2021", amount: 19000 },
+  { date: "05/01/2021", amount: 19500 },
+  { date: "06/01/2021", amount: 25000 },
 ];

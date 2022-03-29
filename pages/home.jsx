@@ -1,6 +1,7 @@
-import { Grid, Paper, Select, Text } from "@mantine/core";
+import { Grid, Paper, Select, Text, Title } from "@mantine/core";
 import LinkFirstAccount from "components/accounts/LinkFirstAccount";
 import { Application } from "components/app/Application";
+import { BudgetBarChart } from "components/charts/BudgetBarChart";
 import { NetWorthLineChart } from "components/charts/NetWorthLineChart";
 import StackedBarChart from "components/charts/StackedBarChart";
 
@@ -19,11 +20,23 @@ export default function Home({ user }) {
         <IncomeAndExpensesCard />
       </ResponsiveGrid>
       <ResponsiveGrid columns={2}>
-        <Text>Categories</Text>
+        <BudgetCard />
         <Text>Recent Transactions</Text>
-        <Text>Budget</Text>
       </ResponsiveGrid>
     </Application>
+  );
+}
+
+function BudgetCard() {
+  return (
+    <>
+      <div style={{ display: "flex", justifyContent: "space-between" }}>
+        <Title order={4}>Budget</Title>
+
+        <ChartRangeDropDown />
+      </div>
+      <BudgetBarChart />
+    </>
   );
 }
 
@@ -31,7 +44,8 @@ function IncomeAndExpensesCard() {
   return (
     <>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <Text>Income vs Expenses</Text>
+        <Title order={4}>Income vs Expenses</Title>
+
         <ChartRangeDropDown />
       </div>
       <StackedBarChart />
@@ -44,7 +58,7 @@ function NetWorthCard() {
   return (
     <>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <Text>Net worth</Text>
+        <Title order={4}>Net Worth</Title>
         <ChartRangeDropDown onChange={setNumberofMonths} />
       </div>
 

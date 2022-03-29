@@ -24,12 +24,12 @@ ChartJS.register(
 
 const dollarAmounts = {
   budget: [
-    { date: "01/01/2021", amount: 8824.29 },
-    { date: "02/01/2021", amount: 8832.5 },
-    { date: "03/01/2021", amount: 10536.16 },
-    { date: "04/01/2021", amount: 8834.06 },
-    { date: "05/01/2021", amount: 8930.09 },
-    { date: "06/01/2021", amount: 8992.19 },
+    // { date: "01/01/2021", amount: 8824.29 },
+    // { date: "02/01/2021", amount: 8832.5 },
+    // { date: "03/01/2021", amount: 10536.16 },
+    // { date: "04/01/2021", amount: 8834.06 },
+    // { date: "05/01/2021", amount: 8930.09 },
+    // { date: "06/01/2021", amount: 8992.19 },
     { date: "07/01/2021", amount: 7430.29 },
     { date: "08/01/2021", amount: 23676.83 },
     { date: "09/01/2021", amount: 10749.14 },
@@ -38,12 +38,12 @@ const dollarAmounts = {
     { date: "12/01/2021", amount: 14451.76 },
   ],
   spend: [
-    { date: "01/01/2021", amount: 8724.29 },
-    { date: "02/01/2021", amount: 8832.5 },
-    { date: "03/01/2021", amount: 14536.16 },
-    { date: "04/01/2021", amount: 7834.06 },
-    { date: "05/01/2021", amount: 8430.09 },
-    { date: "06/01/2021", amount: 8892.19 },
+    // { date: "01/01/2021", amount: 8724.29 },
+    // { date: "02/01/2021", amount: 8832.5 },
+    // { date: "03/01/2021", amount: 14536.16 },
+    // { date: "04/01/2021", amount: 7834.06 },
+    // { date: "05/01/2021", amount: 8430.09 },
+    // { date: "06/01/2021", amount: 8892.19 },
     { date: "07/01/2021", amount: 6430.29 },
     { date: "08/01/2021", amount: 23576.83 },
     { date: "09/01/2021", amount: 8749.14 },
@@ -106,7 +106,7 @@ export function BudgetBarChart() {
   });
 
   const data = {
-    labels: [new Date("01/01/2021"), new Date("12/01/2021")],
+    labels: [new Date("07/01/2021"), new Date("12/01/2021")],
     datasets: [
       {
         label: "Spend",

@@ -32,8 +32,7 @@ function BudgetCard() {
     <>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <Title order={4}>Budget</Title>
-
-        <ChartRangeDropDown />
+        <ChartRangeDropDown value="3" />
       </div>
       <BudgetBarChart />
     </>

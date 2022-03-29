@@ -31,9 +31,10 @@ export default function LinkFirstAccount({}) {
           >
             <List.Item>Connecting your accounts is safe and easy</List.Item>
             <List.Item>
-              Lorem ipsum dolor sit amet, consectetuer adipiscing elit
+              The more accounts you connect, the better financial picture you'll
+              have
             </List.Item>
-            <List.Item>Aliquam tincidunt mauris eu risus</List.Item>
+            <List.Item>All communications are encypted and secure</List.Item>
             <List.Item>Vestibulum auctor dapibus neque</List.Item>
           </List>
           <div style={{ display: "flex", justifyContent: "flex-end" }}>

@@ -21,7 +21,7 @@ export default function SignIn() {
     const response = await axios.post("/api/auth/signin", { email: email });
     const { status, data: user } = response;
     if (user && status === 200) {
-      router.push("/home");
+      router.push("/");
       return;
     }
     if (!user) alert("User not found");

@@ -13,7 +13,7 @@ const PlaidLink = ({ token }) => {
         metadata,
       });
 
-      router.push("/home");
+      router.push("/");
     },
     [router]
   );

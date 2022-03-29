@@ -1,14 +1,14 @@
 import LinkFirstAccount from "components/accounts/LinkFirstAccount";
+import Dashboard from "components/dashboard";
 import { getUserFromCookie, removeUserCookie } from "cookies/user";
 import React from "react";
-import { Dashboard } from "tabler-icons-react";
 
 export default function Index({ user }) {
   if (!user?.has_accounts) {
     return <LinkFirstAccount />;
   }
 
-  return <div>xxxx</div>;
+  return <Dashboard user={user} />;
 }
 
 export async function getServerSideProps(context) {

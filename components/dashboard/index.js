@@ -124,10 +124,3 @@ function ResponsiveGrid({ columns = undefined, children }) {
     </Grid>
   );
 }
-
-export async function getServerSideProps(context) {
-  const user = getUserFromCookie(context.req, context.res);
-  return {
-    props: { user },
-  };
-}

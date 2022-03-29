@@ -14,7 +14,6 @@ import {
 } from "chart.js";
 
 import { Line } from "react-chartjs-2";
-import { faker } from "@faker-js/faker";
 import { useMantineTheme } from "@mantine/core";
 import moment from "moment";
 
@@ -41,7 +40,7 @@ function getFormattedDate(val) {
   return moment(val).format("MMM DD YYYY");
 }
 
-export function NetWorthLineChart() {
+export function NetWorthLineChart({ numberofMonths }) {
   const theme = useMantineTheme();
   const chartRef = useRef();
 

@@ -7,6 +7,7 @@ import {
   Select,
   TextInput,
   Title,
+  Text,
 } from "@mantine/core";
 import { ShieldLock, At } from "tabler-icons-react";
 import React, { useState } from "react";
@@ -51,7 +52,10 @@ export default function Login() {
                 backgroundRepeat: "no-repeat",
               }}
             >
-              <div>img</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                <img src="/logo.svg" />
+                <Text>Snazzy catch line</Text>
+              </div>
             </Center>
           </Grid.Col>
           <Grid.Col md={12} lg={6} style={{}}>

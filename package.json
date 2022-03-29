@@ -6,15 +6,29 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "ngrok": "ngrok http 3000"
   },
   "dependencies": {
+    "@mantine/core": "^4.1.0",
+    "@mantine/hooks": "^4.1.0",
+    "@mantine/next": "^4.1.0",
+    "axios": "^0.26.1",
+    "cookies-next": "^2.0.4",
+    "dayjs": "^1.11.0",
     "next": "12.1.0",
+    "plaid": "^10.1.0",
+    "postgres": "^3.0.0",
     "react": "17.0.2",
-    "react-dom": "17.0.2"
+    "react-dom": "17.0.2",
+    "react-plaid-link": "^3.3.0",
+    "react-query": "^3.34.19",
+    "socket.io": "^4.4.1",
+    "tabler-icons-react": "^1.42.0"
   },
   "devDependencies": {
     "eslint": "8.9.0",
-    "eslint-config-next": "12.1.0"
+    "eslint-config-next": "12.1.0",
+    "ngrok": "^4.3.1"
   }
 }

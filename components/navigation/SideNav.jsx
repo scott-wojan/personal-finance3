@@ -1,14 +1,8 @@
-import {
-  Button,
-  createStyles,
-  Navbar,
-  ScrollArea,
-  Stack,
-  Text,
-} from "@mantine/core";
+import { createStyles, Navbar, ScrollArea } from "@mantine/core";
 import React, { useState } from "react";
 import {
   BellRinging,
+  BuildingBank,
   DatabaseImport,
   Fingerprint,
   Home2,
@@ -17,6 +11,7 @@ import {
   Receipt2,
   Settings,
   TwoFA,
+  Wallet,
 } from "tabler-icons-react";
 
 const useStyles = createStyles((theme, _params, getRef) => {
@@ -81,13 +76,11 @@ const useStyles = createStyles((theme, _params, getRef) => {
 });
 
 const navLinks = [
+  { link: "", label: "Home", icon: Home2 },
+  { link: "", label: "Accounts", icon: BuildingBank },
+  { link: "", label: "Transactions", icon: Receipt2 },
+  { link: "", label: "Budget", icon: Wallet },
   { link: "", label: "Notifications", icon: BellRinging },
-  { link: "", label: "Billing", icon: Receipt2 },
-  { link: "", label: "Security", icon: Fingerprint },
-  { link: "", label: "SSH Keys", icon: Key },
-  { link: "", label: "Databases", icon: DatabaseImport },
-  { link: "", label: "Authentication", icon: TwoFA },
-  { link: "", label: "Other Settings", icon: Settings },
 ];
 
 export default function SideNav({ opened }) {

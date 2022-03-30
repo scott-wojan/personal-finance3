@@ -1,4 +1,4 @@
-import { Select, Title } from "@mantine/core";
+import { Paper, Select, Title } from "@mantine/core";
 import LinkFirstAccount from "components/accounts/LinkFirstAccount";
 import { Application } from "components/app/Application";
 import { BudgetBarChart } from "components/charts/BudgetBarChart";
@@ -7,7 +7,7 @@ import StackedBarChart from "components/charts/StackedBarChart";
 
 import React, { useState } from "react";
 import { Calendar } from "tabler-icons-react";
-import { ResponsiveGrid } from "../ResponsiveGrid";
+import { ResponsiveGrid } from "../grid/ResponsiveGrid";
 
 export default function Dashboard({ user }) {
   if (!user?.has_accounts) {
@@ -29,52 +29,60 @@ export default function Dashboard({ user }) {
 
 function RecentTransactionsCard() {
   return (
-    <>
+    <GridCard>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <Title order={4}>Recent Transactions</Title>
         <ChartRangeDropDown value="3" />
       </div>
       {/* <BudgetBarChart /> */}
-    </>
+    </GridCard>
   );
 }
 
 function BudgetCard() {
   return (
-    <>
+    <GridCard>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <Title order={4}>Budget</Title>
         <ChartRangeDropDown value="3" />
       </div>
       <BudgetBarChart />
-    </>
+    </GridCard>
   );
 }
 
 function IncomeAndExpensesCard() {
   return (
-    <>
+    <GridCard>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <Title order={4}>Income vs Expenses</Title>
 
         <ChartRangeDropDown />
       </div>
       <StackedBarChart />
-    </>
+    </GridCard>
   );
 }
 
 function NetWorthCard() {
   const [numberofMonths, setNumberofMonths] = useState("12");
   return (
-    <>
+    <GridCard>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <Title order={4}>Net Worth</Title>
         <ChartRangeDropDown onChange={setNumberofMonths} />
       </div>
 
       <NetWorthLineChart numberofMonths={numberofMonths} />
-    </>
+    </GridCard>
+  );
+}
+
+function GridCard({ children }) {
+  return (
+    <Paper shadow="xs" pl="md" pr="md" style={{ flex: 1 }}>
+      {children}
+    </Paper>
   );
 }
 

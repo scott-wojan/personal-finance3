@@ -3,7 +3,7 @@ import { Card, Text, Title, createStyles, Paper, Anchor } from "@mantine/core";
 import { CirclePlus } from "tabler-icons-react";
 
 import { useApi } from "hooks/useApi";
-import { ResponsiveGrid } from "components/ResponsiveGrid";
+import { ResponsiveGrid } from "components/grid/ResponsiveGrid";
 import { PrimaryLinkButton } from "components/buttons";
 import { getShortCurrency, groupBy } from "formatting";
 

@@ -10,7 +10,7 @@ import {
 import { TopNav } from "components/navigation/TopMenu";
 import SideNav from "components/navigation/SideNav";
 
-function Application({ children, centerContent = false }) {
+function Application({ children, sidebar = undefined, centerContent = false }) {
   const [opened, setOpened] = useState(false);
 
   return (
@@ -32,7 +32,7 @@ function Application({ children, centerContent = false }) {
       aside={
         <MediaQuery smallerThan="sm" styles={{ display: "none" }}>
           <Aside p="md" hiddenBreakpoint="sm" width={{ sm: 200, lg: 300 }}>
-            <Text>Application sidebar</Text>
+            {sidebar}
           </Aside>
         </MediaQuery>
       }

@@ -30,11 +30,13 @@ function Application({ children, sidebar = undefined, centerContent = false }) {
       header={<TopNav opened={opened} setOpened={setOpened} />}
       navbar={<SideNav opened={opened} />}
       aside={
-        <MediaQuery smallerThan="sm" styles={{ display: "none" }}>
-          <Aside p="md" hiddenBreakpoint="sm" width={{ sm: 200, lg: 300 }}>
-            {sidebar}
-          </Aside>
-        </MediaQuery>
+        sidebar && (
+          <MediaQuery smallerThan="sm" styles={{ display: "none" }}>
+            <Aside p="md" hiddenBreakpoint="sm" width={{ sm: 200, lg: 300 }}>
+              {sidebar}
+            </Aside>
+          </MediaQuery>
+        )
       }
       footer={
         <Footer height={60} p="md">

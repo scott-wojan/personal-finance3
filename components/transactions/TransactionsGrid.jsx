@@ -28,6 +28,17 @@ export default function TransactionsGrid({ accountId = undefined }) {
     payload: { accountId },
   });
 
+  const accountColumn = accountId
+    ? {}
+    : {
+        Header: "Account",
+        accessor: "account",
+        dataType: "select",
+        filterUrl: "/select-options/accounts",
+        width: 100,
+        canFilter: true,
+      };
+
   const columns = useMemo(
     () => [
       {
@@ -43,12 +54,7 @@ export default function TransactionsGrid({ accountId = undefined }) {
         canFilter: true,
       },
       {
-        Header: "Account",
-        accessor: "account",
-        dataType: "select",
-        filterUrl: "/select-options/accounts",
-        width: 100,
-        canFilter: true,
+        ...accountColumn,
       },
       {
         Header: "Name",

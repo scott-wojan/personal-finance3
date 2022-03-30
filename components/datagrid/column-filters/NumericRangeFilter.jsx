@@ -1,5 +1,4 @@
 import { Divider, Menu, NumberInput, TextInput } from "@mantine/core";
-import { PrimaryButton, SecondaryButton } from "components/Buttons";
 import React, { forwardRef, useState } from "react";
 import { useRef } from "react";
 import { Filter, FilterOff, Search } from "tabler-icons-react";

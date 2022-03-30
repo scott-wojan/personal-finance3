@@ -1,5 +1,5 @@
 import { getUserFromCookie } from "cookies/user";
-import { getAccountsAsSelectOptions } from "database/accounts";
+import { getUserCategoriesAndSubcategories } from "database/usercategories";
 
 export default async function handler(req, res) {
   const user = getUserFromCookie(req, res);
@@ -7,7 +7,7 @@ export default async function handler(req, res) {
   if (!user) return res.status(401).json();
 
   try {
-    const categories = await getAccountsAsSelectOptions({
+    const categories = await getUserCategoriesAndSubcategories({
       userId: user?.id,
     });
 

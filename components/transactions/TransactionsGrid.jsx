@@ -10,7 +10,7 @@ import TransactionDetailMenu from "./TransactionDetailMenu";
 import { Text } from "@mantine/core";
 import { usePagingAndFilteringApi } from "hooks/usePagingAndFilteringApi";
 import { CategoriesDropdown } from "./CategoriesDropdown";
-import { SubCategoriesDropdown } from "./SubCategoriesDropdown";
+import { SubCategoriesDropdown } from "./SubCategoriesSelect";
 import { ResponsiveGrid } from "components/grid/ResponsiveGrid";
 
 export default function TransactionsGrid({ accountId = undefined }) {
@@ -79,7 +79,9 @@ export default function TransactionsGrid({ accountId = undefined }) {
         dataType: "select",
         filterUrl: "/select-options/subcategories",
         width: 200,
-        Cell: SubCategoriesDropdown,
+        Cell: ({ row }) => {
+          return <SubCategoriesDropdown category={row.row} />;
+        },
         canFilter: true,
       },
       {
@@ -157,9 +159,9 @@ export default function TransactionsGrid({ accountId = undefined }) {
     if (error) console.log("error", error);
   }, [error]);
 
-  useEffect(() => {
-    console.log("data", data);
-  }, [data]);
+  // useEffect(() => {
+  //   console.log("data", data);
+  // }, [data]);
 
   return (
     <>

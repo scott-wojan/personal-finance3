@@ -16,11 +16,11 @@ export function usePagingAndFilteringApi(params) {
   const { isLoading, error, data } = useQuery(
     [params, pagingSorting, filtersAndSorting],
     async () => {
-      console.log("useQuery", params.url, {
-        ...params.payload,
-        ...pagingSorting,
-        ...filtersAndSorting,
-      });
+      // console.log("useQuery", params.url, {
+      //   ...params.payload,
+      //   ...pagingSorting,
+      //   ...filtersAndSorting,
+      // });
       const res = await axios.post(`/api/${params.url}`, {
         ...params.payload,
         ...pagingSorting,

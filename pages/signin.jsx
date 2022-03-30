@@ -8,10 +8,10 @@ import {
   TextInput,
   Title,
   Text,
+  Button,
 } from "@mantine/core";
 import { ShieldLock, At } from "tabler-icons-react";
 import React, { useState } from "react";
-import { PrimaryButton } from "components/buttons";
 import axios from "axios";
 import router from "next/router";
 
@@ -102,9 +102,9 @@ export default function SignIn() {
                     required
                   />
                   <Checkbox label="Remember Me" />
-                  <PrimaryButton disabled={!email} onClick={signIn}>
+                  <Button disabled={!email} onClick={signIn}>
                     Sign In
-                  </PrimaryButton>
+                  </Button>
                 </form>
               </div>
             </Center>

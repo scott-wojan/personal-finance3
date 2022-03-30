@@ -1,8 +1,14 @@
 import sql from "./db.js";
 
-async function getSubCategoriesAsSelectOptions({ userId }) {
+async function getSubCategoriesAsSelectOptions({ userId, category }) {
   // @ts-ignore
-  return await sql` select distinct category as group, subcategory as value, subcategory as label from user_transactions where user_id = ${userId} order by category,subcategory; `;
+  return await sql`
+      select user_subcategory as value, 
+             user_subcategory as label 
+        from user_categories 
+       where user_id = ${userId} 
+         and user_category=${category} 
+       order by user_category; `;
 }
 
 export { getSubCategoriesAsSelectOptions };

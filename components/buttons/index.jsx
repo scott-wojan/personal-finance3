@@ -9,14 +9,10 @@ export function SecondaryButton({ children, ...rest }) {
   );
 }
 
-export function PrimaryButton({ children, ...rest }) {
-  return <Button {...rest}>{children}</Button>;
-}
-
 export function PrimaryLinkButton({ children, href, ...rest }) {
   return (
     <Anchor href={href}>
-      <PrimaryButton {...rest}>{children}</PrimaryButton>
+      <Button {...rest}>{children}</Button>
     </Anchor>
   );
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { createStyles, Select } from "@mantine/core";
 import axios from "axios";
 
@@ -9,7 +9,9 @@ export function CategoriesSelect({
   label = undefined,
 }) {
   const [selectedValue, setSelectedValue] = useState(value);
+  const [error, setError] = useState();
   const [options, setOptions] = useState([{ value: value, label: value }]);
+  const ref = useRef();
 
   useEffect(() => {
     setSelectedValue(value);
@@ -25,6 +27,7 @@ export function CategoriesSelect({
   };
 
   const handleOnChange = (newSelectedValue) => {
+    setError(null);
     setSelectedValue(newSelectedValue);
     onChange?.(newSelectedValue);
   };
@@ -51,7 +54,9 @@ export function CategoriesSelect({
   return (
     <>
       <Select
+        error={error}
         autoComplete="off"
+        ref={ref}
         className={cx(classes.select)}
         // disabled={isLoading || error}
         value={selectedValue}
@@ -69,6 +74,14 @@ export function CategoriesSelect({
         searchable
         creatable
         clearable
+        onBlur={() => {
+          if (selectedValue === null) {
+            setError(true);
+            if(!ref?.current?.placeholder.includes(" is required")){
+              ref?.current?.placeholder = ref?.current?.placeholder + " is required";
+            }
+          }
+        }}
         // maxDropdownHeight={280}
         dropdownComponent="div"
         // rightSection={<ChevronDown size={14} color={theme.colors.gray[7]} />}

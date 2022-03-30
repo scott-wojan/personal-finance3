@@ -1,6 +1,6 @@
 import sql from "./db.js";
 
-async function getUserCategoriesAndSubcategories({ userId }) {
+export async function getUserCategoriesAndSubcategories({ userId }) {
   // @ts-ignore
   return await sql`
     select category_id, c.category as imported_category, c.subcategory as imported_subcategory, user_category, user_subcategory
@@ -11,4 +11,18 @@ async function getUserCategoriesAndSubcategories({ userId }) {
   ;`;
 }
 
-export { getUserCategoriesAndSubcategories };
+export async function updateUserCategoryAndSubcategory({
+  userId,
+  categoryId,
+  category,
+  subcategory,
+}) {
+  // @ts-ignore
+  return await sql`
+   update user_categories 
+      set user_category = ${category},
+          user_subcategory = ${subcategory}
+    where user_id=${userId}
+      and category_id=${categoryId}
+  ;`;
+}

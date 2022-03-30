@@ -1,9 +1,11 @@
 import { createStyles, Table, Title } from "@mantine/core";
-import { CategoriesDropdown } from "components/transactions/CategoriesDropdown";
+import axios from "axios";
+import { CategoriesSelect } from "components/transactions/CategoriesSelect";
 import { SubCategoriesDropdown } from "components/transactions/SubCategoriesSelect";
 import { groupBy } from "formatting";
 import { useApi } from "hooks/useApi";
 
+// @ts-ignore
 import React, { Fragment, useEffect, useRef, useState } from "react";
 
 export default function UserCategories() {
@@ -26,6 +28,7 @@ export default function UserCategories() {
 
   const { classes, cx } = useStyles();
 
+  // @ts-ignore
   const { isLoading, error, data } = useApi({
     url: "usercategories",
   });
@@ -35,6 +38,7 @@ export default function UserCategories() {
   // }, [data]);
 
   if (error) {
+    // @ts-ignore
     return <div>ERROR... {error.message}</div>;
   }
 
@@ -94,22 +98,37 @@ function CategorySubCategories({ categoryId, category, subcategory }) {
     setSelectedCategory(value);
     setSelectedSubCategory(null);
     setTimeout(() => {
+      // @ts-ignore
       subcategoryDropdownRef?.current?.value = null;
+      // @ts-ignore
       subcategoryDropdownRef?.current?.focus();
     }, 100);
-
   };
+
+  const onSubCategorySelected = (value) => {
+    setSelectedSubCategory(value);
+    if(selectedCategory && value){
+      axios.post("api/usercategories/update",{
+        categoryId,
+        category:selectedCategory,
+        subcategory:value
+      })
+      console.log(`update user category ${categoryId} to ${selectedCategory} and ${value}`)
+    }
+  }
+
   return (
     <>
-      <CategoriesDropdown
+      <CategoriesSelect
         value={selectedCategory}
         onChange={onCategorySelected}
       />
       <SubCategoriesDropdown
         ref={subcategoryDropdownRef}
+        // @ts-ignore
         value={selectedSubCategory}
         category={selectedCategory}
-        onChange={setSelectedSubCategory}
+        onChange={onSubCategorySelected}
       />
     </>
   );

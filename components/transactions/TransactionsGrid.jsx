@@ -9,7 +9,7 @@ import { DataGrid } from "components/datagrid/DataGrid";
 import TransactionDetailMenu from "./TransactionDetailMenu";
 import { Text } from "@mantine/core";
 import { usePagingAndFilteringApi } from "hooks/usePagingAndFilteringApi";
-import { CategoriesDropdown } from "./CategoriesDropdown";
+import { CategoriesSelect } from "./CategoriesSelect";
 import { SubCategoriesDropdown } from "./SubCategoriesSelect";
 import { ResponsiveGrid } from "components/grid/ResponsiveGrid";
 
@@ -69,7 +69,7 @@ export default function TransactionsGrid({ accountId = undefined }) {
         accessor: "category",
         dataType: "select",
         filterUrl: "/select-options/categories",
-        Cell: CategoriesDropdown,
+        Cell: CategoriesSelect,
         width: 200,
         canFilter: true,
       },

@@ -77,10 +77,11 @@ const SubCategoriesSelect = React.forwardRef((props, ref) => {
         creatable
         clearable
         onBlur={() => {
-          console.log("selectedValue", selectedValue);
           if (selectedValue === null) {
             setError(true);
-            ref.current.focus();
+            if(!ref?.current?.placeholder.includes(" is required")){
+              ref?.current?.placeholder = ref?.current?.placeholder + " is required";
+            }            
           }
         }}
         // maxDropdownHeight={280}

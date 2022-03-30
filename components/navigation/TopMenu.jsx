@@ -113,14 +113,12 @@ const links = [
 ];
 
 export function TopNav({ opened, setOpened }) {
-  const [active, setActive] = useState(links[0].link);
   const items = links.map((link) => (
     <Button
       variant="subtle"
       key={link.label}
       onClick={(event) => {
         event.preventDefault();
-        setActive(link.link);
         setOpened(false);
       }}
     >

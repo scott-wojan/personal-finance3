@@ -1,13 +1,13 @@
-import { Grid, Paper, Select, Text, Title } from "@mantine/core";
+import { Select, Title } from "@mantine/core";
 import LinkFirstAccount from "components/accounts/LinkFirstAccount";
 import { Application } from "components/app/Application";
 import { BudgetBarChart } from "components/charts/BudgetBarChart";
 import { NetWorthLineChart } from "components/charts/NetWorthLineChart";
 import StackedBarChart from "components/charts/StackedBarChart";
 
-import { getUserFromCookie } from "cookies/user";
 import React, { useState } from "react";
-import { Calendar, Filter } from "tabler-icons-react";
+import { Calendar } from "tabler-icons-react";
+import { ResponsiveGrid } from "../ResponsiveGrid";
 
 export default function Dashboard({ user }) {
   if (!user?.has_accounts) {
@@ -101,26 +101,5 @@ function ChartRangeDropDown({ value = "12", onChange = undefined }) {
         { value: "24", label: "Last 24 months" },
       ]}
     />
-  );
-}
-
-function ResponsiveGrid({ columns = undefined, children }) {
-  if (!children) return null;
-  const components = Array.isArray(children) ? children : [children];
-  const numberOfChildren = React.Children.count(children) ?? 0;
-  const largeCloumnSize = columns ? 12 / columns : 12 / numberOfChildren ?? 1;
-
-  return (
-    <Grid>
-      {components.map((child, index) => {
-        return (
-          <Grid.Col key={index} md={12} lg={largeCloumnSize}>
-            <Paper shadow="xs" p="md" style={{ flex: 1 }}>
-              {child}
-            </Paper>
-          </Grid.Col>
-        );
-      })}
-    </Grid>
   );
 }

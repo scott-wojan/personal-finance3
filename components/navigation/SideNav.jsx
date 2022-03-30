@@ -1,6 +1,6 @@
 import { createStyles, Navbar, ScrollArea } from "@mantine/core";
 import { useRouter } from "next/router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   BellRinging,
   BuildingBank,
@@ -77,23 +77,38 @@ const useStyles = createStyles((theme, _params, getRef) => {
 });
 
 const navLinks = [
-  { link: "/", label: "Home", icon: Home2 },
-  { link: "/accounts", label: "Accounts", icon: BuildingBank },
-  { link: "/transactions", label: "Transactions", icon: Receipt2 },
-  { link: "/budget", label: "Budget", icon: Wallet },
-  { link: "/notifications", label: "Notifications", icon: BellRinging },
+  { link: "", label: "Home", icon: Home2 },
+  { link: "accounts", label: "Accounts", icon: BuildingBank },
+  { link: "transactions", label: "Transactions", icon: Receipt2 },
+  { link: "budget", label: "Budget", icon: Wallet },
+  { link: "notifications", label: "Notifications", icon: BellRinging },
 ];
 
 export default function SideNav({ opened }) {
   const { classes, cx } = useStyles();
-  const [active, setActive] = useState();
   const router = useRouter();
+
+  useEffect(() => {
+    console.log("path", router.pathname.substring(1));
+  });
+
+  const isActive = (link) => {
+    if (router.pathname === "/" && link === "") {
+      return true;
+    }
+    const comparePath = router.pathname.substring(1);
+    if (comparePath === "") {
+      return false;
+    }
+    return link.startsWith(comparePath);
+  };
+
   const links = navLinks.map((item) => (
     <a
       className={cx(classes.link, {
-        [classes.linkActive]: item.link.startsWith(router.pathname),
+        [classes.linkActive]: isActive(item.link),
       })}
-      href={`${item.link}`}
+      href={`/${item.link}`}
       key={item.label}
       onClick={(event) => {
         // setActive(item.label);

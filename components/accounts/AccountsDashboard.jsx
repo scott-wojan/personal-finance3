@@ -1,20 +1,11 @@
-import React from "react";
-import {
-  Card,
-  Text,
-  Badge,
-  Title,
-  createStyles,
-  Paper,
-  Anchor,
-} from "@mantine/core";
-import { CirclePlus, CreditCard } from "tabler-icons-react";
+import React, { useState } from "react";
+import { Card, Text, Title, createStyles, Paper, Anchor } from "@mantine/core";
+import { CirclePlus } from "tabler-icons-react";
 
 import { useApi } from "hooks/useApi";
 import { ResponsiveGrid } from "components/ResponsiveGrid";
-import { PrimaryLinkButton, SecondaryLinkButton } from "components/buttons";
-import numeral from "numeral";
-import { getShortCurrency } from "formatting";
+import { PrimaryLinkButton } from "components/buttons";
+import { getShortCurrency, groupBy } from "formatting";
 
 export default function AccountsDashboard() {
   const { isLoading, error, data } = useApi({
@@ -22,27 +13,40 @@ export default function AccountsDashboard() {
   });
 
   return (
-    <ResponsiveGrid columns={1}>
+    <>
+      <div style={{ display: "flex", justifyContent: "space-between" }}>
+        <Title order={4}>Institution</Title>
+        <PrimaryLinkButton href="#" leftIcon={<CirclePlus strokeWidth={1} />}>
+          Add new account
+        </PrimaryLinkButton>
+      </div>
       <>
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <Title order={4}>Institution</Title>
-          <PrimaryLinkButton href="#" leftIcon={<CirclePlus strokeWidth={1} />}>
-            Add new account
-          </PrimaryLinkButton>
-        </div>
-        <ResponsiveGrid columns={3}>
-          {data &&
-            data.map((account) => {
-              return <AccountCard key={account.name} account={account} />;
-            })}
-        </ResponsiveGrid>
+        {
+          data &&
+            Object.entries(groupBy("institution")(data)).map(([key, value]) => {
+              return (
+                <div key={key}>
+                  <div>{key}</div>
+                  <ResponsiveGrid columns={4}>
+                    {value.map((account, accountIndex) => {
+                      return (
+                        <AccountCard key={account.name} account={account} />
+                      );
+                    })}
+                  </ResponsiveGrid>
+                </div>
+              );
+            })
+          // data.map((account) => {
+          //   return <AccountCard key={account.name} account={account} />;
+          // })
+        }
       </>
-    </ResponsiveGrid>
+    </>
   );
 }
 
 function Stats({ account }) {
-  console.log("account", account);
   const useStyles = createStyles((theme) => ({
     stats: {
       display: "flex",
@@ -87,8 +91,6 @@ function Stat({ label, value }) {
 
 function AccountCard({ account }) {
   const useStyles = createStyles((theme, _params, getRef) => {
-    const icon = getRef("icon");
-
     return {
       paperLink: {
         "&:hover": {
@@ -124,7 +126,8 @@ function AccountCard({ account }) {
   return (
     <Paper
       shadow="xs"
-      p="md"
+      pl="md"
+      pr="md"
       style={{ flex: 1 }}
       className={cx(classes.paperLink)}
     >

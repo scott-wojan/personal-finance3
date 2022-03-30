@@ -15,3 +15,13 @@ export function getShortCurrency(val) {
 export function getFormattedDate(val) {
   return moment(val).format("MMM DD YYYY");
 }
+
+const groupBy = (key) => (array) =>
+  array.reduce(
+    (objectsByKeyValue, obj) => ({
+      ...objectsByKeyValue,
+      [obj[key]]: (objectsByKeyValue[obj[key]] || []).concat(obj),
+    }),
+    {}
+  );
+export { groupBy };

@@ -33,8 +33,8 @@ async function getTransactions({
 
   // @ts-ignore
   const rows = await sql.unsafe(query);
-  // console.log(rows.statement);
-  return rows;
+  // console.log(rows.statement, rows);
+  return rows[0];
 }
 
 async function saveUserTransactions({ userId, transactions }) {

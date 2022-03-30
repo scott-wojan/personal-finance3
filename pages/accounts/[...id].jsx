@@ -5,6 +5,7 @@ import React from "react";
 import { useApi } from "hooks/useApi";
 import { Application } from "components/app/Application";
 import { AccountStats } from "components/accounts/AccountStats";
+import TransactionsGrid from "components/transactions/TransactionsGrid";
 
 //https://nextjs.org/docs/routing/dynamic-routes
 
@@ -64,8 +65,7 @@ export default function AccountDetail() {
                 <AccountLineChart />
               </div>
               <div style={{ paddingRight: theme.spacing.md }}>
-                TransactionsGrid
-                {/* <TransactionsGrid accountId={data.id} /> */}
+                <TransactionsGrid accountId={data.id} />
               </div>
             </div>
           </div>

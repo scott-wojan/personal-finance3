@@ -29,14 +29,20 @@ async function getAccountsAsSelectOptions({ userId }) {
 }
 
 async function getUserAccountById({ userId, accountId }) {
+  try {
+    // @ts-ignore
+    const rows = await sql`
+    select *
+      from user_accounts
+     where id=${accountId} 
+       and user_id = ${userId}
+`;
+    console.log("rows", rows);
+    return rows[0];
+  } catch (error) {
+    console.log(error);
+  }
   // @ts-ignore
-  const rows = await sql`
-      select *
-        from user_accounts
-       where id=${accountId} 
-         and user_id = ${userId}
-  `;
-  return rows[0];
 }
 
 const saveSample = [

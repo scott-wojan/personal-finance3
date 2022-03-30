@@ -1,10 +1,18 @@
 import React, { useState } from "react";
-import { Card, Text, Title, createStyles, Paper, Anchor } from "@mantine/core";
+import {
+  Card,
+  Text,
+  Title,
+  createStyles,
+  Paper,
+  Anchor,
+  Button,
+} from "@mantine/core";
 import { CirclePlus } from "tabler-icons-react";
 
 import { useApi } from "hooks/useApi";
 import { ResponsiveGrid } from "components/grid/ResponsiveGrid";
-import { PrimaryLinkButton } from "components/buttons";
+
 import { getShortCurrency, groupBy } from "formatting";
 
 export default function AccountsDashboard() {
@@ -15,10 +23,14 @@ export default function AccountsDashboard() {
   return (
     <>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <Title order={4}>Institution</Title>
-        <PrimaryLinkButton href="#" leftIcon={<CirclePlus strokeWidth={1} />}>
+        <Title order={3}>Accounts</Title>
+        <Button
+          component="a"
+          href="#"
+          leftIcon={<CirclePlus strokeWidth={1} />}
+        >
           Add new account
-        </PrimaryLinkButton>
+        </Button>
       </div>
       <>
         {
@@ -26,7 +38,9 @@ export default function AccountsDashboard() {
             Object.entries(groupBy("institution")(data)).map(([key, value]) => {
               return (
                 <div key={key}>
-                  <div>{key}</div>
+                  <Title pb="sm" order={4}>
+                    {key}
+                  </Title>
                   <ResponsiveGrid columns={4}>
                     {value.map((account, accountIndex) => {
                       return (

@@ -11,6 +11,7 @@ import { Text } from "@mantine/core";
 import { usePagingAndFilteringApi } from "hooks/usePagingAndFilteringApi";
 import { CategoriesDropdown } from "./CategoriesDropdown";
 import { SubCategoriesDropdown } from "./SubCategoriesDropdown";
+import { ResponsiveGrid } from "components/grid/ResponsiveGrid";
 
 export default function TransactionsGrid({ accountId = undefined }) {
   const {
@@ -190,6 +191,7 @@ function DataGridSubRow() {
         td: {
           border: "0 !important",
           padding: "0 !important",
+          fontSize: `${theme.fontSizes.xs}px !important`,
         },
       },
     },
@@ -209,8 +211,8 @@ function DataGridSubRow() {
               paddingTop: theme.spacing.sm,
             }}
           >
-            <div style={{ display: "flex" }}>
-              <div style={{ width: "50%" }}>
+            <ResponsiveGrid>
+              <div>
                 <Text weight={600} size="sm">
                   Received As
                 </Text>
@@ -243,7 +245,7 @@ function DataGridSubRow() {
                   </tbody>
                 </table>
               </div>
-              <div style={{ width: "50%" }}>
+              <div>
                 <Text weight={600} size="sm">
                   Merchant Info
                 </Text>
@@ -285,7 +287,7 @@ function DataGridSubRow() {
                   </tbody>
                 </table>
               </div>
-            </div>
+            </ResponsiveGrid>
           </div>
         </div>
       </td>

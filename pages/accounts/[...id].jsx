@@ -65,6 +65,9 @@ export default function AccountDetail() {
                 <AccountLineChart />
               </div>
               <div style={{ paddingRight: theme.spacing.md }}>
+                <Title pb="sm" order={4}>
+                  Transactions
+                </Title>
                 <TransactionsGrid accountId={data.id} />
               </div>
             </div>

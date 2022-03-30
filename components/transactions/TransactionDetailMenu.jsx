@@ -24,8 +24,8 @@ export default function TransactionDetailMenu() {
 
   const links = linkData.map((link, index) => (
     <NavbarLink
-      height={30}
-      width={30}
+      height={22}
+      width={22}
       {...link}
       key={index}
       active={index === active}
@@ -34,7 +34,9 @@ export default function TransactionDetailMenu() {
   ));
 
   return (
-    <Stack spacing="xs">{links}</Stack>
+    <Stack spacing="xs" pt="sm" pl="xs">
+      {links}
+    </Stack>
     // <Navbar height="100%" width={{ base: 50 }} p="xs" style={{}}>
     //   <Navbar.Section grow>
     //     <Group direction="column" align="center" spacing={0}>

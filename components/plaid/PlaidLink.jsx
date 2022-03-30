@@ -1,5 +1,5 @@
+import { Button } from "@mantine/core";
 import axios from "axios";
-import { PrimaryButton } from "components/buttons";
 import { useRouter } from "next/router";
 import React, { useCallback, useEffect, useState } from "react";
 import { usePlaidLink } from "react-plaid-link";
@@ -41,9 +41,9 @@ const PlaidLink = ({ token }) => {
 
   return (
     <>
-      <PrimaryButton onClick={open} loading={!ready} disabled={!open}>
+      <Button onClick={open} loading={!ready} disabled={!open}>
         Connect Accounts
-      </PrimaryButton>
+      </Button>
       {error}
     </>
   );

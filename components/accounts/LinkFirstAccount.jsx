@@ -1,5 +1,4 @@
 import { List, Modal, Paper, ThemeIcon, Title } from "@mantine/core";
-import { PrimaryButton } from "components/buttons";
 import PlaidLinkButton from "components/plaid/PlaidLink";
 import React from "react";
 import { Check } from "tabler-icons-react";

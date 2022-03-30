@@ -1,11 +1,14 @@
-import { Paper, Select, Title } from "@mantine/core";
+import { Anchor, Paper, Select, Table, Title } from "@mantine/core";
 import LinkFirstAccount from "components/accounts/LinkFirstAccount";
 import { Application } from "components/app/Application";
 import { BudgetBarChart } from "components/charts/BudgetBarChart";
 import { NetWorthLineChart } from "components/charts/NetWorthLineChart";
 import StackedBarChart from "components/charts/StackedBarChart";
+import TransactionsGrid from "components/transactions/TransactionsGrid";
+import { useApi } from "hooks/useApi";
+import { usePagingAndFilteringApi } from "hooks/usePagingAndFilteringApi";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Calendar } from "tabler-icons-react";
 import { ResponsiveGrid } from "../grid/ResponsiveGrid";
 
@@ -32,10 +35,49 @@ function RecentTransactionsCard() {
     <GridCard>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <Title order={4}>Recent Transactions</Title>
-        <ChartRangeDropDown value="3" />
       </div>
-      {/* <BudgetBarChart /> */}
+      <RecentTransactions />
     </GridCard>
+  );
+}
+
+function RecentTransactions() {
+  const [tableData, setTableDate] = useState([]);
+
+  const { isLoading, error, data } = usePagingAndFilteringApi({
+    url: "transactions",
+    payload: { pageSize: 6 },
+  });
+
+  useEffect(() => {
+    setTableDate(
+      data?.data?.map((transaction) => (
+        <tr key={transaction.name}>
+          <td>{transaction.date}</td>
+          <td>{transaction.name}</td>
+          <td>{transaction.amount}</td>
+        </tr>
+      ))
+    );
+  }, [data]);
+
+  return (
+    <>
+      {isLoading && <>Loading...</>}
+      {error && <>Error!! {error?.message}</>}
+      {data && (
+        <Table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Name</th>
+              <th>Amount</th>
+            </tr>
+          </thead>
+          <tbody>{tableData}</tbody>
+        </Table>
+      )}
+    </>
   );
 }
 

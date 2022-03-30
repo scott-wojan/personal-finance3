@@ -109,16 +109,16 @@ export function BudgetBarChart() {
     labels: [new Date("07/01/2021"), new Date("12/01/2021")],
     datasets: [
       {
-        label: "Spend",
-        data: spendData,
-        borderColor: theme.colors.red[3],
-        backgroundColor: theme.colors.red[3],
-      },
-      {
         label: "Goal",
         data: budgetData,
         borderColor: theme.colors.blue[3],
         backgroundColor: theme.colors.blue[3],
+      },
+      {
+        label: "Spend",
+        data: spendData,
+        borderColor: theme.colors.red[3],
+        backgroundColor: theme.colors.red[3],
       },
     ],
   };

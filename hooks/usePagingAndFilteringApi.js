@@ -6,16 +6,21 @@ export function usePagingAndFilteringApi(params) {
   if (!params.url) {
     throw new Error("No url specified");
   }
-  const [pagingSorting, dispatch] = useReducer(pagingReducer, pagingDefaults);
+
+  const { page = pagingDefaults.page, pageSize = pagingDefaults.pageSize } =
+    params.payload;
+  const [pagingSorting, dispatch] = useReducer(pagingReducer, {
+    ...{ page, pageSize },
+  });
   const [filtersAndSorting, setFiltersAndSorting] = useState({});
   const { isLoading, error, data } = useQuery(
     [params, pagingSorting, filtersAndSorting],
     async () => {
-      // console.log("useQuery", {
-      //   ...params.payload,
-      //   ...pagingSorting,
-      //   ...filtersAndSorting,
-      // });
+      console.log("useQuery", params.url, {
+        ...params.payload,
+        ...pagingSorting,
+        ...filtersAndSorting,
+      });
       const res = await axios.post(`/api/${params.url}`, {
         ...params.payload,
         ...pagingSorting,

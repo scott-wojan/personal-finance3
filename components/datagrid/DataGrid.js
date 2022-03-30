@@ -14,8 +14,6 @@ export function DataGrid({
   onCellChange = undefined,
   onFilterAndSort = undefined,
 }) {
-  console.log("rows", rows);
-
   const [gridData, setGridData] = useState(
     rows?.map((row, rowIndex) => {
       return { ...row, index: rowIndex };

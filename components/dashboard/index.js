@@ -14,7 +14,7 @@ export default function Dashboard({ user }) {
     return <LinkFirstAccount />;
   }
   return (
-    <Application>
+    <Application sidebar={<>TBD</>}>
       <ResponsiveGrid columns={1}>
         <NetWorthCard />
         <IncomeAndExpensesCard />

@@ -8,6 +8,7 @@ import {
   Fingerprint,
   Home2,
   Key,
+  List,
   Logout,
   Receipt2,
   Settings,
@@ -81,6 +82,7 @@ const navLinks = [
   { link: "accounts", label: "Accounts", icon: BuildingBank },
   { link: "transactions", label: "Transactions", icon: Receipt2 },
   { link: "budget", label: "Budget", icon: Wallet },
+  { link: "categories", label: "Categories", icon: List },
   { link: "notifications", label: "Notifications", icon: BellRinging },
 ];
 

@@ -1,6 +1,6 @@
 import sql from "./db.js";
 
-async function getCategoriesAsSelectOptions({ userId }) {
+async function getUserCategoriesAsSelectOptions({ userId }) {
   // @ts-ignore
   return await sql`
       select distinct user_category as label, 
@@ -11,4 +11,4 @@ async function getCategoriesAsSelectOptions({ userId }) {
   `;
 }
 
-export { getCategoriesAsSelectOptions };
+export { getUserCategoriesAsSelectOptions };

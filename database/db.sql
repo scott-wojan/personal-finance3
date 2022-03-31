@@ -147,19 +147,18 @@ CREATE TYPE plaid_account_import as (
 );
 
 
--- CREATE FUNCTION set_transaction_values() RETURNS trigger AS $$
---   BEGIN
---     NEW.month := EXTRACT(MONTH FROM NEW.date);
---     NEW.year := EXTRACT(YEAR FROM NEW.date);
---     NEW.subcategory :=COALESCE(NEW.subcategory, NEW.category || ' General', NEW.subcategory);
---     RETURN NEW;
---   END
--- $$ LANGUAGE plpgsql;
+CREATE OR REPLACE FUNCTION set_transaction_values() RETURNS trigger AS $$
+  BEGIN
+    NEW.imported_category :=COALESCE(NEW.imported_category,'General');
+    NEW.imported_subcategory :=COALESCE(NEW.imported_subcategory,'General');
+    RETURN NEW;
+  END
+$$ LANGUAGE plpgsql;
 
 
--- CREATE TRIGGER transactions_set_transaction_values
--- BEFORE INSERT OR UPDATE ON transactions
--- FOR EACH ROW EXECUTE PROCEDURE set_transaction_values();
+CREATE TRIGGER transactions_set_transaction_values
+after insert or update on transactions
+FOR EACH ROW EXECUTE PROCEDURE set_transaction_values();
 
 
 CREATE TABLE IF NOT EXISTS categories

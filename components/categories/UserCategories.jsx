@@ -50,7 +50,7 @@ export default function UserCategories() {
         <thead>
           <tr>
             <th>When Imported As</th>
-            <th colSpan={2}>Change To</th>
+            <th>Change To</th>
           </tr>
         </thead>
         <tbody>

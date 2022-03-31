@@ -9,8 +9,6 @@ const SubCategoriesSelect = React.forwardRef((props, ref) => {
     // @ts-ignore
     onChange,
     // @ts-ignore
-    onCreate,
-    // @ts-ignore
     category,
     // @ts-ignore
     value,
@@ -39,10 +37,14 @@ const SubCategoriesSelect = React.forwardRef((props, ref) => {
     onChange?.(newSelectedValue);
   };
 
-  const handleCreate = (newValue) => {
+  const handleCreate = async (newValue) => {
     //TODO: save to URL
     setSelectedValue(newValue);
-    onCreate?.(newValue);
+    setOptions(prevState => {
+      // Object.assign would also work
+      const newState = [...prevState, ...[{ value: newValue, label: newValue }]];
+      return newState;
+    });    
   };
 
   const useStyles = createStyles((theme) => ({

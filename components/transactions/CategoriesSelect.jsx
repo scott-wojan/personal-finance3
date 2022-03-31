@@ -23,7 +23,13 @@ export function CategoriesSelect({
   };
 
   const onCreate = (newValue) => {
-    //TODO: save to URL
+    setSelectedValue(newValue);
+
+    setOptions(prevState => {
+      // Object.assign would also work
+      const newState = [...prevState, ...[{ value: newValue, label: newValue }]];
+      return newState;
+    });    
   };
 
   const handleOnChange = (newSelectedValue) => {

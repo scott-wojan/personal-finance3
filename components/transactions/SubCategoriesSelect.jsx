@@ -20,16 +20,16 @@ const SubCategoriesSelect = React.forwardRef((props, ref) => {
   const [error, setError] = useState();
   const [options, setOptions] = useState([{ value: value, label: value }]);
 
+  useEffect(() => {
+    setSelectedValue(value);
+  }, [value]);
+
   const onFocus = async () => {
     const res = await axios.post("api/select-options/subcategories", {
       category,
     });
     setOptions(res.data);
   };
-
-  useEffect(() => {
-    setSelectedValue(value);
-  }, [value]);
 
   const handleOnChange = (newSelectedValue) => {
     setError(null);

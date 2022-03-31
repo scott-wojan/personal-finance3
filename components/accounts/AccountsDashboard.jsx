@@ -35,7 +35,7 @@ export default function AccountsDashboard() {
       <>
         {
           data &&
-            Object.entries(groupBy("institution")(data)).map(([key, value]) => {
+            Object.entries(groupBy(data, "institution")).map(([key, value]) => {
               return (
                 <div key={key}>
                   <Title pb="sm" order={4}>

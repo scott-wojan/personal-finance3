@@ -3,9 +3,9 @@ import { createStyles, Select } from "@mantine/core";
 import axios from "axios";
 
 export function CategoriesSelect({
+  size = "xs",
   onChange,
   value,
-  size = "xs",
   label = undefined,
 }) {
   const [selectedValue, setSelectedValue] = useState(value);
@@ -22,16 +22,6 @@ export function CategoriesSelect({
     setOptions(res.data);
   };
 
-  const onCreate = (newValue) => {
-    setSelectedValue(newValue);
-
-    setOptions(prevState => {
-      // Object.assign would also work
-      const newState = [...prevState, ...[{ value: newValue, label: newValue }]];
-      return newState;
-    });    
-  };
-
   const handleOnChange = (newSelectedValue) => {
     setError(null);
     setSelectedValue(newSelectedValue);
@@ -40,7 +30,13 @@ export function CategoriesSelect({
 
   const handleCreate = (newValue) => {
     setSelectedValue(newValue);
-    onCreate(newValue);
+    setSelectedValue(newValue);
+
+    setOptions(prevState => {
+      // Object.assign would also work
+      const newState = [...prevState, ...[{ value: newValue, label: newValue }]];
+      return newState;
+    }); 
   };
 
   const useStyles = createStyles((theme) => ({

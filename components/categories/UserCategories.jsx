@@ -3,6 +3,7 @@ import axios from "axios";
 import { CategoriesSelect } from "components/transactions/CategoriesSelect";
 import { SubCategoriesDropdown } from "components/transactions/SubCategoriesSelect";
 import { groupBy } from "formatting";
+
 import { useApi } from "hooks/useApi";
 
 // @ts-ignore
@@ -44,17 +45,17 @@ export default function UserCategories() {
 
   return (
     <>
-      <Title order={3}>Categories</Title>
-      <Table highlightOnHover className={cx(classes.table)}>
+      <Title order={3}>Category Management</Title>
+      <Table  className={cx(classes.table)}>
         <thead>
           <tr>
-            <th>Imported As</th>
+            <th>When Imported As</th>
             <th colSpan={2}>Change To</th>
           </tr>
         </thead>
         <tbody>
           {data &&
-            Object.entries(groupBy("imported_category")(data)).map(
+            Object.entries(groupBy(data,"imported_category")).map(
               ([key, value]) => {
                 return (
                   <Fragment key={key}>
@@ -113,7 +114,7 @@ function CategorySubCategories({ categoryId, category, subcategory }) {
         category:selectedCategory,
         subcategory:value
       })
-      console.log(`update user category ${categoryId} to ${selectedCategory} and ${value}`)
+      // console.log(`update user category ${categoryId} to ${selectedCategory} and ${value}`)
     }
   }
 

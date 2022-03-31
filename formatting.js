@@ -16,12 +16,14 @@ export function getFormattedDate(val) {
   return moment(val).format("MMM DD YYYY");
 }
 
-const groupBy = (key) => (array) =>
-  array.reduce(
-    (objectsByKeyValue, obj) => ({
-      ...objectsByKeyValue,
-      [obj[key]]: (objectsByKeyValue[obj[key]] || []).concat(obj),
-    }),
-    {}
-  );
-export { groupBy };
+export function groupBy(objectArray, property) {
+  return objectArray.reduce((acc, obj) => {
+    const key = obj[property];
+    if (!acc[key]) {
+      acc[key] = [];
+    }
+    // Add object to list for given key's value
+    acc[key].push(obj);
+    return acc;
+  }, {});
+}

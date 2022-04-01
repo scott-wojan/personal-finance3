@@ -1,7 +1,7 @@
 import sql from "./db.js";
 import { toJsonEscaped, toOrderBy, toWhere } from "./helpers.js";
 
-async function getTransactions({
+export async function getTransactions({
   userId,
   page = 1,
   pageSize = 10,
@@ -37,13 +37,13 @@ async function getTransactions({
   return rows[0];
 }
 
-async function saveUserTransactions({ userId, transactions }) {
+export async function saveUserTransactions({ userId, transactions }) {
   const json = toJsonEscaped(transactions);
   const query = `select * from insert_plaid_transactions(${userId},'${json}')`;
   await sql.unsafe(query);
 }
 
-async function deleteTransactions({ transactionIds }) {
+export async function deleteTransactions({ transactionIds }) {
   const list = transactionIds.map((transationId, index) => {
     return ` ${index !== 0 ? "," : ""} '${transationId}'`;
   });
@@ -51,7 +51,23 @@ async function deleteTransactions({ transactionIds }) {
   await sql.unsafe(query);
 }
 
-export { getTransactions, saveUserTransactions, deleteTransactions };
+export async function updateUserTransaction({
+  userId,
+  id,
+  name,
+  category,
+  subcategory,
+}) {
+  // @ts-ignore
+  return await sql`
+    update transactions
+    set name = ${name},
+        category=${category},
+        subcategory=${subcategory}
+  where user_id = ${userId}
+    and id = ${id};
+  ;`;
+}
 
 /*
 async function saveTransactions(userId, transactions) {

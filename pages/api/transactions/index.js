@@ -8,13 +8,13 @@ export default async function handler(req, res) {
 
   if (!user) return res.status(401).json();
 
-  console.log("API Transactions", {
-    userId: user?.id,
-    page,
-    pageSize,
-    sort,
-    filter: JSON.stringify(filter),
-  });
+  // console.log("API Transactions", {
+  //   userId: user?.id,
+  //   page,
+  //   pageSize,
+  //   sort,
+  //   filter: JSON.stringify(filter),
+  // });
 
   try {
     let transactions = await getTransactions({

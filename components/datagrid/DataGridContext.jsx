@@ -17,7 +17,7 @@ const DataGridContext = createContext({
   pagination: undefined,
   setSort: undefined,
   setFilter: undefined,
-
+  updateRow: undefined,
   // selectedColumnIndex: null,
   // setSelectedColumnIndex: null,
   // tableRef: null,
@@ -42,6 +42,10 @@ export function DataGridProvider({
   // const tableRef = useRef();
   const [filtersAndSorting, dispatch] = useReducer(gridReducer, gridDefaults);
   const tbodyRef = useRef(null);
+
+  const updateRow = ({ rowIndex, propertyName, newValue }) => {
+    rows[rowIndex][propertyName] = newValue;
+  };
 
   const updateSelectedRow = useCallback(
     async (newRow) => {
@@ -91,6 +95,7 @@ export function DataGridProvider({
       pagination,
       setSort: updateSort,
       setFilter: updateFilter,
+      updateRow,
       tbodyRef,
       // selectedColumnIndex,
       // setSelectedColumnIndex,

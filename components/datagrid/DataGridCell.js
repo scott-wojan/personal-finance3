@@ -6,7 +6,7 @@ import { useDataGrid } from "./DataGridContext";
 
 export function DataGridCell(props) {
   const { column, onChange, row, children, isEditing = false } = props;
-  const { tbodyRef, rows, setSelectedRow } = useDataGrid();
+  const { tbodyRef, rows, setSelectedRow, updateRow } = useDataGrid();
   const [formatting, setFormatting] = useState(
     column?.formatting &&
       new Proxy(
@@ -31,6 +31,11 @@ export function DataGridCell(props) {
   const Component = getComponent();
 
   const onCellChange = (newValue, oldValue) => {
+    updateRow({
+      rowIndex: row.index,
+      propertyName: column?.accessor,
+      newValue,
+    });
     onChange?.({
       propertyName: column?.accessor,
       newValue,

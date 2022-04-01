@@ -1,22 +1,23 @@
 import { getUserFromCookie } from "cookies/user";
-import { updateUserCategoryAndSubcategory } from "database/usercategories";
+import { updateUserTransaction } from "database/transactions";
 
 export default async function handler(req, res) {
   const user = getUserFromCookie(req, res);
   if (!user) return res.status(401).json();
 
-  const { categoryId, category, subcategory } = req.body;
-  if (!categoryId || !category || !subcategory) return res.status(400).json();
+  const { id, name, category, subcategory } = req.body;
+  if (!id || !name || !category || !subcategory) return res.status(401).json();
 
   try {
-    const categories = await updateUserCategoryAndSubcategory({
+    await updateUserTransaction({
       userId: user?.id,
-      categoryId,
+      id,
+      name,
       category,
       subcategory,
     });
 
-    res.status(200).json(categories);
+    res.status(200).json();
   } catch (error) {
     res.status(400).json(error.response);
   }

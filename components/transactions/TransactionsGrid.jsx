@@ -12,6 +12,7 @@ import { usePagingAndFilteringApi } from "hooks/usePagingAndFilteringApi";
 import { CategoriesSelect } from "./CategoriesSelect";
 import { SubCategoriesDropdown } from "./SubCategoriesSelect";
 import { ResponsiveGrid } from "components/grid/ResponsiveGrid";
+import axios from "axios";
 
 export default function TransactionsGrid({ accountId = undefined }) {
   const {
@@ -79,8 +80,15 @@ export default function TransactionsGrid({ accountId = undefined }) {
         dataType: "select",
         filterUrl: "/select-options/subcategories",
         width: 200,
-        Cell: ({ row }) => {
-          return <SubCategoriesDropdown category={row.row} />;
+        Cell: (props) => {
+          const { row, onChange } = props;
+          return (
+            <SubCategoriesDropdown
+              category={row.category}
+              value={row.subcategory}
+              onChange={onChange}
+            />
+          );
         },
         canFilter: true,
       },
@@ -127,8 +135,14 @@ export default function TransactionsGrid({ accountId = undefined }) {
     []
   );
 
-  const onRowChange = (row) => {
-    console.log("onRowChange", row);
+  const onRowChange = async ({ row }) => {
+    const { id, name, category, subcategory } = row;
+    await axios.post("/api/transactions/update", {
+      id,
+      name,
+      category,
+      subcategory,
+    });
   };
   const onFilterAndSort = (filter) => {
     //console.log("TransactionGrid onFilter", filter);

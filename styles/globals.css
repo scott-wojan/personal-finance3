@@ -12,3 +12,53 @@ body {
   right: 0;
   overflow: auto;
 }
+
+.noUi-tooltip {
+  display: none !important;
+}
+.noUi-active .noUi-tooltip {
+  display: block !important;
+  /* background-color: red; */
+}
+
+.noUi-connect {
+  background-color: #139f5a !important;
+  /* height: 12px !important; */
+}
+
+.noUi-target {
+  height: 10px !important;
+}
+.noUi-horizontal .noUi-handle {
+  height: 18px !important;
+  width: 18px !important;
+}
+.noUi-handle:before {
+  left: 6px !important;
+  top: 3px !important;
+  height: 10px !important;
+}
+
+.noUi-handle:after {
+  left: 9px !important;
+  top: 3px !important;
+  height: 10px !important;
+}
+
+.noUi-pips {
+  padding-top: 4px !important;
+  font-size: 10px !important;
+  color: black !important;
+}
+
+.noUi-value {
+  line-height: 15px !important;
+}
+
+.noUi-marker-large {
+  height: 8px !important;
+}
+
+.noUi-value-large {
+  padding-top: 0 !important;
+}

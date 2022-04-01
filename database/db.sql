@@ -193,10 +193,10 @@ CREATE TABLE IF NOT EXISTS user_categories
   category_id integer references categories(id) on delete cascade on update cascade,
   user_category citext,
   user_subcategory citext,
-  budgeted_amount numeric(28,10)
+  min_budgeted_amount numeric(28,10) default 0,
+  max_budgeted_amount numeric(28,10) default 0
 );
 CREATE UNIQUE INDEX user_categories_uidx ON user_categories(user_id, category_id, user_category, user_subcategory);
-
 
 
 create or replace function user_category_update_values() returns trigger AS $$

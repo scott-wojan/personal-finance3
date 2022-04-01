@@ -47,7 +47,7 @@ export default function SignIn() {
             <Center
               style={{
                 height: "100%",
-                backgroundImage: "url(/background.png)",
+                backgroundImage: "url(/background.jpg)",
                 backgroundSize: "cover",
                 backgroundRepeat: "no-repeat",
               }}

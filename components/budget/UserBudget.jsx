@@ -1,6 +1,6 @@
 import faker from "@faker-js/faker";
 import { createStyles, RangeSlider, Table, Title } from "@mantine/core";
-import { getFormattedCurrency, groupBy } from "formatting";
+import { getFormattedCurrency, getShortCurrency, groupBy } from "formatting";
 import { useApi } from "hooks/useApi";
 import React, { Fragment, useEffect, useState } from "react";
 import BudgetRangeSlider2 from "./BudgetRangeSlider2";
@@ -39,7 +39,7 @@ export default function UserBudget() {
         textAlign: "center",
       },
       "tbody tr td:nth-of-type(2)": {
-        minWidth: 300,
+        minWidth: 500,
       },
       th: {
         fontWeight: "400 !important",
@@ -120,7 +120,7 @@ export default function UserBudget() {
 function BudgetRow({ subcategory, onChange }) {
   const [minValue, setMinValue] = useState(subcategory.min_budgeted_amount);
   const [maxValue, setMaxValue] = useState(subcategory.max_budgeted_amount);
-
+  //console.log("subcategory", subcategory);
   const useStyles = createStyles((theme) => ({
     subcategory: {
       "td:first-of-type": {
@@ -146,11 +146,22 @@ function BudgetRow({ subcategory, onChange }) {
       <td className="center">
         {/* <BudgetRangeSlider2 onChange={onRangeSelection} /> */}
         <BudgetRangeSlider
+          // min={subcategory.min * 0.8}
+          // max={subcategory.max * 1.2}
           onChange={onRangeSelection}
           marks={[
-            { value: 25, label: `Min $${25}` },
-            { value: 50, label: `Avg $${45}` },
-            { value: 75, label: `Max $${75}` },
+            {
+              value: 25,
+              label: `Min ${getFormattedCurrency(subcategory.min)}`,
+            },
+            {
+              value: 50,
+              label: `Avg ${getFormattedCurrency(subcategory.avg)}`,
+            },
+            {
+              value: 75,
+              label: `Max ${getFormattedCurrency(subcategory.max)}`,
+            },
           ]}
         />
       </td>
@@ -161,7 +172,7 @@ function BudgetRow({ subcategory, onChange }) {
   );
 }
 
-function BudgetRangeSlider({ marks, onChange }) {
+function BudgetRangeSlider({ marks, onChange, min = 0, max = 100 }) {
   const [showMarks, setShowMarks] = useState(true);
 
   //mantine-14thopp mantine-Slider-markLabel
@@ -182,9 +193,9 @@ function BudgetRangeSlider({ marks, onChange }) {
         label={(val) => `$${val}`}
         showLabelOnHover={true}
         onChangeEnd={onChange}
-        max={100}
+        min={min}
+        max={max}
         step={1}
-        min={0}
         defaultValue={[0, 0]}
         marks={showMarks ? marks : []}
         styles={(theme) => ({

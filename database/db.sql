@@ -83,7 +83,7 @@ CREATE TABLE IF NOT EXISTS transactions
     id text PRIMARY KEY,
     user_id integer references users(id) on delete cascade on update cascade NOT NULL,    
     account_id citext references accounts(id) on delete cascade on update cascade NOT NULL,
-    amount numeric(28,10),
+    amount numeric(28,10) default 0,
     iso_currency_code citext,
     imported_category_id citext,
     imported_category citext,

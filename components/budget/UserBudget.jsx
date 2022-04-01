@@ -123,7 +123,7 @@ function BudgetRow({ subcategory, onChange }) {
 
   const useStyles = createStyles((theme) => ({
     subcategory: {
-      "td:first-child": {
+      "td:first-of-type": {
         paddingLeft: `${theme.spacing.lg}px !important`,
       },
       td: {

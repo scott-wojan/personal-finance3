@@ -127,7 +127,7 @@ function BudgetRow({ subcategory, onChange }) {
         paddingLeft: `${theme.spacing.lg}px !important`,
       },
       td: {
-        paddingBottom: `24px !important`,
+        paddingBottom: `16px !important`,
       },
     },
   }));
@@ -185,7 +185,7 @@ function BudgetRangeSlider({ marks, onChange }) {
         max={100}
         step={1}
         min={0}
-        defaultValue={[0, 0.5]}
+        defaultValue={[0, 0]}
         marks={showMarks ? marks : []}
         styles={(theme) => ({
           markLabel: {

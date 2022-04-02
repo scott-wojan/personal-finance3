@@ -8,7 +8,8 @@ import { useApi } from "hooks/useApi";
 
 // @ts-ignore
 import React, { Fragment, useEffect, useRef, useState } from "react";
-import { SubCategoriesDropdown } from "./SubCategoriesSelect";
+import { SubCategoriesSelect } from "./SubCategoriesSelect";
+
 
 export default function UserCategories() {
   const useStyles = createStyles((theme) => ({
@@ -125,7 +126,7 @@ function CategorySubCategories({ categoryId, category, subcategory }) {
         value={selectedCategory}
         onChange={onCategorySelected}
       />
-      <SubCategoriesDropdown
+      <SubCategoriesSelect
         ref={subcategoryDropdownRef}
         // @ts-ignore
         value={selectedSubCategory}

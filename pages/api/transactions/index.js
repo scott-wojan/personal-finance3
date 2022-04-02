@@ -1,5 +1,5 @@
 import { getUserFromCookie } from "cookies/user";
-import { getTransactions } from "database/transactions";
+import { getUserTransactions } from "database/transactions";
 
 export default async function handler(req, res) {
   const user = getUserFromCookie(req, res);
@@ -7,8 +7,7 @@ export default async function handler(req, res) {
     return res.status(401).json();
   }
 
-  const { accountId } = req.body;
-  const { page = 2, pageSize = 10, sort, filter } = req.body;
+  const { accountId, page = 2, pageSize = 10, sort, filter } = req.body;
 
   // console.log("API Transactions", {
   //   userId: user?.id,
@@ -19,7 +18,7 @@ export default async function handler(req, res) {
   // });
 
   try {
-    let transactions = await getTransactions({
+    const transactions = await getUserTransactions({
       userId: user?.id,
       page,
       pageSize,

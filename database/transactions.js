@@ -1,7 +1,7 @@
 import sql from "./db.js";
 import { toJsonEscaped, toOrderBy, toWhere } from "./helpers.js";
 
-export async function getTransactions({
+export async function getUserTransactions({
   userId,
   page = 1,
   pageSize = 10,

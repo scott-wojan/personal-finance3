@@ -910,62 +910,62 @@ LANGUAGE 'plpgsql';
 
 
 
-CREATE OR REPLACE FUNCTION get_transactions(userId integer, accountId text default null, startDate date default null, endDate date default null, page integer default 1, pageSize integer default 1, sortBy text default 'date', sortDirection text default'asc')
-RETURNS TABLE (
- total bigint,
- data json	
-)
-AS $$
-DECLARE 
- selectStmt VARCHAR;
- whereStmt VARCHAR := ' WHERE a.user_id = '|| quote_literal(userId); 
- sortByColumn VARCHAR := sortBy;
- sortColumnDirection VARCHAR := sortDirection; 
-BEGIN
-    IF sortByColumn IS NULL THEN
-     sortByColumn := 'date';
-    END IF;
+-- CREATE OR REPLACE FUNCTION get_transactions(userId integer, accountId text default null, startDate date default null, endDate date default null, page integer default 1, pageSize integer default 1, sortBy text default 'date', sortDirection text default'asc')
+-- RETURNS TABLE (
+--  total bigint,
+--  data json	
+-- )
+-- AS $$
+-- DECLARE 
+--  selectStmt VARCHAR;
+--  whereStmt VARCHAR := ' WHERE a.user_id = '|| quote_literal(userId); 
+--  sortByColumn VARCHAR := sortBy;
+--  sortColumnDirection VARCHAR := sortDirection; 
+-- BEGIN
+--     IF sortByColumn IS NULL THEN
+--      sortByColumn := 'date';
+--     END IF;
 	
 
-     IF sortColumnDirection IS NULL THEN
- 		IF sortByColumn = 'date' THEN
- 		   sortColumnDirection := 'desc';
-		ELSE
- 		   sortColumnDirection := 'asc';
- 		END IF;
-     END IF;
+--      IF sortColumnDirection IS NULL THEN
+--  		IF sortByColumn = 'date' THEN
+--  		   sortColumnDirection := 'desc';
+-- 		ELSE
+--  		   sortColumnDirection := 'asc';
+--  		END IF;
+--      END IF;
 	
--- 	raise notice 'sortByColumn: %', sortByColumn;
--- 	raise notice 'sortColumnDirection: %', sortColumnDirection;
+-- -- 	raise notice 'sortByColumn: %', sortByColumn;
+-- -- 	raise notice 'sortColumnDirection: %', sortColumnDirection;
 	
-    IF accountId IS NOT NULL THEN
-        whereStmt := whereStmt || ' AND a.id = '|| quote_literal(accountId) ||' ';
-    END IF;
+--     IF accountId IS NOT NULL THEN
+--         whereStmt := whereStmt || ' AND a.id = '|| quote_literal(accountId) ||' ';
+--     END IF;
    
-    IF startDate IS NOT NULL AND endDate IS NOT NULL THEN
-	    whereStmt := whereStmt || ' AND date BETWEEN '|| quote_literal(startDate) ||' AND '|| quote_literal(endDate) ||' ';
-    END IF;   
+--     IF startDate IS NOT NULL AND endDate IS NOT NULL THEN
+-- 	    whereStmt := whereStmt || ' AND date BETWEEN '|| quote_literal(startDate) ||' AND '|| quote_literal(endDate) ||' ';
+--     END IF;   
    
-   selectStmt := 'SELECT (SELECT COUNT(t.*) FROM transactions t INNER JOIN accounts a on a.id = t.account_id '
-   || whereStmt ||
-   ') as count, ' 
-   '(SELECT json_agg(t.*) '
-	  'FROM ( '
-	  ' select t.id, t.date, a.name account, t.name, t.category as category, t.subcategory as subcategory, t.amount, t.iso_currency_code FROM transactions t '
-	  ' INNER JOIN accounts a on a.id = t.account_id '
-	  || whereStmt ||
-      ' ORDER BY '|| sortByColumn ||' ' || sortColumnDirection ||
-      '  OFFSET '|| quote_literal(page) ||' '
-      '  LIMIT '|| quote_literal(pageSize) ||' '
-	  ') AS t'
-	 ' ) as data';
+--    selectStmt := 'SELECT (SELECT COUNT(t.*) FROM transactions t INNER JOIN accounts a on a.id = t.account_id '
+--    || whereStmt ||
+--    ') as count, ' 
+--    '(SELECT json_agg(t.*) '
+-- 	  'FROM ( '
+-- 	  ' select t.id, t.date, a.name account, t.name, t.category as category, t.subcategory as subcategory, t.amount, t.iso_currency_code FROM transactions t '
+-- 	  ' INNER JOIN accounts a on a.id = t.account_id '
+-- 	  || whereStmt ||
+--       ' ORDER BY '|| sortByColumn ||' ' || sortColumnDirection ||
+--       '  OFFSET '|| quote_literal(page) ||' '
+--       '  LIMIT '|| quote_literal(pageSize) ||' '
+-- 	  ') AS t'
+-- 	 ' ) as data';
    
--- raise notice 'SQL: %', selectStmt;   
+-- -- raise notice 'SQL: %', selectStmt;   
    
-RETURN QUERY EXECUTE selectStmt;
+-- RETURN QUERY EXECUTE selectStmt;
 
-END; $$ 
-LANGUAGE 'plpgsql';
+-- END; $$ 
+-- LANGUAGE 'plpgsql';
 
 
 create or replace view user_transactions as

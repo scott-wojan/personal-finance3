@@ -3,7 +3,7 @@ import LinkFirstAccount from "components/accounts/LinkFirstAccount";
 import { Application } from "components/app/Application";
 import { BudgetBarChart } from "components/charts/BudgetBarChart";
 import { NetWorthLineChart } from "components/charts/NetWorthLineChart";
-import StackedBarChart from "components/charts/StackedBarChart";
+import IncomeToExpensesChart from "components/charts/IncomeToExpensesChart";
 import { usePagingAndFilteringApi } from "hooks/usePagingAndFilteringApi";
 
 import React, { useEffect, useState } from "react";
@@ -50,7 +50,7 @@ function RecentTransactions() {
   useEffect(() => {
     setTableDate(
       data?.data?.map((transaction) => (
-        <tr key={transaction.name}>
+        <tr key={transaction.id}>
           <td>{transaction.date}</td>
           <td>{transaction.name}</td>
           <td>{transaction.amount}</td>
@@ -99,7 +99,7 @@ function IncomeAndExpensesCard() {
 
         <ChartRangeDropDown />
       </div>
-      <StackedBarChart />
+      <IncomeToExpensesChart />
     </GridCard>
   );
 }

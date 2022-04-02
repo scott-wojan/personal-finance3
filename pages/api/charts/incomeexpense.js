@@ -7,11 +7,13 @@ export default async function handler(req, res) {
     return res.status(401).json();
   }
 
-  // const { accountId } = req.body;
+  const { startDate, endDate } = req.body;
 
   try {
     const transactions = await getUserIncomeAndExpense({
       userId: user?.id,
+      startDate,
+      endDate,
     });
     res.status(200).json(transactions);
   } catch (error) {

@@ -14,6 +14,7 @@ import {
 import { useMantineTheme } from "@mantine/core";
 import { getFormattedCurrency, groupBy } from "formatting";
 import { useApi } from "hooks/useApi";
+import dayjs from "dayjs";
 
 ChartJS.register(
   CategoryScale,
@@ -26,16 +27,24 @@ ChartJS.register(
   Legend
 );
 
-export default function StackedBarChart({ height = 50 }) {
+export default function IncomeToExpensesChart({
+  height = 50,
+  startDate = dayjs().subtract(12, "months").format("YYYY-MM-DD"),
+  endDate = dayjs().subtract(0, "days").format("YYYY-MM-DD"),
+}) {
   const theme = useMantineTheme();
   const [chartDatas, setChartDatas] = useState();
-
+  console.log(dayjs());
   const {
     isLoading,
     error,
     data: apiData,
   } = useApi({
     url: "charts/incomeexpense",
+    payload: {
+      startDate,
+      endDate,
+    },
   });
 
   useEffect(() => {
@@ -69,7 +78,7 @@ export default function StackedBarChart({ height = 50 }) {
     });
 
     const chartData = {
-      labels: [new Date("01/01/2021"), new Date("12/01/2021")],
+      labels: [new Date(startDate), new Date(endDate)],
       datasets: [
         {
           type: "line",

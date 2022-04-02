@@ -234,120 +234,115 @@ function DataGridSubRow({ transactionId }) {
     url: `transactions/${transactionId}`,
   });
 
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
   if (error) {
     <div>Error: error.message</div>;
   }
 
   return (
     <>
-      {data && (
-        <tr>
-          <td colSpan={9999} style={{ padding: 0 }}>
-            <div style={{ display: "flex" }}>
-              <div>
-                <TransactionDetailMenu />
-              </div>
-              <div
-                style={{
-                  width: "100%",
-                  paddingLeft: theme.spacing.lg,
-                  paddingTop: theme.spacing.sm,
-                }}
-              >
-                <ResponsiveGrid>
-                  <div>
-                    <Text weight={600} size="sm">
-                      Received As
-                    </Text>
-                    <table className={classes.table}>
-                      <tbody>
-                        <tr>
-                          <td>Name:</td>
-                          <td>
-                            <a
-                              href={`https://www.google.com/search?q=${data.imported_name}`}
-                              target="_blank"
-                              rel="noreferrer"
-                            >
-                              {data.imported_name}
-                            </a>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>Category:</td>
-                          <td>{data.imported_category}</td>
-                        </tr>
-                        <tr>
-                          <td>Sub Category:</td>
-                          <td>{data.imported_subcategory}</td>
-                        </tr>
-                        {data.check && (
-                          <tr>
-                            <td>Check #:</td>
-                            <td>{data.check}</td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                  <div>
-                    <Text weight={600} size="sm">
-                      Merchant Info
-                    </Text>
-
-                    <table className={classes.table}>
-                      <tbody>
-                        <tr>
-                          <td>Name:</td>
-                          <td>
-                            <a
-                              href={`https://www.google.com/search?q=${data.merchant_name}`}
-                              target="_blank"
-                              rel="noreferrer"
-                            >
-                              {data.merchant_name}
-                            </a>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>Store #:</td>
-                          <td>1234</td>
-                        </tr>
-                        {data.address && (
-                          <tr>
-                            <td>Address:</td>
-                            <td>
-                              <a
-                                href={`https://www.google.com/maps/search/?api=1&query=${data.address} ${data.city} ${data.region} ${data.postal_code}`}
-                                target="_blank"
-                                rel="noreferrer"
-                              >
-                                {data.address}, {data.city}, {data.region}{" "}
-                                {data.postal_code}
-                              </a>
-                            </td>
-                          </tr>
-                        )}
-
-                        {data.authorized_date && (
-                          <tr>
-                            <td>Authorized On: </td>
-                            <td>{data.authorized_date}</td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                </ResponsiveGrid>
-              </div>
+      <tr>
+        <td colSpan={9999} style={{ padding: 0 }}>
+          <div style={{ display: "flex" }}>
+            <div>
+              <TransactionDetailMenu />
             </div>
-          </td>
-        </tr>
-      )}
+
+            <div
+              style={{
+                width: "100%",
+                paddingLeft: theme.spacing.lg,
+                paddingTop: theme.spacing.sm,
+              }}
+            >
+              <ResponsiveGrid>
+                <div>
+                  <Text weight={600} size="sm">
+                    Received As
+                  </Text>
+                  <table className={classes.table}>
+                    <tbody>
+                      <tr>
+                        <td>Name:</td>
+                        <td>
+                          <a
+                            href={`https://www.google.com/search?q=${data?.imported_name}`}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            {data?.imported_name}
+                          </a>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>Category:</td>
+                        <td>{data?.imported_category}</td>
+                      </tr>
+                      <tr>
+                        <td>Sub Category:</td>
+                        <td>{data?.imported_subcategory}</td>
+                      </tr>
+                      {data?.check && (
+                        <tr>
+                          <td>Check #:</td>
+                          <td>{data?.check}</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+                <div>
+                  <Text weight={600} size="sm">
+                    Merchant Info
+                  </Text>
+
+                  <table className={classes.table}>
+                    <tbody>
+                      <tr>
+                        <td>Name:</td>
+                        <td>
+                          <a
+                            href={`https://www.google.com/search?q=${data?.merchant_name}`}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            {data?.merchant_name}
+                          </a>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>Store #:</td>
+                        <td>1234</td>
+                      </tr>
+                      {data?.address && (
+                        <tr>
+                          <td>Address:</td>
+                          <td>
+                            <a
+                              href={`https://www.google.com/maps/search/?api=1&query=${data?.address} ${data?.city} ${data?.region} ${data?.postal_code}`}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              {data?.address}, {data?.city}, {data?.region}{" "}
+                              {data?.postal_code}
+                            </a>
+                          </td>
+                        </tr>
+                      )}
+
+                      {data?.authorized_date && (
+                        <tr>
+                          <td>Authorized On: </td>
+                          <td>{data?.authorized_date}</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </ResponsiveGrid>
+            </div>
+          </div>
+        </td>
+      </tr>
     </>
   );
 }

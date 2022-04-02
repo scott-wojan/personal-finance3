@@ -1,11 +1,9 @@
-import { Anchor, Paper, Select, Table, Title } from "@mantine/core";
+import { Paper, Select, Table, Title } from "@mantine/core";
 import LinkFirstAccount from "components/accounts/LinkFirstAccount";
 import { Application } from "components/app/Application";
 import { BudgetBarChart } from "components/charts/BudgetBarChart";
 import { NetWorthLineChart } from "components/charts/NetWorthLineChart";
 import StackedBarChart from "components/charts/StackedBarChart";
-import TransactionsGrid from "components/transactions/TransactionsGrid";
-import { useApi } from "hooks/useApi";
 import { usePagingAndFilteringApi } from "hooks/usePagingAndFilteringApi";
 
 import React, { useEffect, useState } from "react";

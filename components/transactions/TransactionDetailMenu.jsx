@@ -11,7 +11,7 @@ import React, { useState } from "react";
 
 import { Bolt, ListSearch, Notes, History } from "tabler-icons-react";
 
-export default function TransactionDetailMenu() {
+export function TransactionDetailMenu() {
   const theme = useMantineTheme();
   const [active, setActive] = useState(0);
 

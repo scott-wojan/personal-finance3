@@ -1,18 +1,16 @@
 import { createStyles, Title, useMantineTheme } from "@mantine/core";
 import React, { useEffect, useMemo } from "react";
-
 import { EditableCheckbox } from "components/datagrid/cellrenderers/EditableCheckbox";
 import { EditableTextInput } from "components/datagrid/cellrenderers/EditableTextInput";
 import { TransactionStatus } from "components/datagrid/cellrenderers/TransactionStatus";
 import { DataGrid } from "components/datagrid/DataGrid";
-
-import TransactionDetailMenu from "./TransactionDetailMenu";
+import { TransactionDetailMenu } from "./TransactionDetailMenu";
 import { Text } from "@mantine/core";
 import { usePagingAndFilteringApi } from "hooks/usePagingAndFilteringApi";
-import { CategoriesSelect } from "./CategoriesSelect";
-import { SubCategoriesDropdown } from "./SubCategoriesSelect";
+import { CategoriesSelect } from "../categories/CategoriesSelect";
 import { ResponsiveGrid } from "components/grid/ResponsiveGrid";
 import axios from "axios";
+import { SubCategoriesDropdown } from "components/categories/SubCategoriesSelect";
 
 export default function TransactionsGrid({ accountId = undefined }) {
   const {
@@ -116,16 +114,16 @@ export default function TransactionsGrid({ accountId = undefined }) {
         useDefaultRendererForNonEdit: false,
         Cell: TransactionStatus,
       },
-      {
-        Header: "Recurring",
-        accessor: "is_recurring",
-        width: 80,
-        align: "center",
-        useDefaultRendererForNonEdit: false,
-        Cell: EditableCheckbox,
-        dataType: "select",
-        canFilter: true,
-      },
+      // {
+      //   Header: "Recurring",
+      //   accessor: "is_recurring",
+      //   width: 80,
+      //   align: "center",
+      //   useDefaultRendererForNonEdit: false,
+      //   Cell: EditableCheckbox,
+      //   dataType: "select",
+      //   canFilter: true,
+      // },
       {
         Header: "Currency Code",
         accessor: "iso_currency_code",
@@ -150,6 +148,7 @@ export default function TransactionsGrid({ accountId = undefined }) {
   };
 
   const getSubRow = (row) => {
+    console.log(row);
     return <DataGridSubRow />;
   };
 

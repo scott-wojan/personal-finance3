@@ -1,13 +1,14 @@
 import { createStyles, Table, Title } from "@mantine/core";
 import axios from "axios";
-import { CategoriesSelect } from "components/transactions/CategoriesSelect";
-import { SubCategoriesDropdown } from "components/transactions/SubCategoriesSelect";
+import { CategoriesSelect } from "components/categories/CategoriesSelect";
+
 import { groupBy } from "formatting";
 
 import { useApi } from "hooks/useApi";
 
 // @ts-ignore
 import React, { Fragment, useEffect, useRef, useState } from "react";
+import { SubCategoriesDropdown } from "./SubCategoriesSelect";
 
 export default function UserCategories() {
   const useStyles = createStyles((theme) => ({
@@ -49,8 +50,8 @@ export default function UserCategories() {
       <Table  className={cx(classes.table)}>
         <thead>
           <tr>
-            <th>When Imported As</th>
-            <th>Change To</th>
+            <th>When imported as</th>
+            <th>Always change to</th>
           </tr>
         </thead>
         <tbody>

@@ -79,10 +79,10 @@ const useStyles = createStyles((theme, _params, getRef) => {
 
 const navLinks = [
   { link: "", label: "Home", icon: Home2 },
-  { link: "categories", label: "Categories", icon: List },
-  { link: "budget", label: "Budget", icon: Wallet },
   { link: "accounts", label: "Accounts", icon: BuildingBank },
   { link: "transactions", label: "Transactions", icon: Receipt2 },
+  { link: "categories", label: "Categories", icon: List },
+  { link: "budget", label: "Budget", icon: Wallet },
   { link: "notifications", label: "Notifications", icon: BellRinging },
 ];
 

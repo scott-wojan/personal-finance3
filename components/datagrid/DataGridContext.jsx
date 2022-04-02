@@ -43,9 +43,12 @@ export function DataGridProvider({
   const [filtersAndSorting, dispatch] = useReducer(gridReducer, gridDefaults);
   const tbodyRef = useRef(null);
 
-  const updateRow = ({ rowIndex, propertyName, newValue }) => {
-    rows[rowIndex][propertyName] = newValue;
-  };
+  const updateRow = useCallback(
+    ({ rowIndex, propertyName, newValue }) => {
+      rows[rowIndex][propertyName] = newValue;
+    },
+    [rows]
+  );
 
   const updateSelectedRow = useCallback(
     async (newRow) => {
@@ -68,8 +71,13 @@ export function DataGridProvider({
   }, [filtersAndSorting, onFilterAndSort]);
 
   const updateSort = useCallback((name, direction) => {
+    if (direction) {
+      // @ts-ignore
+      dispatch({ type: ON_SORT, payload: { name, direction } });
+      return;
+    }
     // @ts-ignore
-    dispatch({ type: ON_SORT, payload: { name, direction } });
+    dispatch({ type: ON_REMOVE_SORT, payload: { name, direction } });
   }, []);
 
   const updateFilter = useCallback((name, values) => {
@@ -114,6 +122,7 @@ export function DataGridProvider({
       pagination,
       updateSort,
       updateFilter,
+      updateRow,
     ]
   );
 
@@ -158,8 +167,9 @@ const gridDefaults = {
 };
 
 const ON_FILTER = "ON_FILTER";
-const ON_SORT = "ON_SORT";
 const ON_REMOVE_FILTER = "REMOVE_FILTER";
+const ON_SORT = "ON_SORT";
+const ON_REMOVE_SORT = "ON_REMOVE_SORT";
 
 function gridReducer(state, { type, payload }) {
   switch (type) {
@@ -183,6 +193,11 @@ function gridReducer(state, { type, payload }) {
       return {
         ...state,
         sort: newSortValue,
+      };
+    case ON_REMOVE_SORT:
+      return {
+        ...state,
+        sort: gridDefaults.sort,
       };
     default:
       throw new Error(`Unhandled action type: ${type}`);

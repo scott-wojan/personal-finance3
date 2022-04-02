@@ -55,6 +55,8 @@ export function HeaderFilter({
     }
     onFilter?.(undefined);
     setFilterValues(undefined);
+    setSortDirection(undefined);
+    onSort?.(undefined);
   }
 
   return (

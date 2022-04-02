@@ -3,6 +3,7 @@ import { MoodSad } from "tabler-icons-react";
 import { useDataGrid } from "./DataGridContext";
 import { DataGridRow } from "./DataGridRow";
 import { Text } from "@mantine/core";
+import NoResults from "components/noresults";
 export function DataGridRows() {
   const { rows, tbodyRef } = useDataGrid();
 
@@ -25,13 +26,7 @@ export function DataGridRows() {
               textAlign: "center",
             }}
           >
-            <div>
-              <Text size="xl" weight={700}>
-                Oh No
-              </Text>
-            </div>
-            <MoodSad size={48} strokeWidth={1} color={"gray"} />
-            <div>No results were found</div>
+            <NoResults />
           </td>
         </tr>
       )}

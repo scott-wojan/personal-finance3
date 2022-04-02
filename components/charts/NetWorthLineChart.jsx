@@ -29,7 +29,7 @@ ChartJS.register(
   TimeSeriesScale
 );
 
-export function NetWorthLineChart({ numberofMonths }) {
+export function NetWorthLineChart({ numberOfMonths }) {
   const theme = useMantineTheme();
   const chartRef = useRef();
 

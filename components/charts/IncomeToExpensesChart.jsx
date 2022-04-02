@@ -15,6 +15,8 @@ import { useMantineTheme } from "@mantine/core";
 import { getFormattedCurrency, groupBy } from "formatting";
 import { useApi } from "hooks/useApi";
 import dayjs from "dayjs";
+import { MoodSad } from "tabler-icons-react";
+import NoResults from "components/noresults";
 
 ChartJS.register(
   CategoryScale,
@@ -29,12 +31,16 @@ ChartJS.register(
 
 export default function IncomeToExpensesChart({
   height = 50,
-  startDate = dayjs().subtract(12, "months").format("YYYY-MM-DD"),
-  endDate = dayjs().subtract(0, "days").format("YYYY-MM-DD"),
+  numberOfMonths = 12,
 }) {
   const theme = useMantineTheme();
+  const startDate = dayjs()
+    .subtract(numberOfMonths, "months")
+    .format("YYYY-MM-DD");
+  const endDate = dayjs().subtract(0, "days").format("YYYY-MM-DD");
   const [chartDatas, setChartDatas] = useState();
-  console.log(dayjs());
+  const [showNoData, setShowNoData] = useState(false);
+
   const {
     isLoading,
     error,
@@ -49,31 +55,35 @@ export default function IncomeToExpensesChart({
 
   useEffect(() => {
     if (!apiData) return;
+    if (apiData.length === 0) {
+      setShowNoData(true);
+      return;
+    }
     console.log("data", apiData);
-    const poop = groupBy(apiData, "type");
+    const groupedApiData = groupBy(apiData, "type");
     // const chartDatas = groupBy(apiData, "type");
     // console.log("chartDatas", chartDatas);
-    const incomeData = poop.income.map((income) => {
+    const incomeData = groupedApiData.income.map((income) => {
       return {
         x: new Date(income.date),
         y: parseFloat(income.amount),
       };
     });
 
-    const expenseData = poop.expense.map((expense) => {
+    const expenseData = groupedApiData.expense.map((expense) => {
       return {
         x: new Date(expense.date),
         y: parseFloat(expense.amount),
       };
     });
 
-    const netData = poop.income.map((income, index) => {
-      const expense = poop.expense.find((ex) => {
+    const netData = groupedApiData.income.map((income, index) => {
+      const expense = groupedApiData.expense.find((ex) => {
         return ex.date === income.date;
       }) ?? { amount: 0 };
       return {
         x: new Date(income.date),
-        y: parseFloat(income.amount) + parseFloat(expense.amount),
+        y: parseFloat(income?.amount ?? 0) + parseFloat(expense?.amount ?? 0),
       };
     });
 
@@ -102,7 +112,7 @@ export default function IncomeToExpensesChart({
     };
     // @ts-ignore
     setChartDatas(chartData);
-  }, [apiData, theme.colors, theme.primaryColor]);
+  }, [apiData, endDate, startDate, theme.colors, theme.primaryColor]);
 
   const options = {
     responsive: true,
@@ -154,9 +164,10 @@ export default function IncomeToExpensesChart({
   // @ts-ignore
   return (
     <>
-      {chartDatas && (
+      {!showNoData && chartDatas && (
         <Bar height={height} options={options} data={chartDatas} />
       )}
+      {showNoData && <NoResults />}
     </>
   );
 }

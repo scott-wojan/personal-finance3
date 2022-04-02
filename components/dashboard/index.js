@@ -83,7 +83,7 @@ function BudgetCard() {
   return (
     <GridCard>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <Title order={4}>Budget</Title>
+        <Title order={4}>Budget*</Title>
         <ChartRangeDropDown value="3" />
       </div>
       <BudgetBarChart />
@@ -92,28 +92,29 @@ function BudgetCard() {
 }
 
 function IncomeAndExpensesCard() {
+  const [numberOfMonths, setNumberOfMonths] = useState("12");
   return (
     <GridCard>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <Title order={4}>Income vs Expenses</Title>
 
-        <ChartRangeDropDown />
+        <ChartRangeDropDown onChange={setNumberOfMonths} />
       </div>
-      <IncomeToExpensesChart />
+      <IncomeToExpensesChart numberOfMonths={numberOfMonths} />
     </GridCard>
   );
 }
 
 function NetWorthCard() {
-  const [numberofMonths, setNumberofMonths] = useState("12");
+  const [numberOfMonths, setNumberOfMonths] = useState("12");
   return (
     <GridCard>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <Title order={4}>Net Worth</Title>
-        <ChartRangeDropDown onChange={setNumberofMonths} />
+        <Title order={4}>Net Worth*</Title>
+        <ChartRangeDropDown onChange={setNumberOfMonths} />
       </div>
 
-      <NetWorthLineChart numberofMonths={numberofMonths} />
+      <NetWorthLineChart numberOfMonths={numberOfMonths} />
     </GridCard>
   );
 }

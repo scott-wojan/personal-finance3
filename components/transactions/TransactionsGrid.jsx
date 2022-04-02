@@ -8,9 +8,9 @@ import { TransactionDetailMenu } from "./TransactionDetailMenu";
 import { Text } from "@mantine/core";
 import { usePagingAndFilteringApi } from "hooks/usePagingAndFilteringApi";
 import { CategoriesSelect } from "../categories/CategoriesSelect";
+import { SubCategoriesSelect } from "../categories/SubCategoriesSelect";
 import { ResponsiveGrid } from "components/grid/ResponsiveGrid";
 import axios from "axios";
-import { SubCategoriesDropdown } from "components/categories/SubCategoriesSelect";
 
 export default function TransactionsGrid({ accountId = undefined }) {
   const {
@@ -66,28 +66,27 @@ export default function TransactionsGrid({ accountId = undefined }) {
       {
         Header: "Category",
         accessor: "category",
-        dataType: "select",
-        filterUrl: "/select-options/categories",
-        Cell: CategoriesSelect,
+        // dataType: "select",
+        // Cell: CategoriesSelect,
         width: 200,
         canFilter: true,
       },
       {
         Header: "Sub Category",
         accessor: "subcategory",
-        dataType: "select",
-        filterUrl: "/select-options/subcategories",
+        // dataType: "select",
+        // Cell: SubCategoriesSelect,
         width: 200,
-        Cell: (props) => {
-          const { row, onChange } = props;
-          return (
-            <SubCategoriesDropdown
-              category={row.category}
-              value={row.subcategory}
-              onChange={onChange}
-            />
-          );
-        },
+        // Cell: (props) => {
+        //   const { row, onChange } = props;
+        //   return (
+        //     <SubCategoriesDropdown
+        //       category={row.category}
+        //       value={row.subcategory}
+        //       onChange={onChange}
+        //     />
+        //   );
+        // },
         canFilter: true,
       },
       {

@@ -97,4 +97,4 @@ const SubCategoriesSelect = React.forwardRef((props, ref) => {
 
 SubCategoriesSelect.displayName = "SubCategoriesDropdown";
 
-export { SubCategoriesSelect as SubCategoriesDropdown };
+export { SubCategoriesSelect  };

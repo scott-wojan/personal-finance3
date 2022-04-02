@@ -51,6 +51,31 @@ export async function deleteTransactions({ transactionIds }) {
   await sql.unsafe(query);
 }
 
+export async function getUserTransactionDetails({ userId, transactionId }) {
+  // @ts-ignore
+  const rows = await sql`
+     select imported_category, 
+            imported_subcategory, 
+            imported_name, 
+            merchant_name, 
+            check_number, 
+            authorized_date, 
+            address, 
+            city, 
+            region, 
+            postal_code, 
+            country, 
+            store_number, 
+            payment_channel,
+            created_at, 
+            updated_at
+      from transactions
+     where user_id = ${userId}
+       and id = ${transactionId};
+  ;`;
+  return rows[0];
+}
+
 export async function updateUserTransaction({
   userId,
   id,
@@ -59,7 +84,7 @@ export async function updateUserTransaction({
   subcategory,
 }) {
   // @ts-ignore
-  return await sql`
+  await sql`
     update transactions
     set name = ${name},
         category=${category},

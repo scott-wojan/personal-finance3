@@ -6,7 +6,7 @@ export default async function handler(req, res) {
   if (!user) return res.status(401).json();
 
   const { id, name, category, subcategory } = req.body;
-  if (!id || !name || !category || !subcategory) return res.status(401).json();
+  if (!id || !name || !category || !subcategory) return res.status(400).json();
 
   try {
     await updateUserTransaction({

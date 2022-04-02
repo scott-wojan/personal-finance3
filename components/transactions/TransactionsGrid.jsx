@@ -11,6 +11,7 @@ import { CategoriesSelect } from "../categories/CategoriesSelect";
 import { SubCategoriesSelect } from "../categories/SubCategoriesSelect";
 import { ResponsiveGrid } from "components/grid/ResponsiveGrid";
 import axios from "axios";
+import { useApi } from "hooks/useApi";
 
 export default function TransactionsGrid({ accountId = undefined }) {
   const {
@@ -68,16 +69,34 @@ export default function TransactionsGrid({ accountId = undefined }) {
         accessor: "category",
         // dataType: "select",
         // filterUrl: "/select-options/categories",
-        // Cell: CategoriesSelect,
+        Cell: CategoriesSelect,
         width: 200,
         canFilter: true,
       },
       {
         Header: "Sub Category",
         accessor: "subcategory",
-        // dataType: "select",
-        // Cell: SubCategoriesSelect,
+        dataType: "select",
+        // Cell: ({ row }) => {
+        //   return (
+        //     <SubCategoriesSelect
+        //       value={row.subcategory}
+        //       category={row.category}
+        //     />
+        //   );
+        // },
+        filterUrl: "/select-options/subcategories",
         width: 200,
+        Cell: (props) => {
+          const { row, onChange } = props;
+          return (
+            <SubCategoriesSelect
+              category={row.category}
+              value={row.subcategory}
+              onChange={onChange}
+            />
+          );
+        },
         canFilter: true,
       },
       {
@@ -139,8 +158,8 @@ export default function TransactionsGrid({ accountId = undefined }) {
   };
 
   const getSubRow = (row) => {
-    console.log(row);
-    return <DataGridSubRow />;
+    // console.log(row);
+    return <DataGridSubRow transactionId={row.id} />;
   };
 
   // const rows = transactions.data;
@@ -194,7 +213,7 @@ export default function TransactionsGrid({ accountId = undefined }) {
   );
 }
 
-function DataGridSubRow() {
+function DataGridSubRow({ transactionId }) {
   const theme = useMantineTheme();
   const useStyles = createStyles((theme) => ({
     table: {
@@ -209,100 +228,126 @@ function DataGridSubRow() {
     },
   }));
   const { classes } = useStyles();
-  return (
-    <tr>
-      <td colSpan={9999} style={{ padding: 0 }}>
-        <div style={{ display: "flex" }}>
-          <div>
-            <TransactionDetailMenu />
-          </div>
-          <div
-            style={{
-              width: "100%",
-              paddingLeft: theme.spacing.lg,
-              paddingTop: theme.spacing.sm,
-            }}
-          >
-            <ResponsiveGrid>
-              <div>
-                <Text weight={600} size="sm">
-                  Received As
-                </Text>
-                <table className={classes.table}>
-                  <tbody>
-                    <tr>
-                      <td>Name:</td>
-                      <td>
-                        <a
-                          href="https://www.google.com/search?q=COINBASE.COM 8889087930 ***********1D5D"
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          COINBASE.COM 8889087930 ***********1D5D
-                        </a>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>Category:</td>
-                      <td>Online Services</td>
-                    </tr>
-                    <tr>
-                      <td>Sub Category:</td>
-                      <td>Expense</td>
-                    </tr>
-                    <tr>
-                      <td>Check #:</td>
-                      <td> 1232</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              <div>
-                <Text weight={600} size="sm">
-                  Merchant Info
-                </Text>
 
-                <table className={classes.table}>
-                  <tbody>
-                    <tr>
-                      <td>Name:</td>
-                      <td>
-                        <a
-                          href="https://www.google.com/search?q=Best Buy"
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          Best Buy
-                        </a>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>Store #:</td>
-                      <td>1234</td>
-                    </tr>
-                    <tr>
-                      <td>Address:</td>
-                      <td>
-                        <a
-                          href="https://www.google.com/maps/search/?api=1&query=6405 wexley ln the colony tx 75056"
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          1234 Main Street, Dallas, TX 75056
-                        </a>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>Authorized On: </td>
-                      <td>01/04/2022</td>
-                    </tr>
-                  </tbody>
-                </table>
+  console.log(transactionId);
+  const { isLoading, error, data } = useApi({
+    url: `transactions/${transactionId}`,
+  });
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    <div>Error: error.message</div>;
+  }
+
+  return (
+    <>
+      {data && (
+        <tr>
+          <td colSpan={9999} style={{ padding: 0 }}>
+            <div style={{ display: "flex" }}>
+              <div>
+                <TransactionDetailMenu />
               </div>
-            </ResponsiveGrid>
-          </div>
-        </div>
-      </td>
-    </tr>
+              <div
+                style={{
+                  width: "100%",
+                  paddingLeft: theme.spacing.lg,
+                  paddingTop: theme.spacing.sm,
+                }}
+              >
+                <ResponsiveGrid>
+                  <div>
+                    <Text weight={600} size="sm">
+                      Received As
+                    </Text>
+                    <table className={classes.table}>
+                      <tbody>
+                        <tr>
+                          <td>Name:</td>
+                          <td>
+                            <a
+                              href={`https://www.google.com/search?q=${data.imported_name}`}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              {data.imported_name}
+                            </a>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Category:</td>
+                          <td>{data.imported_category}</td>
+                        </tr>
+                        <tr>
+                          <td>Sub Category:</td>
+                          <td>{data.imported_subcategory}</td>
+                        </tr>
+                        {data.check && (
+                          <tr>
+                            <td>Check #:</td>
+                            <td>{data.check}</td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div>
+                    <Text weight={600} size="sm">
+                      Merchant Info
+                    </Text>
+
+                    <table className={classes.table}>
+                      <tbody>
+                        <tr>
+                          <td>Name:</td>
+                          <td>
+                            <a
+                              href={`https://www.google.com/search?q=${data.merchant_name}`}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              {data.merchant_name}
+                            </a>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Store #:</td>
+                          <td>1234</td>
+                        </tr>
+                        {data.address && (
+                          <tr>
+                            <td>Address:</td>
+                            <td>
+                              <a
+                                href={`https://www.google.com/maps/search/?api=1&query=${data.address} ${data.city} ${data.region} ${data.postal_code}`}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                {data.address}, {data.city}, {data.region}{" "}
+                                {data.postal_code}
+                              </a>
+                            </td>
+                          </tr>
+                        )}
+
+                        {data.authorized_date && (
+                          <tr>
+                            <td>Authorized On: </td>
+                            <td>{data.authorized_date}</td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </ResponsiveGrid>
+              </div>
+            </div>
+          </td>
+        </tr>
+      )}
+    </>
   );
 }

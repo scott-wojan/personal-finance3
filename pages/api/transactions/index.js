@@ -3,12 +3,12 @@ import { getTransactions } from "database/transactions";
 
 export default async function handler(req, res) {
   const user = getUserFromCookie(req, res);
-  const { accountId } = req.body;
-  const { page = 2, pageSize = 10, sort, filter } = req.body;
-
   if (!user) {
     return res.status(401).json();
   }
+
+  const { accountId } = req.body;
+  const { page = 2, pageSize = 10, sort, filter } = req.body;
 
   // console.log("API Transactions", {
   //   userId: user?.id,

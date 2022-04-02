@@ -67,6 +67,7 @@ export default function TransactionsGrid({ accountId = undefined }) {
         Header: "Category",
         accessor: "category",
         // dataType: "select",
+        // filterUrl: "/select-options/categories",
         // Cell: CategoriesSelect,
         width: 200,
         canFilter: true,
@@ -77,16 +78,6 @@ export default function TransactionsGrid({ accountId = undefined }) {
         // dataType: "select",
         // Cell: SubCategoriesSelect,
         width: 200,
-        // Cell: (props) => {
-        //   const { row, onChange } = props;
-        //   return (
-        //     <SubCategoriesDropdown
-        //       category={row.category}
-        //       value={row.subcategory}
-        //       onChange={onChange}
-        //     />
-        //   );
-        // },
         canFilter: true,
       },
       {
@@ -107,6 +98,7 @@ export default function TransactionsGrid({ accountId = undefined }) {
         Header: "Status",
         accessor: "is_pending",
         dataType: "select",
+        filterUrl: "/select-options/transactionstatus",
         canFilter: true,
         width: 80,
         align: "center",

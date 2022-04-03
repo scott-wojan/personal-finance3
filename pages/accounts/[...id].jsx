@@ -62,7 +62,7 @@ export default function AccountDetail() {
           <div style={{ display: "flex", justifyContent: "space-between" }}>
             <div style={{ width: "100%" }}>
               <div style={{ paddingBottom: theme.spacing.md }}>
-                <AccountLineChart numberOfMonths={12} />
+                <AccountLineChart numberOfMonths={12} accountId={id} />
               </div>
               <div style={{ paddingRight: theme.spacing.md }}>
                 <Title pb="sm" order={4}>

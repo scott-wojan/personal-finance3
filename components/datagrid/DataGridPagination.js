@@ -12,6 +12,11 @@ export function DataGridPagination({}) {
     onRowCountChange?.(parseInt(newRowCount));
   };
 
+  const pageSizes = ["10", "20", "30", "40", "50"];
+  if (pageSize) {
+    pageSizes.push(pageSize.toString());
+  }
+
   return (
     <tfoot>
       <tr>
@@ -20,7 +25,7 @@ export function DataGridPagination({}) {
             <Group spacing={4}>
               Show
               <Select
-                data={["10", "20", "30", "40", "50"]}
+                data={pageSizes}
                 value={pageSize?.toString()}
                 style={{ width: 80 }}
                 onChange={handleRowCountChange}

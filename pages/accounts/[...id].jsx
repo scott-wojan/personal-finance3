@@ -62,13 +62,13 @@ export default function AccountDetail() {
           <div style={{ display: "flex", justifyContent: "space-between" }}>
             <div style={{ width: "100%" }}>
               <div style={{ paddingBottom: theme.spacing.md }}>
-                <AccountLineChart />
+                <AccountLineChart numberOfMonths={12} />
               </div>
               <div style={{ paddingRight: theme.spacing.md }}>
                 <Title pb="sm" order={4}>
                   Transactions
                 </Title>
-                <TransactionsGrid accountId={data.id} />
+                <TransactionsGrid pageSize={7} accountId={data.id} />
               </div>
             </div>
           </div>

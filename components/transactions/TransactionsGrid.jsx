@@ -13,7 +13,10 @@ import { ResponsiveGrid } from "components/grid/ResponsiveGrid";
 import axios from "axios";
 import { useApi } from "hooks/useApi";
 
-export default function TransactionsGrid({ accountId = undefined }) {
+export default function TransactionsGrid({
+  pageSize = 10,
+  accountId = undefined,
+}) {
   const {
     isLoading,
     error,
@@ -22,22 +25,30 @@ export default function TransactionsGrid({ accountId = undefined }) {
     setPageSize,
     setFiltersAndSorting,
     page,
-    pageSize,
+    pageSize: tablePageSize,
   } = usePagingAndFilteringApi({
     url: "transactions",
-    payload: { accountId },
+    payload: { accountId, pageSize },
   });
 
-  const accountColumn = accountId
-    ? {}
-    : {
-        Header: "Account",
-        accessor: "account",
-        dataType: "select",
-        filterUrl: "/select-options/accounts",
-        width: 100,
-        canFilter: true,
-      };
+  // const accountColumn = accountId
+  //   ? {}
+  //   : {
+  //       Header: "Account",
+  //       accessor: "account",
+  //       dataType: "select",
+  //       filterUrl: "/select-options/accounts",
+  //       width: 100,
+  //       canFilter: true,
+  //     };
+  const accountColumn = {
+    Header: "Account",
+    accessor: "account",
+    dataType: "select",
+    filterUrl: "/select-options/accounts",
+    width: 100,
+    canFilter: true,
+  };
 
   const columns = useMemo(
     () => [
@@ -202,7 +213,7 @@ export default function TransactionsGrid({ accountId = undefined }) {
             pagination={{
               total: data.count,
               page: page,
-              pageSize: pageSize,
+              pageSize: tablePageSize,
               onPageChange,
               onRowCountChange,
             }}
@@ -311,7 +322,7 @@ function DataGridSubRow({ transactionId }) {
                       </tr>
                       <tr>
                         <td>Store #:</td>
-                        <td>1234</td>
+                        <td>{data?.store_number}</td>
                       </tr>
                       {data?.address && (
                         <tr>

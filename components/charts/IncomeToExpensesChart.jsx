@@ -62,10 +62,7 @@ export default function IncomeToExpensesChart({
       setShowNoData(true);
       return;
     }
-    console.log("data", apiData);
     const groupedApiData = groupBy(apiData, "type");
-    // const chartDatas = groupBy(apiData, "type");
-    console.log("chartDatas", chartDatas);
     const incomeData = groupedApiData.income.map((income) => {
       return {
         x: new Date(income.date),

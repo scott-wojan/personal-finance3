@@ -37,7 +37,10 @@ export default function IncomeToExpensesChart({
   const startDate = dayjs()
     .subtract(numberOfMonths, "months")
     .format("YYYY-MM-DD");
-  const endDate = dayjs().subtract(0, "days").format("YYYY-MM-DD");
+  const endDate = dayjs()
+    .subtract(1, "months")
+    .endOf("month")
+    .format("YYYY-MM-DD");
   const [chartDatas, setChartDatas] = useState();
   const [showNoData, setShowNoData] = useState(false);
 
@@ -62,7 +65,7 @@ export default function IncomeToExpensesChart({
     console.log("data", apiData);
     const groupedApiData = groupBy(apiData, "type");
     // const chartDatas = groupBy(apiData, "type");
-    // console.log("chartDatas", chartDatas);
+    console.log("chartDatas", chartDatas);
     const incomeData = groupedApiData.income.map((income) => {
       return {
         x: new Date(income.date),

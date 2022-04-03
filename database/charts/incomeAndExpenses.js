@@ -19,7 +19,7 @@ async function getUserIncomeAndExpense({ userId, startDate, endDate }) {
 	     and date between ${startDate} and ${endDate}	  
 	   group by year, month
 	  ) as x
-  order by type, year desc, month
+  order by type, year, month
   `;
 }
 

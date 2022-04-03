@@ -9,7 +9,7 @@ export default function transactions() {
       <Title order={3} pb="sm">
         Transactions
       </Title>
-      <TransactionsGrid />
+      <TransactionsGrid pageSize={12} />
     </Application>
   );
 }

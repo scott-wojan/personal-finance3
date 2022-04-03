@@ -18,7 +18,7 @@ export function CategoriesSelect({
   }, [value]);
 
   const onFocus = async () => {
-    const res = await axios.post("api/select-options/categories");
+    const res = await axios.post("/api/select-options/categories");
     setOptions(res.data);
   };
 

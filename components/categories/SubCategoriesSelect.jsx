@@ -25,7 +25,7 @@ const SubCategoriesSelect = React.forwardRef((props, ref) => {
   }, [value]);
 
   const onFocus = async () => {
-    const res = await axios.post("api/select-options/subcategories", {
+    const res = await axios.post("/api/select-options/subcategories", {
       category,
     });
     setOptions(res.data);

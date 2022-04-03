@@ -32,6 +32,51 @@ ChartJS.register(
   TimeSeriesScale
 );
 
+const options = {
+  //maintainAspectRatio: false,
+  responsive: true,
+  plugins: {
+    legend: {
+      display: false,
+    },
+    tooltip: {
+      //https://www.chartjs.org/docs/latest/configuration/tooltip.html
+
+      callbacks: {
+        title: function (context) {
+          return getFormattedDate(new Date(context[0].label));
+        },
+        label: function (context) {
+          let label = context.dataset.label || "";
+          if (label) {
+            label += ": ";
+          }
+          if (context.parsed.y !== null) {
+            label += getFormattedCurrency(context.parsed.y);
+          }
+          return label;
+        },
+      },
+    },
+  },
+  scales: {
+    xAxes: {
+      type: "time",
+      time: {
+        unit: "month", //quarter, year
+      },
+    },
+    yAxes: {
+      ticks: {
+        // Include a dollar sign in the ticks
+        callback: function (value, index, ticks) {
+          return getFormattedCurrency(value);
+        },
+      },
+    },
+  },
+};
+
 export function AccountLineChart({ accountId, numberOfMonths }) {
   const theme = useMantineTheme();
   const chartRef = useRef();
@@ -62,51 +107,6 @@ export function AccountLineChart({ accountId, numberOfMonths }) {
     },
   });
 
-  const options = {
-    //maintainAspectRatio: false,
-    responsive: true,
-    plugins: {
-      legend: {
-        display: false,
-      },
-      tooltip: {
-        //https://www.chartjs.org/docs/latest/configuration/tooltip.html
-
-        callbacks: {
-          title: function (context) {
-            return getFormattedDate(new Date(context[0].label));
-          },
-          label: function (context) {
-            let label = context.dataset.label || "";
-            if (label) {
-              label += ": ";
-            }
-            if (context.parsed.y !== null) {
-              label += getFormattedCurrency(context.parsed.y);
-            }
-            return label;
-          },
-        },
-      },
-    },
-    scales: {
-      xAxes: {
-        type: "time",
-        time: {
-          unit: "month", //quarter, year
-        },
-      },
-      yAxes: {
-        ticks: {
-          // Include a dollar sign in the ticks
-          callback: function (value, index, ticks) {
-            return getFormattedCurrency(value);
-          },
-        },
-      },
-    },
-  };
-
   useEffect(() => {
     const chart = chartRef.current;
     if (!apiData) return;
@@ -115,15 +115,16 @@ export function AccountLineChart({ accountId, numberOfMonths }) {
       return;
     }
     const groupedApiData = groupBy(apiData, "type");
+    console.log(groupedApiData, groupedApiData);
 
-    const incomeData = groupedApiData.income.map((income) => {
+    const incomeData = groupedApiData?.income?.map((income) => {
       return {
         x: new Date(income.date),
         y: income.amount,
       };
     });
 
-    const expenseData = groupedApiData.expense.map((expense) => {
+    const expenseData = groupedApiData?.expense?.map((expense) => {
       return {
         x: new Date(expense.date),
         y: expense.amount,

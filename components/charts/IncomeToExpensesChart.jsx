@@ -28,6 +28,52 @@ ChartJS.register(
   Tooltip,
   Legend
 );
+const options = {
+  responsive: true,
+  plugins: {
+    // title: {
+    //   display: true,
+    //   text: "Income vs. Expenses",
+    // },
+    legend: {
+      position: "bottom",
+    },
+    tooltip: {
+      //https://www.chartjs.org/docs/latest/configuration/tooltip.html
+      callbacks: {
+        label: function (context) {
+          let label = context.dataset.label || "";
+          if (label) {
+            label += ": ";
+          }
+          if (context.parsed.y !== null) {
+            label += getFormattedCurrency(context.parsed.y);
+          }
+          return label;
+        },
+      },
+    },
+  },
+
+  scales: {
+    xAxes: {
+      stacked: true,
+      type: "time",
+      time: {
+        unit: "month", //quarter, year
+      },
+    },
+    yAxes: {
+      stacked: true,
+      ticks: {
+        // Include a dollar sign in the ticks
+        callback: function (value, index, ticks) {
+          return getFormattedCurrency(value);
+        },
+      },
+    },
+  },
+};
 
 export default function IncomeToExpensesChart({
   height = 50,
@@ -113,53 +159,6 @@ export default function IncomeToExpensesChart({
     // @ts-ignore
     setChartDatas(chartData);
   }, [apiData, endDate, startDate, theme.colors, theme.primaryColor]);
-
-  const options = {
-    responsive: true,
-    plugins: {
-      // title: {
-      //   display: true,
-      //   text: "Income vs. Expenses",
-      // },
-      legend: {
-        position: "bottom",
-      },
-      tooltip: {
-        //https://www.chartjs.org/docs/latest/configuration/tooltip.html
-        callbacks: {
-          label: function (context) {
-            let label = context.dataset.label || "";
-            if (label) {
-              label += ": ";
-            }
-            if (context.parsed.y !== null) {
-              label += getFormattedCurrency(context.parsed.y);
-            }
-            return label;
-          },
-        },
-      },
-    },
-
-    scales: {
-      xAxes: {
-        stacked: true,
-        type: "time",
-        time: {
-          unit: "month", //quarter, year
-        },
-      },
-      yAxes: {
-        stacked: true,
-        ticks: {
-          // Include a dollar sign in the ticks
-          callback: function (value, index, ticks) {
-            return getFormattedCurrency(value);
-          },
-        },
-      },
-    },
-  };
 
   // @ts-ignore
   return (

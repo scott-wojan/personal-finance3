@@ -5,7 +5,17 @@ import React from "react";
 
 export default function transactions() {
   return (
-    <Application sidebar={<>TBD</>}>
+    <Application
+      sidebar={
+        <>
+          Stats?
+          <br />
+          Behavioral Reinforcement?
+          <br />
+          ads?
+        </>
+      }
+    >
       <Title order={3} pb="sm">
         Transactions
       </Title>

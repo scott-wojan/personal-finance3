@@ -12,6 +12,7 @@ import { SubCategoriesSelect } from "../categories/SubCategoriesSelect";
 import { ResponsiveGrid } from "components/grid/ResponsiveGrid";
 import axios from "axios";
 import { useApi } from "hooks/useApi";
+import dayjs from "dayjs";
 
 export default function TransactionsGrid({
   pageSize = 10,
@@ -343,7 +344,9 @@ function DataGridSubRow({ transactionId }) {
                       {data?.authorized_date && (
                         <tr>
                           <td>Authorized On: </td>
-                          <td>{data?.authorized_date}</td>
+                          <td>
+                            {dayjs(data?.authorized_date).format("MM-DD-YYYY")}
+                          </td>
                         </tr>
                       )}
                     </tbody>

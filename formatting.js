@@ -17,6 +17,9 @@ export function getFormattedDate(val) {
 }
 
 export function groupBy(objectArray, property) {
+  if (!objectArray || !Array.isArray(objectArray)) {
+    return [];
+  }
   return objectArray.reduce((acc, obj) => {
     const key = obj[property];
     if (!acc[key]) {

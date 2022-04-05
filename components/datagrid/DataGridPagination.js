@@ -6,11 +6,13 @@ import { ChevronDown } from "tabler-icons-react";
 export function DataGridPagination({}) {
   const theme = useMantineTheme();
   const { pagination } = useDataGrid();
-  const { page, total, pageSize, onPageChange, onRowCountChange } = pagination;
+  const { page, total, pageSize, onPageChange, onRowCountChange, rows } =
+    pagination;
 
   const handleRowCountChange = (newRowCount) => {
     onRowCountChange?.(parseInt(newRowCount));
   };
+  console.log("rows", rows);
 
   const pageSizes = ["10", "20", "30", "40", "50"];
   if (pageSize) {
@@ -25,6 +27,7 @@ export function DataGridPagination({}) {
             <Group spacing={4}>
               Show
               <Select
+                disabled={!rows}
                 data={pageSizes}
                 value={pageSize?.toString()}
                 style={{ width: 80 }}

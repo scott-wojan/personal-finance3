@@ -161,6 +161,24 @@ after insert or update on transactions
 FOR EACH ROW EXECUTE PROCEDURE set_transaction_values();
 
 
+CCREATE FUNCTION months_between (startDate timestamp, endDate timestamp)
+RETURNS integer
+AS $$
+select ((extract('years' from $2)::int -  extract('years' from $1)::int) * 12) 
+    - extract('month' from $1)::int + extract('month' from $2)::int
+$$
+LANGUAGE SQL
+IMMUTABLE
+RETURNS NULL ON NULL INPUT;
+
+create function end_of_month(date)
+returns date as
+$$
+select (date_trunc('month', $1) + interval '1 month' - interval '1 day')::date;
+$$ language 'sql'
+immutable strict;
+
+
 CREATE TABLE IF NOT EXISTS categories
 (
   id serial PRIMARY KEY,
@@ -169,9 +187,9 @@ CREATE TABLE IF NOT EXISTS categories
 );
 
 --
-CREATE UNIQUE INDEX categories_uidx ON categories(category, subcategory);
+CREATE UNIQUE INDEX categories_uidx ON categories(category, subcategory, source);;
 -- unique index to not allow more than one null
-CREATE UNIQUE INDEX categories_null_uidx ON categories (category, (subcategory IS NULL)) WHERE subcategory IS NULL;
+CREATE UNIQUE INDEX categories_null_uidx ON categories (source, category, (subcategory IS NULL)) WHERE subcategory IS NULL;
 
 CREATE FUNCTION category_insert_values() RETURNS trigger AS $$
   BEGIN
@@ -190,13 +208,13 @@ CREATE TABLE IF NOT EXISTS user_categories
 (
   id SERIAL PRIMARY KEY,
   user_id integer references users(id) on delete cascade on update cascade,
-  category_id integer references categories(id) on delete cascade on update cascade,
   user_category citext,
   user_subcategory citext,
   min_budgeted_amount numeric(28,10) default 0,
-  max_budgeted_amount numeric(28,10) default 0
+  max_budgeted_amount numeric(28,10) default 0,
+  do_not_budget boolean default false
 );
-CREATE UNIQUE INDEX user_categories_uidx ON user_categories(user_id, category_id, user_category, user_subcategory);
+CREATE UNIQUE INDEX user_categories_uidx ON user_categories(user_id, user_category, user_subcategory);
 
 
 create or replace function user_category_update_values() returns trigger AS $$
@@ -221,7 +239,20 @@ create or replace trigger user_category_update_trigger
  after update on user_categories
    for each row execute procedure user_category_update_values();
 
+create table years_and_months as
+select year, month
+  from generate_series(2015, 2075) as years(year)
+ cross join generate_series(1, 12) as months(month)
+ order by year, month;
 
+create index idx_years_and_months 
+    on years_and_months (year, month);  
+
+
+
+
+
+    
 
 
 CREATE TABLE IF NOT EXISTS user_rules
@@ -295,11 +326,18 @@ BEGIN
     and transactions.imported_subcategory = c.subcategory;
 
   -- add user categories that don't exist
-  insert into user_categories(user_id,category_id,user_category,user_subcategory)
-  select userId as user_id, c.id as category_id, c.category, c.subcategory as subcategory
-    from categories c
-   where source = 'Plaid'
-     and not exists (select 1 from user_categories where user_id = userId and category_id = c.id);
+  -- insert into user_categories(user_id,category_id,user_category,user_subcategory)
+  -- select userId as user_id, c.id as category_id, c.category, c.subcategory as subcategory
+  --   from categories c
+  --  where source = 'Plaid'
+  --    and not exists (select 1 from user_categories where user_id = userId and category_id = c.id);
+
+  insert into user_categories(user_id, user_category, user_subcategory)
+  select distinct 1 as user_id, category, subcategory
+    from transactions
+   where user_id = 1
+     and not exists (select 1 from user_categories where user_category = category and user_subcategory = subcategory)
+   order by category, subcategory;     
 
   -- apply rules
   RETURN(select update_transactions(userId,match_column_name,match_condition,match_value,set_column_name,set_value)
@@ -409,6 +447,8 @@ DO UPDATE SET
   END;    
 $BODY$;
 
+
+
 CREATE OR REPLACE FUNCTION insert_plaid_accounts(userId integer, institutionId text, accessToken text, jsonDoc JSON)
  RETURNS void 
  LANGUAGE 'plpgsql' 
@@ -449,6 +489,89 @@ select account_id,
   END;
 $BODY$;
 
+
+CREATE OR REPLACE FUNCTION user_spending_metrics_by_category_subcategory(userId integer, startDate date, endDate date, exclude_non_budgeted_items bool default false)
+RETURNS TABLE (
+   user_category_id	 integer
+ , user_category citext
+ , user_subcategory citext
+ , min_budgeted_amount numeric(28,10)	
+ , max_budgeted_amount numeric(28,10)
+ , min_monthly_spend numeric(28,10)	
+ , avg_monthly_spend numeric(28,10)	
+ , max_monthly_spend numeric(28,10)	
+ , total_spend numeric(28,10)
+)
+AS $$
+DECLARE 
+
+BEGIN
+RETURN QUERY
+	select user_ledger.user_category_id
+	     , user_ledger.user_category
+		 , user_ledger.user_subcategory
+		 , user_ledger.min_budgeted_amount
+		 , user_ledger.max_budgeted_amount	 
+		 , max(user_ledger.monthly_total) as min_monthly_spend
+		 , sum(user_ledger.monthly_total/months_between(startDate, endDate)) as avg_monthly_spend
+		 , min(user_ledger.monthly_total) as max_monthly_spend
+		 , sum(user_ledger.monthly_total) as total_spend	 
+	  from (
+			select uc.id as user_category_id
+		         , timespan.end_of_month
+				 , uc.min_budgeted_amount
+				 , uc.max_budgeted_amount
+				 , uc.user_category
+				 , uc.user_subcategory
+				 , uc.do_not_budget
+				 , coalesce(transaction_data.monthly_total,0) as monthly_total
+			  from user_categories uc
+					 cross join (
+						select end_of_month( (years.year||'/'||months.month||'/01')::date) as end_of_month
+						  from generate_series(
+								extract('years' from startDate)
+							  , extract('years' from endDate)
+							 ) as years(year)
+						 cross join generate_series(1, 12) as months(month)
+						  where end_of_month( (years.year||'/'||months.month||'/01')::date) between startDate and endDate
+						) as timespan
+			 left join (
+						select end_of_month(t.date) as end_of_month
+							 , t.category
+							 , t.subcategory
+							 , sum(coalesce(t.amount,0)) as monthly_total
+						  from transactions t
+						 where t.user_id = userId
+						   and amount < 0			 
+						   and t.date between startDate and endDate
+						 group by end_of_month(t.date), category, subcategory				 
+					 ) as transaction_data on transaction_data.category = uc.user_category  
+					   and transaction_data.subcategory = uc.user_subcategory
+					   and transaction_data.end_of_month = timespan.end_of_month
+			 where uc.user_id = userId
+			   and uc.do_not_budget = false
+		) as user_ledger
+	   group by user_ledger.user_category_id
+	          , user_ledger.user_category
+		      , user_ledger.user_subcategory
+			  , user_ledger.min_budgeted_amount
+			  , user_ledger.max_budgeted_amount	
+	   order by user_ledger.user_category
+			  , user_ledger.user_subcategory;
+
+END; $$ 
+LANGUAGE 'plpgsql';
+
+
+
+
+
+
+
+
+
+
+
 -- update transactions
 --   set category = uc.user_category ,
 --       subcategory = uc.user_subcategory
@@ -458,135 +581,136 @@ $BODY$;
 --   and transactions.subcategory = uc.subcategory
 
 
-CREATE OR REPLACE FUNCTION get_spending_metrics_by_category_subcategory(
-  userId integer,
-  startYear integer,
-  startMonth integer,
-  endMonth integer
-) RETURNS TABLE (
-  category citext,
-  subcategory citext,
-  min numeric(28, 2),
-  max numeric(28, 2),
-  avg numeric(28, 2)
-) AS $$ 
-BEGIN 
-RETURN QUERY
-select
-  ledger.category,
-  ledger.subcategory,
-  sum(ledger.min) min,
-  sum(ledger.max) max,
-  sum(ledger.avg) avg
-from
-  (
-    select
-      t.category,
-      t.subcategory,
-      round(max(t.total), 2) min,
-      round(min(t.total), 2) max,
-      round(avg(t.total), 2) avg
-    from(
-        select
-          months.month,
-          user_categories.category,
-          user_categories.subcategory,
-          coalesce(round(sum(t.amount), 2), 0) as total
-        from
-          generate_series(startMonth, endMonth) as months(month)
-          cross join (
-            select
-              t.category,
-              t.subcategory
-            from
-              transactions t
-              inner join accounts a on a.id = t.account_id
-            where
-              a.user_id = userId
-              and t.year = startYear
-              and month between startMonth
-              and endMonth
-              and amount < 0
-            group by
-              t.category,
-              t.subcategory
-            order by
-              t.category,
-              t.subcategory
-          ) as user_categories
-          left join transactions t on t.month = months.month
-          and t.category = user_categories.category
-          and t.subcategory = user_categories.subcategory
-          and amount < 0
-        group by
-          months.month,
-          user_categories.category,
-          user_categories.subcategory
-      ) t
-    GROUP BY
-      t.category,
-      t.subcategory
-    UNION
-    select
-      t.category,
-      t.subcategory,
-      round(min(t.total), 2) min,
-      round(max(t.total), 2) max,
-      round(avg(t.total), 2) avg
-    from(
-        select
-          months.month,
-          user_categories.category,
-          user_categories.subcategory,
-          coalesce(round(sum(t.amount), 2), 0) as total
-        from
-          generate_series(1, 12) as months(month)
-          cross join (
-            select
-              t.category,
-              t.subcategory
-            from
-              transactions t
-              inner join accounts a on a.id = t.account_id
-            where
-              a.user_id = userId
-              and t.year = startYear
-              and month between startMonth
-              and endMonth
-              and amount > 0
-            group by
-              t.category,
-              t.subcategory
-            order by
-              t.category,
-              t.subcategory
-          ) as user_categories
-          left join transactions t 
-	        on t.month = months.month
-           and t.category = user_categories.category
-           and t.subcategory = user_categories.subcategory
-           and amount > 0
-        group by
-          months.month,
-          user_categories.category,
-          user_categories.subcategory
-        order by
-          months.month,
-          user_categories.category,
-          user_categories.subcategory
-      ) t
-    GROUP BY
-      t.category,
-      t.subcategory
-  ) as ledger
-GROUP BY
-  ledger.category,
-  ledger.subcategory
-ORDER BY
-  ledger.category,
-  ledger.subcategory;
-END;$$ 
-LANGUAGE 'plpgsql';
+
+
+-- CREATE OR REPLACE FUNCTION get_spending_metrics_by_category_subcategory(
+--   userId integer,
+--   startYear integer,
+--   startMonth integer,
+--   endMonth integer
+-- ) RETURNS TABLE (
+--   category citext,
+--   subcategory citext,
+--   min numeric(28, 2),
+--   max numeric(28, 2),
+--   avg numeric(28, 2)
+-- ) AS $$ 
+-- BEGIN 
+-- RETURN QUERY
+-- select
+--   ledger.category,
+--   ledger.subcategory,
+--   sum(ledger.min) min,
+--   sum(ledger.max) max,
+--   sum(ledger.avg) avg
+-- from
+--   (
+--     select
+--       t.category,
+--       t.subcategory,
+--       round(max(t.total), 2) min,
+--       round(min(t.total), 2) max,
+--       round(avg(t.total), 2) avg
+--     from(
+--         select
+--           months.month,
+--           user_categories.category,
+--           user_categories.subcategory,
+--           coalesce(round(sum(t.amount), 2), 0) as total
+--         from
+--           generate_series(startMonth, endMonth) as months(month)
+--           cross join (
+--             select
+--               t.category,
+--               t.subcategory
+--             from
+--               transactions t
+--             where
+--                  user_id = userId
+--               and year = startYear
+--               and month between startMonth
+--               and endMonth
+--               and amount < 0
+--             group by
+--               t.category,
+--               t.subcategory
+--             order by
+--               t.category,
+--               t.subcategory
+--           ) as user_categories
+--           left join transactions t on t.month = months.month
+--           and t.category = user_categories.category
+--           and t.subcategory = user_categories.subcategory
+--           and amount < 0
+--         group by
+--           months.month,
+--           user_categories.category,
+--           user_categories.subcategory
+--       ) t
+--     GROUP BY
+--       t.category,
+--       t.subcategory
+--     UNION
+--     select
+--       t.category,
+--       t.subcategory,
+--       round(min(t.total), 2) min,
+--       round(max(t.total), 2) max,
+--       round(avg(t.total), 2) avg
+--     from(
+--         select
+--           months.month,
+--           user_categories.category,
+--           user_categories.subcategory,
+--           coalesce(round(sum(t.amount), 2), 0) as total
+--         from
+--           generate_series(1, 12) as months(month)
+--           cross join (
+--             select
+--               t.category,
+--               t.subcategory
+--             from
+--               transactions t
+--               inner join accounts a on a.id = t.account_id
+--             where
+--               a.user_id = userId
+--               and t.year = startYear
+--               and month between startMonth
+--               and endMonth
+--               and amount > 0
+--             group by
+--               t.category,
+--               t.subcategory
+--             order by
+--               t.category,
+--               t.subcategory
+--           ) as user_categories
+--           left join transactions t 
+-- 	        on t.month = months.month
+--            and t.category = user_categories.category
+--            and t.subcategory = user_categories.subcategory
+--            and amount > 0
+--         group by
+--           months.month,
+--           user_categories.category,
+--           user_categories.subcategory
+--         order by
+--           months.month,
+--           user_categories.category,
+--           user_categories.subcategory
+--       ) t
+--     GROUP BY
+--       t.category,
+--       t.subcategory
+--   ) as ledger
+-- GROUP BY
+--   ledger.category,
+--   ledger.subcategory
+-- ORDER BY
+--   ledger.category,
+--   ledger.subcategory;
+-- END;$$ 
+-- LANGUAGE 'plpgsql';
 
 -- select * from GetSpendingMetricsByCategoryAndSubcategory(1,2021,1,12)
 

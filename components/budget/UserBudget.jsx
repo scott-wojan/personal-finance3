@@ -1,5 +1,12 @@
 import faker from "@faker-js/faker";
-import { createStyles, RangeSlider, Table, Title } from "@mantine/core";
+import {
+  createStyles,
+  RangeSlider,
+  Table,
+  Title,
+  Tooltip,
+} from "@mantine/core";
+import { SecondaryButton } from "components/buttons";
 import { getFormattedCurrency, getShortCurrency, groupBy } from "formatting";
 import { useApi } from "hooks/useApi";
 import React, { Fragment, useEffect, useState } from "react";
@@ -58,7 +65,18 @@ export default function UserBudget() {
 
   const { isLoading, error, data } = useApi({
     url: "budget",
+    payload: {
+      startDate: "04/01/2021",
+      endDate: "04/01/2022",
+    },
   });
+
+  useEffect(() => {
+    console.log("data", data);
+    if (data) {
+      console.log(groupBy(data, "user_category"));
+    }
+  }, [data]);
 
   if (error) {
     // @ts-ignore
@@ -84,6 +102,7 @@ export default function UserBudget() {
             <th>Budget Range Selection</th>
             <th>Minimum</th>
             <th>Max</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -120,6 +139,7 @@ export default function UserBudget() {
 function BudgetRow({ subcategory, onChange }) {
   const [minValue, setMinValue] = useState(subcategory.min_budgeted_amount);
   const [maxValue, setMaxValue] = useState(subcategory.max_budgeted_amount);
+  const [tooltipOpen, setTooltipOpen] = useState(false);
   //console.log("subcategory", subcategory);
   const useStyles = createStyles((theme) => ({
     subcategory: {
@@ -137,7 +157,7 @@ function BudgetRow({ subcategory, onChange }) {
     console.log(min, max);
     setMinValue(min);
     setMaxValue(max);
-    onChange?.({ categoryId: subcategory.category_id.category_id, min, max });
+    onChange?.({ categoryId: subcategory.user_category_id, min, max });
   };
   return (
     <tr className={cx(classes.subcategory)}>
@@ -146,21 +166,27 @@ function BudgetRow({ subcategory, onChange }) {
       <td className="center">
         {/* <BudgetRangeSlider2 onChange={onRangeSelection} /> */}
         <BudgetRangeSlider
-          // min={subcategory.min * 0.8}
-          // max={subcategory.max * 1.2}
+          min={0}
+          max={subcategory.max_monthly_spend * 1.2}
           onChange={onRangeSelection}
           marks={[
             {
-              value: 25,
-              label: `Min ${getFormattedCurrency(subcategory.min)}`,
+              value: subcategory.min_monthly_spend * -1,
+              label: `Min ${getFormattedCurrency(
+                subcategory.min_monthly_spend
+              )}`,
             },
             {
-              value: 50,
-              label: `Avg ${getFormattedCurrency(subcategory.avg)}`,
+              value: subcategory.max_monthly_spend * -1 * 0.5,
+              label: `Avg ${getFormattedCurrency(
+                subcategory.avg_monthly_spend
+              )}`,
             },
             {
-              value: 75,
-              label: `Max ${getFormattedCurrency(subcategory.max)}`,
+              value: subcategory.max_monthly_spend * -1,
+              label: `Max ${getFormattedCurrency(
+                subcategory.max_monthly_spend
+              )}`,
             },
           ]}
         />
@@ -168,6 +194,23 @@ function BudgetRow({ subcategory, onChange }) {
 
       <td className="center">{getFormattedCurrency(minValue)}</td>
       <td className="center">{getFormattedCurrency(maxValue)}</td>
+      <td>
+        <Tooltip
+          label="Do not budget for this category"
+          opened={tooltipOpen}
+          withArrow
+        >
+          <SecondaryButton
+            size="xs"
+            onMouseOver={() => setTooltipOpen(true)}
+            onMouseOut={() => {
+              setTooltipOpen(false);
+            }}
+          >
+            No budget
+          </SecondaryButton>
+        </Tooltip>
+      </td>
     </tr>
   );
 }
@@ -175,7 +218,17 @@ function BudgetRow({ subcategory, onChange }) {
 function BudgetRangeSlider({ marks, onChange, min = 0, max = 100 }) {
   const [showMarks, setShowMarks] = useState(true);
 
-  //mantine-14thopp mantine-Slider-markLabel
+  // @ts-ignore
+  const useStyles = createStyles((theme) => ({
+    slider: {
+      " .mantine-Slider-markWrapper": {
+        whiteSpace: "nowrap",
+      },
+    },
+  }));
+
+  const { classes, cx } = useStyles();
+
   return (
     <div
       onFocus={(e) => {
@@ -186,6 +239,7 @@ function BudgetRangeSlider({ marks, onChange, min = 0, max = 100 }) {
       }}
     >
       <RangeSlider
+        className={cx(classes.slider)}
         labelAlwaysOn={false}
         precision={0}
         minRange={0}
@@ -193,8 +247,8 @@ function BudgetRangeSlider({ marks, onChange, min = 0, max = 100 }) {
         label={(val) => `$${val}`}
         showLabelOnHover={true}
         onChangeEnd={onChange}
-        min={min}
-        max={max}
+        min={min * -1}
+        max={max * -1}
         step={1}
         defaultValue={[0, 0]}
         marks={showMarks ? marks : []}

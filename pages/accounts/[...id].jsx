@@ -18,9 +18,9 @@ export default function AccountDetail() {
     payload: { accountId: id?.[0] },
   });
 
-  if (data) {
-    console.log(isLoading, error, data);
-  }
+  // if (data) {
+  //   console.log(isLoading, error, data);
+  // }
 
   return (
     <Application sidebar={<AccountStats />}>

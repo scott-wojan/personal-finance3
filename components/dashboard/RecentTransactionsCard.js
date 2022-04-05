@@ -1,4 +1,4 @@
-import { Title, Text, Table } from "@mantine/core";
+import { Title, Text, Table, useMantineTheme } from "@mantine/core";
 import React, { useEffect, useState } from "react";
 import { Eye } from "tabler-icons-react";
 import Link from "next/link";
@@ -6,6 +6,8 @@ import { GridCard } from "./GridCard";
 import { usePagingAndFilteringApi } from "hooks/usePagingAndFilteringApi";
 
 export function RecentTransactionsCard() {
+  const theme = useMantineTheme();
+
   return (
     <GridCard>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
@@ -14,7 +16,7 @@ export function RecentTransactionsCard() {
           <a style={{ textDecoration: "none", color: "black" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
               <Text size="xs">View Transactions</Text>
-              <Eye size={12} strokeWidth={2} color={"black"} />
+              <Eye size={12} strokeWidth={2} color={theme.colors.gray[5]} />
             </div>
           </a>
         </Link>

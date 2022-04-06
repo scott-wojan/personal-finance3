@@ -21,6 +21,10 @@ export function UserBudget2() {
     },
   });
 
+  const onBudgetSelected = ({ user_category_id, min, max }) => {
+    console.log(`Send update for user budget ${user_category_id} `, min, max);
+  };
+
   return (
     <>
       {data && (
@@ -72,7 +76,7 @@ export function UserBudget2() {
                           <BudgetRow
                             key={subcategory.user_subcategory}
                             subcategory={subcategory}
-                            // onChange={onBudgetSelected}
+                            onChange={onBudgetSelected}
                           />
                         );
                       })}
@@ -113,21 +117,13 @@ function BudgetRow({ subcategory, onChange }) {
           onChange={([min, max]) => {
             setMinBudgetedAmount(min);
             setMaxBudgetedAmount(max);
+            onChange?.({
+              user_category_id: subcategory.user_category_id,
+              min,
+              max,
+            });
           }}
         />
-        {/* <RangeSlider
-          // step={0.01}
-          // onChange={(x) => {
-          //   console.log(x);
-          // }}
-          // onChangeEnd={(x) => {
-          //   console.log(x);
-          // }}
-          onChangeEnd={onChangeEnd}
-          // defaultValue={[minValue * -1, maxValue * -1]}
-          min={0}
-          max={subcategory.max_monthly_spend * -1 * 1.2}
-        /> */}
         <div className="stat">
           <Stat value={subcategory.min_monthly_spend} />
           <Stat value={subcategory.avg_monthly_spend * -1} />

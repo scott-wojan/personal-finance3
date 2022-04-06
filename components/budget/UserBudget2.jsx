@@ -1,7 +1,7 @@
 import { RangeSlider, Button, Table, Text, Tooltip } from "@mantine/core";
 import { getFormattedCurrency, groupBy } from "formatting";
 import { useApi } from "hooks/useApi";
-import React, { Fragment } from "react";
+import React, { Fragment, useState } from "react";
 
 export function UserBudget2() {
   const { isLoading, error, data } = useApi({
@@ -78,8 +78,16 @@ export function UserBudget2() {
   );
 }
 
-function BudgetRow({ subcategory }) {
+function BudgetRow({ subcategory, onChange }) {
   console.log(subcategory);
+  const [minValue, setMinValue] = useState(subcategory.min_budgeted_amount);
+  const [maxValue, setMaxValue] = useState(subcategory.max_budgeted_amount);
+  const onRangeSelection = ([min, max]) => {
+    setMinValue(min * -1);
+    setMaxValue(max * -1);
+    onChange?.({ categoryId: subcategory.user_category_id, min, max });
+  };
+
   const Stat = ({ value }) => {
     return (
       <Text size="xs" color="gray">
@@ -92,12 +100,10 @@ function BudgetRow({ subcategory }) {
       <td className="subcategory">{subcategory.user_subcategory}</td>
       <td>
         <RangeSlider
-          defaultValue={[
-            subcategory.min_budgeted_amount * -1,
-            subcategory.max_budgeted_amount * -1,
-          ]}
+          onChange={onRangeSelection}
+          defaultValue={[minValue * -1, maxValue * -1]}
           min={0}
-          max={subcategory.max_monthly_spend * -1}
+          max={subcategory.max_monthly_spend * -1 * 1.2}
         />
         <div className="stat">
           <Stat value={subcategory.min_monthly_spend} />
@@ -105,8 +111,8 @@ function BudgetRow({ subcategory }) {
           <Stat value={subcategory.max_monthly_spend * -1} />
         </div>
       </td>
-      <td>{getFormattedCurrency(subcategory.min_budgeted_amount * -1)}</td>
-      <td>{getFormattedCurrency(subcategory.max_budgeted_amount * -1)}</td>
+      <td>{getFormattedCurrency(minValue * -1)}</td>
+      <td>{getFormattedCurrency(maxValue * -1)}</td>
       <td>
         <Tooltip label="Do not budget for this category" withArrow>
           <Button variant="default" size="xs">

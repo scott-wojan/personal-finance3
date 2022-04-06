@@ -95,17 +95,17 @@ export function UserBudget2() {
 
 function BudgetRow({ subcategory }) {
   const mutation = useMutation((updatedBudgetItem) => {
-    return axios.post("/todos", updatedBudgetItem);
+    return axios.post("api/budget/updateitem", updatedBudgetItem);
   });
 
-  const onBudgetSelected = ({ user_category_id, min, max }) => {
+  const onBudgetSelected = ({ userCategoryId, min, max }) => {
     // @ts-ignore
     mutation.mutate({
-      user_category_id,
+      userCategoryId,
       min,
       max,
     });
-    console.log(`Send update for user budget ${user_category_id} `, min, max);
+    console.log(`Send update for user budget ${userCategoryId} `, min, max);
   };
 
   const [minBudgetedAmount, setMinBudgetedAmount] = useState(
@@ -133,7 +133,7 @@ function BudgetRow({ subcategory }) {
             setMinBudgetedAmount(min);
             setMaxBudgetedAmount(max);
             onBudgetSelected({
-              user_category_id: subcategory.user_category_id,
+              userCategoryId: subcategory.user_category_id,
               min,
               max,
             });
@@ -171,8 +171,7 @@ function BudgetRow({ subcategory }) {
               <AlertCircle size={18} strokeWidth={2} color={"#bf4040"} />
             </Tooltip>
           ) : null}
-
-          {mutation.isSuccess ? <div>Updated!</div> : null}
+          {/* {mutation.isSuccess ? <div>Updated!</div> : null} */}
         </>
       </td>
     </tr>

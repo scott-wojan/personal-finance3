@@ -1,17 +1,22 @@
-import dayjs from "dayjs";
 import sql from "./db.js";
 
-// async function getUserBudget({ userId }) {
-//   // @ts-ignore
-//   return await sql`
-//     select category_id, user_category, user_subcategory, min_budgeted_amount, max_budgeted_amount
-//       from user_categories
-//     where user_id = ${userId}
-//     order by user_category, user_subcategory;
-//   `;
-// }
+export async function updateUserBudgetItem({
+  userId,
+  userCategoryId,
+  min,
+  max,
+}) {
+  // @ts-ignore
+  return await sql`
+   update user_categories
+      set min_budgeted_amount = ${min}
+        , max_budgeted_amount = ${max}
+    where id = ${userCategoryId}
+      and user_id = ${userId}
+  `;
+}
 
-async function getUserBudget({ userId, startDate, endDate }) {
+export async function getUserBudget({ userId, startDate, endDate }) {
   // @ts-ignore
   return await sql`
     select user_category_id
@@ -27,5 +32,3 @@ async function getUserBudget({ userId, startDate, endDate }) {
      where total_spend < 0
   `;
 }
-
-export { getUserBudget };

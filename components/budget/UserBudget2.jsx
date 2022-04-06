@@ -89,11 +89,15 @@ export function UserBudget2() {
 
 function BudgetRow({ subcategory, onChange }) {
   // console.log(subcategory);
-  const [minValue, setMinValue] = useState(subcategory.min_budgeted_amount);
-  const [maxValue, setMaxValue] = useState(subcategory.max_budgeted_amount);
+  const [minValue, setMinValue] = useState(
+    subcategory.min_budgeted_amount * -1
+  );
+  const [maxValue, setMaxValue] = useState(
+    subcategory.max_budgeted_amount * -1
+  );
   const onRangeSelection = ([min, max]) => {
-    setMinValue(min * -1);
-    setMaxValue(max * -1);
+    setMinValue(min);
+    setMaxValue(max);
     onChange?.({ categoryId: subcategory.user_category_id, min, max });
   };
 
@@ -121,10 +125,10 @@ function BudgetRow({ subcategory, onChange }) {
         </div>
       </td>
       <td>
-        <MonetaryInput value={minValue * -1} />
+        <MonetaryInput value={minValue} onChange={setMinValue} />
       </td>
       <td>
-        <MonetaryInput value={maxValue * -1} />
+        <MonetaryInput value={maxValue} onChange={setMaxValue} />
       </td>
       <td>
         <Tooltip label="Do not budget for this category" withArrow>
@@ -137,13 +141,11 @@ function BudgetRow({ subcategory, onChange }) {
   );
 }
 
-function MonetaryInput({ value }) {
+function MonetaryInput({ value, onChange }) {
   const [val, setVal] = useState(value);
   useEffect(() => {
     setVal(value);
   }, [value]);
-  // getFormattedCurrency
-  // console.log(parseFloat("10.547892").toFixed(2));
   return (
     <NumberInput
       hideControls
@@ -163,7 +165,8 @@ function MonetaryInput({ value }) {
       //   setVal(e.currentTarget.value);
       // }}
       onBlur={(e) => {
-        console.log("onBlur", numeral(e.currentTarget.value).value());
+        // console.log("onBlur", numeral(e.currentTarget.value).value());
+        onChange?.(numeral(e.currentTarget.value).value());
       }}
       value={val}
     />

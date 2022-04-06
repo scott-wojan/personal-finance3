@@ -1,16 +1,13 @@
-import faker from "@faker-js/faker";
 import {
+  Button,
   createStyles,
   RangeSlider,
-  Table,
   Title,
   Tooltip,
 } from "@mantine/core";
-import { SecondaryButton } from "components/buttons";
-import { getFormattedCurrency, getShortCurrency, groupBy } from "formatting";
+import { getFormattedCurrency, groupBy } from "formatting";
 import { useApi } from "hooks/useApi";
 import React, { Fragment, useEffect, useState } from "react";
-import BudgetRangeSlider2 from "./BudgetRangeSlider2";
 
 export default function UserBudget() {
   // @ts-ignore
@@ -200,7 +197,8 @@ function BudgetRow({ subcategory, onChange }) {
           opened={tooltipOpen}
           withArrow
         >
-          <SecondaryButton
+          <Button
+            variant="default"
             size="xs"
             onMouseOver={() => setTooltipOpen(true)}
             onMouseOut={() => {
@@ -208,7 +206,7 @@ function BudgetRow({ subcategory, onChange }) {
             }}
           >
             No budget
-          </SecondaryButton>
+          </Button>
         </Tooltip>
       </td>
     </tr>

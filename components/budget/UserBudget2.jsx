@@ -1,7 +1,16 @@
-import { RangeSlider, Button, Table, Text, Tooltip } from "@mantine/core";
+import {
+  RangeSlider,
+  Button,
+  Table,
+  Text,
+  Tooltip,
+  TextInput,
+  NumberInput,
+} from "@mantine/core";
 import { getFormattedCurrency, groupBy } from "formatting";
 import { useApi } from "hooks/useApi";
-import React, { Fragment, useState } from "react";
+import numeral from "numeral";
+import React, { Fragment, useEffect, useState } from "react";
 
 export function UserBudget2() {
   const { isLoading, error, data } = useApi({
@@ -79,7 +88,7 @@ export function UserBudget2() {
 }
 
 function BudgetRow({ subcategory, onChange }) {
-  console.log(subcategory);
+  // console.log(subcategory);
   const [minValue, setMinValue] = useState(subcategory.min_budgeted_amount);
   const [maxValue, setMaxValue] = useState(subcategory.max_budgeted_amount);
   const onRangeSelection = ([min, max]) => {
@@ -111,8 +120,12 @@ function BudgetRow({ subcategory, onChange }) {
           <Stat value={subcategory.max_monthly_spend * -1} />
         </div>
       </td>
-      <td>{getFormattedCurrency(minValue * -1)}</td>
-      <td>{getFormattedCurrency(maxValue * -1)}</td>
+      <td>
+        <MonetaryInput value={minValue * -1} />
+      </td>
+      <td>
+        <MonetaryInput value={maxValue * -1} />
+      </td>
       <td>
         <Tooltip label="Do not budget for this category" withArrow>
           <Button variant="default" size="xs">
@@ -121,5 +134,38 @@ function BudgetRow({ subcategory, onChange }) {
         </Tooltip>
       </td>
     </tr>
+  );
+}
+
+function MonetaryInput({ value }) {
+  const [val, setVal] = useState(value);
+  useEffect(() => {
+    setVal(value);
+  }, [value]);
+  // getFormattedCurrency
+  // console.log(parseFloat("10.547892").toFixed(2));
+  return (
+    <NumberInput
+      hideControls
+      precision={2}
+      size="xs"
+      style={{ width: 100 }}
+      parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+      formatter={(value) =>
+        !Number.isNaN(parseFloat(value))
+          ? `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+          : "$ "
+      }
+      onFocus={(e) => {
+        e.target.select();
+      }}
+      // onChange={(e) => {
+      //   setVal(e.currentTarget.value);
+      // }}
+      onBlur={(e) => {
+        console.log("onBlur", numeral(e.currentTarget.value).value());
+      }}
+      value={val}
+    />
   );
 }

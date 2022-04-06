@@ -2,10 +2,12 @@ import moment from "moment";
 import numeral from "numeral";
 
 export function getFormattedCurrency(val) {
+  const value = val === -0 ? 0 : val;
+
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
-  }).format(val);
+  }).format(value);
 }
 
 export function getShortCurrency(val) {

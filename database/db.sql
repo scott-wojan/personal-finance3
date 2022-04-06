@@ -135,6 +135,12 @@ CREATE TYPE plaid_transaction_import as (
   transaction_type citext
 );
 
+CREATE TYPE plaid_category_import as (
+    category_id text,
+    group citext,
+    hierarchy citext,
+);
+
 
 CREATE TYPE plaid_account_import as (
     account_id text,
@@ -375,7 +381,7 @@ BEGIN
 with transaction_json (doc) as (values(jsonDoc))
 insert into transactions(
 	id,
-    user_id,
+  user_id,
 	account_id,
 	amount,
 	authorized_date,
@@ -395,8 +401,8 @@ insert into transactions(
 	type
 )
 select transaction_id,
-     userId as user_id,
-     account_id,
+       userId as user_id,
+       account_id,
 	 amount,
 	 authorized_date,
 	 (ARRAY (select json_array_elements_text(p.category::json)))[1] as imported_category,

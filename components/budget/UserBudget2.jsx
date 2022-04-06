@@ -38,7 +38,7 @@ export function UserBudget2() {
             },
             ".stat": { display: "flex", justifyContent: "space-between" },
             ".category": {
-              // fontWeight: 500,
+              fontWeight: 500,
             },
             ".subcategory": {
               paddingLeft: 20,
@@ -89,18 +89,13 @@ export function UserBudget2() {
 
 function BudgetRow({ subcategory, onChange }) {
   // console.log(subcategory);
-  const [minValue, setMinValue] = useState(
+  const [minBudgetedAmount, setMinBudgetedAmount] = useState(
     subcategory.min_budgeted_amount * -1
   );
-  const [maxValue, setMaxValue] = useState(
+  const [maxBudgetedAmount, setMaxBudgetedAmount] = useState(
     subcategory.max_budgeted_amount * -1
   );
-  const onRangeSelection = ([min, max]) => {
-    setMinValue(min);
-    setMaxValue(max);
-    onChange?.({ categoryId: subcategory.user_category_id, min, max });
-  };
-
+  // console.log(minBudgetedAmount, maxBudgetedAmount);
   const Stat = ({ value }) => {
     return (
       <Text size="xs" color="gray">
@@ -112,12 +107,27 @@ function BudgetRow({ subcategory, onChange }) {
     <tr>
       <td className="subcategory">{subcategory.user_subcategory}</td>
       <td>
-        <RangeSlider
-          onChange={onRangeSelection}
-          defaultValue={[minValue * -1, maxValue * -1]}
+        <BudgetRangeSlider
+          value={[minBudgetedAmount, maxBudgetedAmount]}
+          maxValue={subcategory.max_monthly_spend * -1 * 1.2}
+          onChange={([min, max]) => {
+            setMinBudgetedAmount(min);
+            setMaxBudgetedAmount(max);
+          }}
+        />
+        {/* <RangeSlider
+          // step={0.01}
+          // onChange={(x) => {
+          //   console.log(x);
+          // }}
+          // onChangeEnd={(x) => {
+          //   console.log(x);
+          // }}
+          onChangeEnd={onChangeEnd}
+          // defaultValue={[minValue * -1, maxValue * -1]}
           min={0}
           max={subcategory.max_monthly_spend * -1 * 1.2}
-        />
+        /> */}
         <div className="stat">
           <Stat value={subcategory.min_monthly_spend} />
           <Stat value={subcategory.avg_monthly_spend * -1} />
@@ -125,10 +135,16 @@ function BudgetRow({ subcategory, onChange }) {
         </div>
       </td>
       <td>
-        <MonetaryInput value={minValue} onChange={setMinValue} />
+        <MonetaryInput
+          value={minBudgetedAmount}
+          onChange={setMinBudgetedAmount}
+        />
       </td>
       <td>
-        <MonetaryInput value={maxValue} onChange={setMaxValue} />
+        <MonetaryInput
+          value={maxBudgetedAmount}
+          onChange={setMaxBudgetedAmount}
+        />
       </td>
       <td>
         <Tooltip label="Do not budget for this category" withArrow>
@@ -141,34 +157,83 @@ function BudgetRow({ subcategory, onChange }) {
   );
 }
 
+function BudgetRangeSlider({ value: initialValue, maxValue, onChange }) {
+  const [value, setValue] = useState(
+    !initialValue
+      ? [0, 0]
+      : [numeral(initialValue?.[0]).value(), numeral(initialValue?.[1]).value()]
+  );
+  useEffect(() => {
+    setValue(initialValue);
+  }, [initialValue]);
+
+  const [onFocusValue, setOnFocusValue] = useState([]);
+
+  const handleChange = () => {
+    if (JSON.stringify(onFocusValue) !== JSON.stringify(value)) {
+      setOnFocusValue(value);
+      onChange?.(value);
+      // console.log("onChange", value);
+    }
+  };
+
+  return (
+    <RangeSlider
+      step={5}
+      min={0}
+      max={maxValue}
+      // @ts-ignore
+      value={value}
+      onChange={setValue}
+      onFocus={() => {
+        setOnFocusValue(value);
+      }}
+      // onChangeEnd={handleChange}
+      onTouchEnd={handleChange}
+      onMouseUp={handleChange}
+    />
+  );
+}
+
 function MonetaryInput({ value, onChange }) {
   const [val, setVal] = useState(value);
+  const [onFocusValue, setOnFocusValue] = useState(value);
+  const [isFocused, setIsfocused] = useState(false);
   useEffect(() => {
     setVal(value);
   }, [value]);
+
+  const formatter = (value) =>
+    !Number.isNaN(parseFloat(value))
+      ? `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+      : "$ ";
+
+  const nonFormatter = (value) => {
+    return value;
+  };
+
   return (
     <NumberInput
+      value={val}
       hideControls
       precision={2}
       size="xs"
       style={{ width: 100 }}
       parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
-      formatter={(value) =>
-        !Number.isNaN(parseFloat(value))
-          ? `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-          : "$ "
-      }
+      formatter={isFocused ? nonFormatter : formatter}
       onFocus={(e) => {
-        e.target.select();
+        // e.target.select();
+        setIsfocused(true);
+        setOnFocusValue(numeral(e.target.value).value());
       }}
-      // onChange={(e) => {
-      //   setVal(e.currentTarget.value);
-      // }}
       onBlur={(e) => {
-        // console.log("onBlur", numeral(e.currentTarget.value).value());
-        onChange?.(numeral(e.currentTarget.value).value());
+        setIsfocused(false);
+        const newValue = numeral(e.currentTarget.value).value();
+        if (onFocusValue !== newValue) {
+          // console.log("onBlur", numeral(e.currentTarget.value).value());
+          onChange?.(numeral(e.currentTarget.value).value());
+        }
       }}
-      value={val}
     />
   );
 }

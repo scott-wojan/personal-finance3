@@ -135,12 +135,6 @@ CREATE TYPE plaid_transaction_import as (
   transaction_type citext
 );
 
-CREATE TYPE plaid_category_import as (
-    category_id text,
-    group citext,
-    hierarchy citext,
-);
-
 
 CREATE TYPE plaid_account_import as (
     account_id text,
@@ -188,7 +182,8 @@ immutable strict;
 CREATE TABLE IF NOT EXISTS categories
 (
   id serial PRIMARY KEY,
-  category citext,
+  category_id citext,
+  category citext not null,
   subcategory citext
 );
 

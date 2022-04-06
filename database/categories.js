@@ -1,6 +1,6 @@
 import sql from "./db.js";
 
-async function getUserCategoriesAsSelectOptions({ userId }) {
+export async function getUserCategoriesAsSelectOptions({ userId }) {
   // @ts-ignore
   return await sql`
       select distinct user_category as label, 
@@ -11,4 +11,17 @@ async function getUserCategoriesAsSelectOptions({ userId }) {
   `;
 }
 
-export { getUserCategoriesAsSelectOptions };
+export async function saveCategories({ categories }) {
+  categories.forEach(async (category) => {
+    await sql`
+      insert into categories (source_id, category, subcategory, source)
+                       values(
+                         ${category.source_id},
+                         ${category.category},
+                         ${category.subcategory},
+                         ${category.source}
+                        )
+                        on conflict do nothing;;
+    `;
+  });
+}

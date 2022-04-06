@@ -1,5 +1,5 @@
 import { Application } from "components/app/Application";
-import { UserBudget2 } from "components/budget/UserBudget2";
+import { UserBudget } from "components/budget/UserBudget";
 import React from "react";
 
 export default function Budget() {
@@ -12,7 +12,7 @@ export default function Budget() {
         <GridCard>Max</GridCard>
       </ResponsiveGrid> */}
 
-      <UserBudget2 />
+      <UserBudget />
     </Application>
   );
 }

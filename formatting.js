@@ -1,4 +1,4 @@
-import moment from "moment";
+import dayjs from "dayjs";
 import numeral from "numeral";
 
 export function getFormattedCurrency(val) {
@@ -15,7 +15,7 @@ export function getShortCurrency(val) {
 }
 
 export function getFormattedDate(val) {
-  return moment(val).format("MMM DD YYYY");
+  return dayjs(val).format("MMM DD YYYY");
 }
 
 export function groupBy(objectArray, property) {

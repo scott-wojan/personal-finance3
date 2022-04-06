@@ -5,12 +5,14 @@ export async function updateUserBudgetItem({
   userCategoryId,
   min,
   max,
+  doNotBudget = false,
 }) {
   // @ts-ignore
   return await sql`
    update user_categories
       set min_budgeted_amount = ${min}
         , max_budgeted_amount = ${max}
+        , do_not_budget = ${doNotBudget}
     where id = ${userCategoryId}
       and user_id = ${userId}
   `;

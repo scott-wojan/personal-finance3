@@ -4,13 +4,14 @@ import {
   Table,
   Text,
   Tooltip,
-  TextInput,
   NumberInput,
 } from "@mantine/core";
+import axios from "axios";
 import { getFormattedCurrency, groupBy } from "formatting";
 import { useApi } from "hooks/useApi";
 import numeral from "numeral";
 import React, { Fragment, useEffect, useState } from "react";
+import { useMutation } from "react-query";
 
 export function UserBudget2() {
   const { isLoading, error, data } = useApi({
@@ -21,7 +22,17 @@ export function UserBudget2() {
     },
   });
 
+  const budgetItemMutation = useMutation((updatedBudgetItem) => {
+    return axios.post("/todos", updatedBudgetItem);
+  });
+
   const onBudgetSelected = ({ user_category_id, min, max }) => {
+    // @ts-ignore
+    budgetItemMutation.mutate({
+      user_category_id,
+      min,
+      max,
+    });
     console.log(`Send update for user budget ${user_category_id} `, min, max);
   };
 
@@ -34,10 +45,10 @@ export function UserBudget2() {
             td: {
               verticalAlign: "top",
             },
-            "thead tr th": {
-              // backgroundColor: "red",
+            "thead tr th:not(:first-of-type)": {
+              textAlign: "center",
             },
-            "tbody td:nth-of-type(n+2)": {
+            "tbody td:not(:first-of-type)": {
               textAlign: "center",
             },
             ".stat": { display: "flex", justifyContent: "space-between" },
@@ -53,9 +64,9 @@ export function UserBudget2() {
             <tr>
               <th>Category</th>
               <th style={{ width: 250, textAlign: "center" }}>Budget</th>
-              <th style={{ textAlign: "center" }}>Min</th>
-              <th style={{ textAlign: "center" }}>Max</th>
-              <th style={{ textAlign: "center" }}>Options</th>
+              <th>Min</th>
+              <th>Max</th>
+              <th>Options</th>
             </tr>
           </thead>
           <tbody>

@@ -33,7 +33,7 @@ export default function LinkFirstAccount({}) {
               The more accounts you connect, the better financial picture you'll
               have
             </List.Item>
-            <List.Item>All communications are encypted and secure</List.Item>
+            <List.Item>All communications are encrypted and secure</List.Item>
             <List.Item>Vestibulum auctor dapibus neque</List.Item>
           </List>
           <div style={{ display: "flex", justifyContent: "flex-end" }}>

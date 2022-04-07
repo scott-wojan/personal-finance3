@@ -20,6 +20,10 @@ export async function getAccessToken(public_token) {
  * @returns the accounts at the bank.
  */
 export async function getLinkToken(request) {
-  const createTokenResponse = await client.linkTokenCreate(request);
-  return createTokenResponse;
+  try {
+    const createTokenResponse = await client.linkTokenCreate(request);
+    return createTokenResponse;
+  } catch (error) {
+    throw error;
+  }
 }

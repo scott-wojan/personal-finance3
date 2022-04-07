@@ -24,6 +24,11 @@ async function getWebhookUrl() {
 }
 
 export default async function handler(req, res) {
+  const user = getUserFromCookie(req, res);
+  if (!user) {
+    return res.status(401);
+  }
+
   let baseUrl = null;
   try {
     baseUrl = await getWebhookUrl();
@@ -32,10 +37,6 @@ export default async function handler(req, res) {
   }
 
   const webhookUrl = `${baseUrl}/api/plaid/webhook`;
-  const user = getUserFromCookie(req, res);
-  if (!user) {
-    return res.status(401);
-  }
 
   const request = {
     user: {
@@ -55,6 +56,6 @@ export default async function handler(req, res) {
     const createTokenResponse = await getLinkToken(request);
     res.status(200).json(createTokenResponse.data);
   } catch (error) {
-    res.status(400).json(error.response?.data);
+    res.status(400).json(error);
   }
 }

@@ -316,15 +316,14 @@ RETURNS text
 AS $$
 BEGIN
   -- update transactions to user defined categories
-  update transactions
-     set category = uc.user_category ,
-         subcategory = uc.user_subcategory
-   from user_categories uc 
-        inner join categories c on uc.category_id = c.id and source = 'Plaid'
-  where transactions.user_id = userId
-    and uc.user_id = userId
-    and transactions.imported_category = c.category
-    and transactions.imported_subcategory = c.subcategory;
+  -- update transactions
+  --    set category = uc.user_category ,
+  --        subcategory = uc.user_subcategory
+  --  from user_categories uc 
+  -- where transactions.user_id = userId
+  --   and uc.user_id = userId
+  --   and transactions.imported_category = c.category
+  --   and transactions.imported_subcategory = c.subcategory;
 
   -- add user categories that don't exist
   -- insert into user_categories(user_id,category_id,user_category,user_subcategory)
@@ -334,9 +333,9 @@ BEGIN
   --    and not exists (select 1 from user_categories where user_id = userId and category_id = c.id);
 
   insert into user_categories(user_id, user_category, user_subcategory)
-  select distinct 1 as user_id, category, subcategory
+  select distinct userId as user_id, category, subcategory
     from transactions
-   where user_id = 1
+   where user_id = userId
      and not exists (select 1 from user_categories where user_category = category and user_subcategory = subcategory)
    order by category, subcategory;     
 

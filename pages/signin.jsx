@@ -83,6 +83,10 @@ export default function SignIn() {
                       { value: "test@test.com", label: "user with accounts" },
                       { value: "asd@asd.com", label: "user without accounts" },
                       {
+                        value: "swojan@rocketmail.com",
+                        label: "swojan@rocketmail.com",
+                      },
+                      {
                         value: "austinpowers@shag.com",
                         label: "Austin Powers",
                       },

@@ -65,20 +65,6 @@ CREATE TABLE IF NOT EXISTS accounts
     institution_id citext REFERENCES institutions(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-INSERT INTO accounts(id, access_token, name, mask, official_name, current_balance, available_balance, iso_currency_code, account_limit, type, subtype, user_id, institution_id) 
-VALUES ('usaa_checking', '12345', 'USAA Checking', '9872', 'USAA Super Checking', null, null, 'USA', null, 'depository', 'checking', 1, 'usaa');
-
-INSERT INTO accounts(id, access_token, name, mask, official_name, current_balance, available_balance, iso_currency_code, account_limit, type, subtype, user_id, institution_id) 
-VALUES ('usaa_savings', '67890', 'USAA Savings', '9864', 'USAA Super Sacubgs', null, null, 'USA', null, 'depository', 'savings', 1, 'usaa');
-
-INSERT INTO accounts(id, access_token, name, mask, official_name, current_balance, available_balance, iso_currency_code, account_limit, type, subtype, user_id, institution_id) 
-VALUES ('credit_card1', '4325', 'Capital One Venture One', '1036', 'Capital One Venture One', null, null, 'USA', null, 'credit', 'credit card', 1, 'capital_one');
-
-INSERT INTO accounts(id, access_token, name, mask, official_name, current_balance, available_balance, iso_currency_code, account_limit, type, subtype, user_id, institution_id) 
-VALUES ('credit_card2', '6334', 'Capital One Venture One', '3381', 'Capital One Venture One', null, null, 'USA', null, 'credit', 'credit card', 1, 'capital_one');
-
-
-
 
 CREATE TABLE IF NOT EXISTS transactions
 (
@@ -188,8 +174,8 @@ CREATE TABLE IF NOT EXISTS user_categories
   do_not_budget boolean default false
 );
 -- unique index to not allow more than one null on user_subcategory
-CREATE UNIQUE INDEX user_categories_uidx ON user_categories (user_id, user_category, (user_subcategory IS NULL)) WHERE user_subcategory IS NULL;
-
+create unique index user_categories_uidx  on user_categories (user_id, user_category, (user_subcategory is null)) WHERE user_subcategory is null;
+create unique index user_categories_uidx2 on user_categories (user_id, user_category, user_subcategory);  
 
 create or replace function user_category_update_values() returns trigger AS $$
   begin
@@ -221,7 +207,6 @@ select year, month
 
 create index idx_years_and_months 
     on years_and_months (year, month);  
-
 
 
 
@@ -288,24 +273,26 @@ $$ LANGUAGE plpgsql;
 
 
 
+
 CREATE OR REPLACE FUNCTION update_user_transactions(userId integer, requestId text)
 RETURNS text
 AS $$
 BEGIN
 
   insert into user_categories(user_id, user_category, user_subcategory)
-	select user_id as user_id
+	select userId as user_id
 	     , transaction->'category'->>0 as category
 		   , transaction->'category'->>1 as subcategory
 	  from transaction_import_history,
          lateral jsonb_array_elements(transaction_import_history.data) transaction
-   where plaid_request_id = requestId
+   where user_id = userId
+     and plaid_request_id = requestId
      and not exists (
              select 1 
 					     from user_categories 
 					    where user_category = transaction->'category'->>0 
 					      and user_subcategory = transaction->'category'->>1
-					  )
+		)
    on conflict do nothing;       
 
   -- apply rules
@@ -494,78 +481,83 @@ where plaid_request_id = requestId
 $BODY$;
 
 
-CREATE OR REPLACE FUNCTION user_spending_metrics_by_category_subcategory(userId integer, startDate date, endDate date, exclude_non_budgeted_items bool default false)
+CREATE OR REPLACE FUNCTION user_spending_metrics_by_category_subcategory(userId integer, startDate date, endDate date, exclude_non_budgeted_categories bool default false)
 RETURNS TABLE (
    user_category_id	 integer
  , user_category citext
  , user_subcategory citext
- , min_budgeted_amount numeric(28,10)	
- , max_budgeted_amount numeric(28,10)
- , min_monthly_spend numeric(28,10)	
- , avg_monthly_spend numeric(28,10)	
- , max_monthly_spend numeric(28,10)	
- , total_spend numeric(28,10)
+ , min_budgeted_amount numeric(28,2)	
+ , max_budgeted_amount numeric(28,2)
+ , min_monthly_spend numeric(28,2)	
+ , avg_monthly_spend numeric(28,2)	
+ , max_monthly_spend numeric(28,2)	
+ , total_spend numeric(28,2)
 )
 AS $$
 DECLARE 
 
 BEGIN
 RETURN QUERY
-	select user_ledger.user_category_id
-	     , user_ledger.user_category
-		   , user_ledger.user_subcategory
-		   , user_ledger.min_budgeted_amount
-		   , user_ledger.max_budgeted_amount	 
-		   , max(user_ledger.monthly_total) as min_monthly_spend
-		   , sum(user_ledger.monthly_total/months_between(startDate, endDate)) as avg_monthly_spend
-		   , min(user_ledger.monthly_total) as max_monthly_spend
-		   , sum(user_ledger.monthly_total) as total_spend	 
-	 from (
-			select uc.id as user_category_id
-		       , timespan.end_of_month
-				   , uc.min_budgeted_amount
-				   , uc.max_budgeted_amount
-				   , uc.user_category
-				   , uc.user_subcategory
-				   , uc.do_not_budget
-				   , coalesce(transaction_data.monthly_total,0) as monthly_total
-			  from user_categories uc
-					 cross join (
-						select end_of_month( (years.year||'/'||months.month||'/01')::date) as end_of_month
-						  from generate_series(
-								extract('years' from startDate)
-							  , extract('years' from endDate)
-							 ) as years(year)
-						 cross join generate_series(1, 12) as months(month)
-						  where end_of_month( (years.year||'/'||months.month||'/01')::date) between startDate and endDate
-						) as timespan
-			 left join (
-						select end_of_month(t.date) as end_of_month
-							 , t.category
-							 , t.subcategory
-							 , sum(coalesce(t.amount,0)) as monthly_total
-						  from transactions t
-						 where t.user_id = userId
-						   and amount < 0			 
-						   and t.date between startDate and endDate
-						 group by end_of_month(t.date), category, subcategory				 
-					 ) as transaction_data on transaction_data.category = uc.user_category  
-					   and transaction_data.subcategory = uc.user_subcategory
-					   and transaction_data.end_of_month = timespan.end_of_month
-			 where uc.user_id = userId
-			   and uc.do_not_budget = false
-		) as user_ledger
-	   group by user_ledger.user_category_id
-	          , user_ledger.user_category
-		      , user_ledger.user_subcategory
-			  , user_ledger.min_budgeted_amount
-			  , user_ledger.max_budgeted_amount	
-	   order by user_ledger.user_category
-			  , user_ledger.user_subcategory;
+  select user_ledger.user_category_id
+      , user_ledger.user_category
+      , user_ledger.user_subcategory
+      , user_ledger.min_budgeted_amount
+      , user_ledger.max_budgeted_amount        
+      , max(user_ledger.monthly_total)::numeric(28,2) as min_monthly_spend
+      , avg(user_ledger.monthly_total)::numeric(28,2) as avg_monthly_spend   
+      , min(user_ledger.monthly_total)::numeric(28,2) as max_monthly_spend
+      , sum(user_ledger.monthly_total)::numeric(28,2) as total_amount_spent   
+    from (
+          select timespan.user_category_id
+              , timespan.end_of_month
+              , timespan.user_category
+              , timespan.user_subcategory
+              , timespan.min_budgeted_amount
+              , timespan.max_budgeted_amount      
+              , coalesce(transaction_monthy_totals.monthly_total,0) as monthly_total
+              , timespan.do_not_budget      
+            from (
+                  select uc.id as user_category_id
+                      , user_categories_by_date_range.end_of_month
+                      , uc.user_category
+                      , uc.user_subcategory
+                      , uc.min_budgeted_amount
+                      , uc.max_budgeted_amount
+                      , 0 as monthly_total
+                      , uc.do_not_budget              
+                    from user_categories uc
+                  cross join (
+                              select end_of_month(date_series::date) as end_of_month
+                              from generate_series( startDate, endDate, '1 month'::interval) date_series
+                            ) as user_categories_by_date_range
+                  where uc.user_id = userId
+                    and (uc.do_not_budget = false or uc.do_not_budget != exclude_non_budgeted_categories)
+          ) as timespan
+          left join (
+                  select end_of_month(date) as end_of_month
+                      , category
+                      , subcategory
+                      , sum(amount) monthly_total
+                    from transactions
+                  where user_id = userId
+                    and date between startDate and endDate
+                  group by end_of_month, category, subcategory
+          ) as transaction_monthy_totals
+            on transaction_monthy_totals.end_of_month = timespan.end_of_month
+            and transaction_monthy_totals.category = timespan.user_category
+            and transaction_monthy_totals.subcategory = timespan.user_subcategory
+      ) as user_ledger
+  group by user_ledger.user_category_id
+        , user_ledger.user_category
+        , user_ledger.user_subcategory
+        , user_ledger.min_budgeted_amount
+        , user_ledger.max_budgeted_amount        
+        , user_ledger.do_not_budget
+  order by user_ledger.user_category
+        , user_ledger.user_subcategory;
 
 END; $$ 
 LANGUAGE 'plpgsql';
-
 
 
 

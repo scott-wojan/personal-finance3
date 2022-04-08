@@ -18,7 +18,12 @@ export async function updateUserBudgetItem({
   `;
 }
 
-export async function getUserBudget({ userId, startDate, endDate }) {
+export async function getUserBudget({
+  userId,
+  startDate,
+  endDate,
+  excludeNonBudgetedCategories = false,
+}) {
   // @ts-ignore
   return await sql`
     select user_category_id
@@ -30,7 +35,7 @@ export async function getUserBudget({ userId, startDate, endDate }) {
          , avg_monthly_spend	
          , max_monthly_spend 
          , total_spend
-      from user_spending_metrics_by_category_subcategory(${userId},${startDate},${endDate})
+      from user_spending_metrics_by_category_subcategory(${userId},${startDate},${endDate},${excludeNonBudgetedCategories})
      where total_spend < 0
   `;
 }

@@ -38,8 +38,8 @@ function RecentTransactions() {
     setTableDate(
       data?.data?.map((transaction) => (
         <tr key={transaction.id}>
-          <td>{transaction.date}</td>
-          <td>{transaction.name}</td>
+          <td style={{ whiteSpace: "nowrap" }}>{transaction.date}</td>
+          <td className="truncate-text">{transaction.name}</td>
           <td>{transaction.amount}</td>
         </tr>
       ))
@@ -54,9 +54,9 @@ function RecentTransactions() {
         <Table>
           <thead>
             <tr>
-              <th>Date</th>
-              <th>Name</th>
-              <th>Amount</th>
+              <th style={{ width: "20%" }}>Date</th>
+              <th style={{ width: "50%" }}>Name</th>
+              <th style={{ width: "20%" }}>Amount</th>
             </tr>
           </thead>
           <tbody>{tableData}</tbody>

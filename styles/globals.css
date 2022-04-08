@@ -13,6 +13,13 @@ body {
   overflow: auto;
 }
 
+.truncate-text {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width: 1px;
+}
+
 .noUi-tooltip {
   display: none !important;
 }

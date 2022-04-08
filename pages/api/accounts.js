@@ -3,7 +3,7 @@ import { getUserAccountById, getUserAccounts } from "database/accounts";
 
 export default async function handler(req, res) {
   const user = getUserFromCookie(req, res);
-  if (!user) return req.status(401).json();
+  if (!user) return res.status(401).json();
 
   const { accountId } = req.body;
 

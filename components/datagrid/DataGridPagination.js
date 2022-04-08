@@ -27,7 +27,7 @@ export function DataGridPagination({}) {
             <Group spacing={4}>
               Show
               <Select
-                disabled={!rows}
+                // disabled={!rows}
                 data={pageSizes}
                 value={pageSize?.toString()}
                 style={{ width: 80 }}

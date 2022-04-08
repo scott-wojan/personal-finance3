@@ -20,6 +20,7 @@ export function DataGridColumn({
     th: {
       cursor: column?.isFilterable ? "pointer" : "",
       width: column?.width ?? width,
+      whiteSpace: "nowrap",
     },
   }));
 

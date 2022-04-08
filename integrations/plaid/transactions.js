@@ -40,6 +40,7 @@ export async function getTransactions(accessToken, startDate, endDate) {
 
       transactions = transactions.concat(paginatedResponse.data.transactions);
     }
+    resultData.request_id = response.data.request_id;
     return resultData;
   } catch (error) {
     return error.response.data;

@@ -37,9 +37,13 @@ export async function getUserTransactions({
   return rows[0];
 }
 
-export async function saveUserTransactions({ userId, transactions }) {
+export async function saveUserTransactions({
+  userId,
+  requestId,
+  transactions,
+}) {
   const json = toJsonEscaped(transactions);
-  const query = `select * from insert_plaid_transactions(${userId},'${json}')`;
+  const query = `select * from insert_plaid_transactions(${userId},'${requestId}','${json}')`;
   await sql.unsafe(query);
 }
 

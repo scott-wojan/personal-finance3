@@ -14,6 +14,7 @@ import { useApi } from "hooks/useApi";
 import { ResponsiveGrid } from "components/grid/ResponsiveGrid";
 
 import { getShortCurrency, groupBy } from "formatting";
+import PlaidLinkButton from "components/plaid/PlaidLink";
 
 export default function AccountsDashboard() {
   const { isLoading, error, data } = useApi({
@@ -24,13 +25,7 @@ export default function AccountsDashboard() {
     <>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <Title order={3}>Accounts</Title>
-        <Button
-          component="a"
-          href="#"
-          leftIcon={<CirclePlus strokeWidth={1} />}
-        >
-          Add new account
-        </Button>
+        <PlaidLinkButton text="Add new account" />
       </div>
       <>
         {

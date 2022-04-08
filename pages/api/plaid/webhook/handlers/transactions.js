@@ -14,6 +14,7 @@ async function updateTransactions(item_id, duration, measurement) {
 
   const accessInfo = await getAccessInfoByItemId(item_id);
   if (!accessInfo) {
+    console.log(`No institution_id found with item_id="${item_id}"`);
     return;
   }
   const {
@@ -25,16 +26,17 @@ async function updateTransactions(item_id, duration, measurement) {
   const endDate = dayjs().subtract(0, "days").format("YYYY-MM-DD");
 
   const data = await getTransactions(access_token, startDate, endDate);
-  const { accounts, transactions } = data;
+  const { accounts, transactions, request_id } = data;
 
   await saveUserAccounts({
     userId: userId,
     institutionId: institutionId,
     accessToken: access_token,
     accounts,
+    requestId: request_id,
   });
 
-  await saveUserTransactions({ userId, transactions });
+  await saveUserTransactions({ userId, transactions, requestId: request_id });
 }
 
 async function initialUpdate(requestBody) {

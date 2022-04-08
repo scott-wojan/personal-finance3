@@ -12,9 +12,11 @@ export default async function handler(req, res) {
   const { public_token, metadata } = req.body;
   const user = getUserFromCookie(req, res);
   try {
-    const { access_token: accessToken, item_id: itemId } = await getAccessToken(
-      public_token
-    );
+    const {
+      access_token: accessToken,
+      item_id: itemId,
+      request_id: requestId,
+    } = await getAccessToken(public_token);
 
     // insert institution
     const institution = await getInstitutionById(
@@ -35,6 +37,7 @@ export default async function handler(req, res) {
 
     await saveUserAccounts({
       userId: user.id,
+      requestId,
       institutionId: institution.institution_id,
       accessToken,
       accounts,

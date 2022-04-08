@@ -78,6 +78,8 @@ INSERT INTO accounts(id, access_token, name, mask, official_name, current_balanc
 VALUES ('credit_card2', '6334', 'Capital One Venture One', '3381', 'Capital One Venture One', null, null, 'USA', null, 'credit', 'credit card', 1, 'capital_one');
 
 
+
+
 CREATE TABLE IF NOT EXISTS transactions
 (
     id text PRIMARY KEY,
@@ -116,37 +118,6 @@ CREATE TABLE IF NOT EXISTS transactions
 );
 
 
-CREATE TYPE plaid_transaction_import as (
-  transaction_id text,
-  account_id text, 
-  amount numeric(28,10),
-  authorized_date date,
-  category citext,
-  check_number citext,
-  date date,
-  iso_currency_code citext,
-  -- lat double precision,
-  -- lon double precision,
-  merchant_name citext,
-  name citext,
-  payment_channel citext,
-  pending boolean,
-  transaction_code citext,
-  transaction_type citext
-);
-
-
-CREATE TYPE plaid_account_import as (
-    account_id text,
-    name citext,
-    mask citext,
-    official_name citext,
-    balances citext,
-    type citext,
-    subtype citext
-);
-
-
 CREATE OR REPLACE FUNCTION set_transaction_values() RETURNS trigger AS $$
   BEGIN
     NEW.imported_category :=COALESCE(NEW.imported_category,'General');
@@ -161,21 +132,22 @@ after insert or update on transactions
 FOR EACH ROW EXECUTE PROCEDURE set_transaction_values();
 
 
-CCREATE FUNCTION months_between (startDate timestamp, endDate timestamp)
-RETURNS integer
-AS $$
+create or replace function months_between (startDate timestamp, endDate timestamp)
+returns integer as 
+$$
 select ((extract('years' from $2)::int -  extract('years' from $1)::int) * 12) 
     - extract('month' from $1)::int + extract('month' from $2)::int
-$$
+$$ 
 LANGUAGE SQL
-IMMUTABLE
-RETURNS NULL ON NULL INPUT;
+immutable
+returns NULL on NULL input;
 
-create function end_of_month(date)
+create or replace function end_of_month(date)
 returns date as
 $$
 select (date_trunc('month', $1) + interval '1 month' - interval '1 day')::date;
-$$ language 'sql'
+$$ 
+language SQL
 immutable strict;
 
 
@@ -189,7 +161,7 @@ CREATE TABLE IF NOT EXISTS categories
 
 --
 CREATE UNIQUE INDEX categories_uidx ON categories(category, subcategory, source);;
--- unique index to not allow more than one null
+-- unique index to not allow more than one null on subcategory
 CREATE UNIQUE INDEX categories_null_uidx ON categories (source, category, (subcategory IS NULL)) WHERE subcategory IS NULL;
 
 CREATE FUNCTION category_insert_values() RETURNS trigger AS $$
@@ -215,7 +187,8 @@ CREATE TABLE IF NOT EXISTS user_categories
   max_budgeted_amount numeric(28,10) default 0,
   do_not_budget boolean default false
 );
-CREATE UNIQUE INDEX user_categories_uidx ON user_categories(user_id, user_category, user_subcategory);
+-- unique index to not allow more than one null on user_subcategory
+CREATE UNIQUE INDEX user_categories_uidx ON user_categories (user_id, user_category, (user_subcategory IS NULL)) WHERE user_subcategory IS NULL;
 
 
 create or replace function user_category_update_values() returns trigger AS $$
@@ -284,6 +257,15 @@ CREATE UNIQUE INDEX user_rules_uidx ON user_rules(user_id, match_column_name, ma
 -- where imported_name ~* '^COSERV ELECTRIC$'
 
 
+CREATE TABLE IF NOT EXISTS transaction_import_history
+(
+  plaid_request_id text primary key, 
+  user_id integer references users(id) on delete cascade on update cascade,
+  data jsonb not null,
+  created_at timestamptz default now()
+);
+
+
 
 CREATE OR REPLACE FUNCTION update_transactions(
 	userId integer, 
@@ -304,66 +286,39 @@ CREATE OR REPLACE FUNCTION update_transactions(
   END;
 $$ LANGUAGE plpgsql; 
 
--- insert into user_categories(user_id,import_category,import_subcategory,user_category,user_subcategory)
--- select distinct user_id, imported_category, imported_subcategory, category, subcategory 
---   from transactions
---  where user_id = 1
---  order by category, subcategory
--- on conflict do nothing;
 
-CREATE OR REPLACE FUNCTION update_user_transactions(userId integer)
+
+CREATE OR REPLACE FUNCTION update_user_transactions(userId integer, requestId text)
 RETURNS text
 AS $$
 BEGIN
-  -- update transactions to user defined categories
-  -- update transactions
-  --    set category = uc.user_category ,
-  --        subcategory = uc.user_subcategory
-  --  from user_categories uc 
-  -- where transactions.user_id = userId
-  --   and uc.user_id = userId
-  --   and transactions.imported_category = c.category
-  --   and transactions.imported_subcategory = c.subcategory;
-
-  -- add user categories that don't exist
-  -- insert into user_categories(user_id,category_id,user_category,user_subcategory)
-  -- select userId as user_id, c.id as category_id, c.category, c.subcategory as subcategory
-  --   from categories c
-  --  where source = 'Plaid'
-  --    and not exists (select 1 from user_categories where user_id = userId and category_id = c.id);
 
   insert into user_categories(user_id, user_category, user_subcategory)
-  select distinct userId as user_id, category, subcategory
-    from transactions
-   where user_id = userId
-     and not exists (select 1 from user_categories where user_category = category and user_subcategory = subcategory)
-   order by category, subcategory;     
+	select user_id as user_id
+	     , transaction->'category'->>0 as category
+		   , transaction->'category'->>1 as subcategory
+	  from transaction_import_history,
+         lateral jsonb_array_elements(transaction_import_history.data) transaction
+   where plaid_request_id = requestId
+     and not exists (
+             select 1 
+					     from user_categories 
+					    where user_category = transaction->'category'->>0 
+					      and user_subcategory = transaction->'category'->>1
+					  )
+   on conflict do nothing;       
 
   -- apply rules
-  RETURN(select update_transactions(userId,match_column_name,match_condition,match_value,set_column_name,set_value)
+  return(select update_transactions(userId,match_column_name,match_condition,match_value,set_column_name,set_value)
     from user_rules
   where user_id=userId
   );
+
 END; $$ 
 LANGUAGE 'plpgsql';
 
-/*
---FOR insert_plaid_accounts
-select account_id, 
-       mask, 
-	   official_name, 
-	   subtype,
-	   type,
-       (select (p.balances::json)->>'available')::numeric as available_balance,
-       (select (p.balances::json)->>'current')::numeric  as current_balance,
-       (select (p.balances::json)->>'limit')::numeric  as account_limit,
-      (select (p.balances::json)->>'iso_currency_code') as iso_currency_code
-  from account_json 
-  cross join lateral json_populate_recordset(null::plaid_account_import, doc) as p	
-*/
 
-
-CREATE OR REPLACE FUNCTION insert_plaid_transactions(userId integer, jsonDoc JSON)
+CREATE OR REPLACE FUNCTION insert_plaid_transactions(userId integer,  requestId text, jsonDoc JSON)
  RETURNS void 
  LANGUAGE 'plpgsql' 
  COST 100 
@@ -372,84 +327,115 @@ CREATE OR REPLACE FUNCTION insert_plaid_transactions(userId integer, jsonDoc JSO
  UNSAFE 
 AS $BODY$
 BEGIN
-with transaction_json (doc) as (values(jsonDoc))
-insert into transactions(
-	id,
-  user_id,
-	account_id,
-	amount,
-	authorized_date,
-	imported_category,
-	imported_subcategory,
-	category,
-	subcategory,
-	check_number,
-	date,
-	iso_currency_code,
-	merchant_name,
-	imported_name,
-	name,
-	payment_channel,
-	is_pending,
-	transaction_code,
-	type
-)
-select transaction_id,
-       userId as user_id,
-       account_id,
-	 amount,
-	 authorized_date,
-	 (ARRAY (select json_array_elements_text(p.category::json)))[1] as imported_category,
-	 (ARRAY (select json_array_elements_text(p.category::json)))[2] as imported_subcategory,
-	 (ARRAY (select json_array_elements_text(p.category::json)))[1] as category,
-	 (ARRAY (select json_array_elements_text(p.category::json)))[2] as subcategory,     
-	 check_number,
-	 date,
-	 iso_currency_code,
-	 merchant_name,
-	 name,
-	 name,
-	 payment_channel,
-	 pending,
-	 transaction_code,
-	 transaction_type
-from transaction_json l
-  cross join lateral json_populate_recordset(null::plaid_transaction_import, jsonDoc) as p
-ON CONFLICT (ID)
-DO UPDATE SET
-   account_id = excluded.account_id,
-   amount = excluded.amount,
-   authorized_date = excluded.authorized_date,
-   category = excluded.category,
-   subcategory = excluded.subcategory,
-   check_number = excluded.check_number,
-   date = excluded.date,
-   iso_currency_code = excluded.iso_currency_code,
-   merchant_name = excluded.merchant_name,
-   imported_name = excluded.name,
-   payment_channel = excluded.payment_channel,
-   is_pending = excluded.is_pending,
-   transaction_code = excluded.transaction_code,
-   type = excluded.type;
 
-  --keep category/subcategory up to date
-  with transaction_json (doc) as (values(jsonDoc))
+  insert into transaction_import_history(user_id,plaid_request_id,data) values(userId,requestId,jsonDoc);
+
+  insert into transactions(
+    id,
+    user_id,
+    account_id,
+    amount,
+    authorized_date,
+    imported_category,
+    imported_subcategory,
+    category,
+    subcategory,
+    check_number,
+    date,
+    iso_currency_code,
+    merchant_name,
+    imported_name,
+    name,
+    payment_channel,
+    is_pending,
+    transaction_code,
+    type
+  )
+  select id 
+      , userId as user_id
+      , account_id
+      , amount
+      , authorized_date
+      , category as imported_category
+      , subcategory as imported_subcategory
+      , category
+      , subcategory
+      , check_number
+      , date
+      , iso_currency_code
+      , merchant_name	 
+      , name as imported_name 
+      , name
+      , payment_channel
+      , is_pending
+      , transaction_code
+      , type
+  from(
+        select transaction->>'transaction_id' "id" 
+             , transaction->>'account_id' "account_id"
+             , (transaction->>'amount')::numeric(28,4) * -1 "amount" --for some reason, positive values like payroll come in as negative numbers and expenses come in as positive
+             , (transaction->>'authorized_date')::date "authorized_date"
+             , transaction->'category'->>0 as category
+             , transaction->'category'->>1 as subcategory	
+             , transaction->>'check_number' "check_number"	 
+             , (transaction->>'date')::date "date"
+             , transaction->>'iso_currency_code' "iso_currency_code"	 
+             , transaction->>'merchant_name' "merchant_name"		 
+             , transaction->>'name' "name" 	 
+             , transaction->>'payment_channel' "payment_channel"	 
+             , (transaction->>'pending')::bool "is_pending"
+             , transaction->>'transaction_code' "transaction_code"
+             , transaction->>'transaction_type' "type"	 
+          from transaction_import_history,
+               lateral jsonb_array_elements(transaction_import_history.data) transaction
+         where plaid_request_id = requestId
+  ) as transaction_date
+  on conflict (id)
+      do update set
+      account_id = excluded.account_id,
+      amount = excluded.amount*-1, --for some reason, positive values like payroll come in as negative numbers and expenses come in as positive
+      authorized_date = excluded.authorized_date,
+      category = excluded.category,
+      subcategory = excluded.subcategory,
+      check_number = excluded.check_number,
+      date = excluded.date,
+      iso_currency_code = excluded.iso_currency_code,
+      merchant_name = excluded.merchant_name,
+      imported_name = excluded.name,
+      payment_channel = excluded.payment_channel,
+      is_pending = excluded.is_pending,
+      transaction_code = excluded.transaction_code,
+      type = excluded.type;
+
+
+  --keep categories up to date
   insert into categories(category, subcategory, source)
-       select (ARRAY (select json_array_elements_text(p.category::json)))[1] as category,
-              (ARRAY (select json_array_elements_text(p.category::json)))[2] as subcategory,
-              'Plaid' as source
-        from transaction_json l 
-             cross join lateral json_populate_recordset(null::plaid_transaction_import, doc) as p
-          ON CONFLICT DO NOTHING;   
+	select transaction->'category'->>0 as category
+		   , transaction->'category'->>1 as subcategory
+		   , 'Plaid' as source
+	  from transaction_import_history,
+         lateral jsonb_array_elements(transaction_import_history.data) transaction
+   where plaid_request_id = requestId
+         on conflict do nothing; 
+         
 
-    perform update_user_transactions(userId);
+    perform update_user_transactions(userId,requestId);
 	
   END;    
 $BODY$;
 
 
 
-CREATE OR REPLACE FUNCTION insert_plaid_accounts(userId integer, institutionId text, accessToken text, jsonDoc JSON)
+CREATE TABLE IF NOT EXISTS account_import_history
+(
+  plaid_request_id text primary key,  
+  user_id integer references users(id) on delete cascade on update cascade,
+  data jsonb not null,
+  created_at timestamptz default now()
+);
+
+
+CREATE OR REPLACE FUNCTION insert_plaid_accounts(userId integer, requestId text, institutionId text, accessToken text, jsonDoc JSON)
  RETURNS void 
  LANGUAGE 'plpgsql' 
  COST 100 
@@ -459,26 +445,43 @@ CREATE OR REPLACE FUNCTION insert_plaid_accounts(userId integer, institutionId t
 AS $BODY$
 BEGIN
 
-with account_json (jsonDoc) as (values($3))
-insert into accounts(id, user_id, name, mask, official_name, subtype, type, available_balance, current_balance, account_limit, iso_currency_code, access_token, institution_id)
-select account_id, 
-       userId as user_id,
-       name,
-       mask, 
-	   official_name, 
-	   subtype,
-	   type,
-       (select (p.balances::json)->>'available')::numeric as available_balance,
-       (select (p.balances::json)->>'current')::numeric  as current_balance,
-       (select (p.balances::json)->>'limit')::numeric  as account_limit,
-       (select (p.balances::json)->>'iso_currency_code') as iso_currency_code,
-	   accessToken as access_token,
-	   institutionId as institution_id
-  from account_json 
-  cross join lateral json_populate_recordset(null::plaid_account_import, $4) as p
+insert into account_import_history(user_id, plaid_request_id, data) 
+                            values(userId, requestId, jsonDoc);
+
+insert into accounts(
+	  id
+	, user_id
+	, name
+	, mask
+	, official_name
+	, subtype
+	, type
+	, available_balance
+	, current_balance
+	, account_limit
+	, iso_currency_code
+	, access_token
+	, institution_id
+)
+select account->>'account_id' "id"
+     , userId as user_id
+     , account->>'name' "name"	 
+     , account->>'mask' "mask"
+     , account->>'official_name' "official_name"		 
+     , account->>'subtype' "subtype"
+     , account->>'type' "type"
+     , (account->'balances'->>'available')::numeric(28,4) "available_balance"
+     , (account->'balances'->>'current')::numeric(28,4) "current_balance"	   
+     , (account->'balances'->>'limit')::numeric(28,4) "account_limit"	 
+     , account->'balances'->>'iso_currency_code' "iso_currency_code"
+	   , accessToken as access_token
+	   , institutionId as institution_id
+ from account_import_history,
+lateral jsonb_array_elements(account_import_history.data) account
+where plaid_request_id = requestId
   ON CONFLICT (ID)
   DO UPDATE SET
-    official_name = excluded.official_name,
+  official_name = excluded.official_name,
 	subtype = excluded.subtype,
 	type = excluded.type,
 	available_balance = excluded.available_balance,
@@ -486,6 +489,7 @@ select account_id,
 	account_limit = excluded.account_limit,
 	iso_currency_code = excluded.iso_currency_code,
 	access_token = excluded.access_token;
+
   END;
 $BODY$;
 
@@ -509,22 +513,22 @@ BEGIN
 RETURN QUERY
 	select user_ledger.user_category_id
 	     , user_ledger.user_category
-		 , user_ledger.user_subcategory
-		 , user_ledger.min_budgeted_amount
-		 , user_ledger.max_budgeted_amount	 
-		 , max(user_ledger.monthly_total) as min_monthly_spend
-		 , sum(user_ledger.monthly_total/months_between(startDate, endDate)) as avg_monthly_spend
-		 , min(user_ledger.monthly_total) as max_monthly_spend
-		 , sum(user_ledger.monthly_total) as total_spend	 
-	  from (
+		   , user_ledger.user_subcategory
+		   , user_ledger.min_budgeted_amount
+		   , user_ledger.max_budgeted_amount	 
+		   , max(user_ledger.monthly_total) as min_monthly_spend
+		   , sum(user_ledger.monthly_total/months_between(startDate, endDate)) as avg_monthly_spend
+		   , min(user_ledger.monthly_total) as max_monthly_spend
+		   , sum(user_ledger.monthly_total) as total_spend	 
+	 from (
 			select uc.id as user_category_id
-		         , timespan.end_of_month
-				 , uc.min_budgeted_amount
-				 , uc.max_budgeted_amount
-				 , uc.user_category
-				 , uc.user_subcategory
-				 , uc.do_not_budget
-				 , coalesce(transaction_data.monthly_total,0) as monthly_total
+		       , timespan.end_of_month
+				   , uc.min_budgeted_amount
+				   , uc.max_budgeted_amount
+				   , uc.user_category
+				   , uc.user_subcategory
+				   , uc.do_not_budget
+				   , coalesce(transaction_data.monthly_total,0) as monthly_total
 			  from user_categories uc
 					 cross join (
 						select end_of_month( (years.year||'/'||months.month||'/01')::date) as end_of_month
@@ -1235,3 +1239,49 @@ from (
 --  group by cats.user_category
 -- 	order by cats.user_category
 -- ) json_user_categories
+
+
+
+
+
+
+
+
+
+-- select *
+--      , category as imported_category
+--      , subcategory as imported_subcategory
+--      , name as imported_name	 
+-- from(
+-- 	select transaction->>'transaction_id' "transaction_id" 
+-- 		 , transaction->>'account_id' "account_id"
+-- 		 , (transaction->>'amount')::numeric(28,4) "amount"
+-- 		 , transaction->>'authorized_date' "authorized_date"
+-- 		 , transaction->'category'->>0 as category
+-- 		 , transaction->'category'->>1 as subcategory	
+-- 		 , transaction->>'check_number' "check_number"	 
+-- 		 , (transaction->>'date')::date "date"
+-- 		 , transaction->>'iso_currency_code' "iso_currency_code"	 
+-- 		 , transaction->>'merchant_name' "merchant_name"		 
+-- 		 , transaction->>'name' "name" 	 
+-- 		 , transaction->>'payment_channel' "payment_channel"	 
+-- 		 , transaction->>'pending' "is_pending"
+-- 		 , transaction->>'transaction_code' "transaction_code"
+-- 		 , transaction->>'transaction_type' "transaction_type"	 
+-- 	from transaction_import_history,
+--          lateral jsonb_array_elements(transaction_import_history.data) transaction
+-- ) as transaction_date
+
+
+-- select account->>'account_id' "name"
+--      , account->>'mask' "mask"
+--      , account->>'name' "name"
+--      , account->>'type' "type"
+--      , account->>'subtype' "name"
+--      , account->>'account_id' "account_id"
+--      , (account->'balances'->>'limit')::numeric(28,4) "limit"	
+--      , (account->'balances'->>'current')::numeric(28,4) "current"	 
+--      , (account->'balances'->>'available')::numeric(28,4) "available"
+--      , account->'balances'->>'iso_currency_code' "iso_currency_code"
+--   from account_import_history,
+-- lateral jsonb_array_elements(account_import_history.data) account;

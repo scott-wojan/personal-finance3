@@ -7,7 +7,7 @@ import { usePlaidLink } from "react-plaid-link";
 import { AlertCircle } from "tabler-icons-react";
 import { environment } from "appconfig";
 
-const PlaidLink = ({ token }) => {
+const PlaidLink = ({ text, token, redirectRoute = "/" }) => {
   const router = useRouter();
   const onSuccess = useCallback(
     async (public_token, metadata) => {
@@ -16,21 +16,20 @@ const PlaidLink = ({ token }) => {
         metadata,
       });
 
-      router.push("/");
+      router.push(redirectRoute);
     },
-    [router]
+    [redirectRoute, router]
   );
 
   const onExit = useCallback(async (error, metadata) => {
     // metadata contains the most recent API request ID and the
     // Link session ID. Storing this information is helpful
     // for support.
-    console.log(metadata);
+    // console.log(metadata);
 
     if (error != null) {
       // The user encountered a Plaid API error prior to exiting.
-      console.log(error);
-      alert("Link Error");
+      console.error(error);
     }
   }, []);
 
@@ -50,42 +49,29 @@ const PlaidLink = ({ token }) => {
         loading={!ready}
         disabled={!open}
       >
-        Connect Accounts
+        {text}
       </Button>
       {error}
     </>
   );
 };
 
-export default function PlaidLinkButton() {
+export default function PlaidLinkButton({
+  text = "Connect Accounts",
+  redirectRoute = undefined,
+}) {
   const [token, setToken] = useState(null);
 
-  const { isLoading, error, data } = useApi({
+  const { error, data } = useApi({
     url: "plaid/create_link_token",
   });
 
   useEffect(() => {
-    const { link_token } = data;
-    setToken(link_token);
-    console.log("data", data);
+    if (data) {
+      const { link_token } = data;
+      setToken(link_token);
+    }
   }, [data]);
-
-  // useEffect(() => {
-  //   async function createLinkToken() {
-  //     try {
-  //       const response = await axios.get("/api/plaid/create_link_token");
-  //       if (response.status === 200) {
-  //         const { link_token } = await response.data;
-  //         setToken(link_token);
-  //       } else {
-  //         alert("Error in PlaidLinkButton");
-  //       }
-  //     } catch (error) {
-  //       alert(error);
-  //     }
-  //   }
-  //   createLinkToken();
-  // }, []);
 
   if (error) {
     return (
@@ -113,5 +99,5 @@ export default function PlaidLinkButton() {
     );
   }
 
-  return <PlaidLink token={token} />;
+  return <PlaidLink redirectRoute={redirectRoute} text={text} token={token} />;
 }

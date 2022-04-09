@@ -5,7 +5,7 @@ export default async function handler(req, res) {
   const user = getUserFromCookie(req, res);
   if (!user) return res.status(401).json();
 
-  const { startDate, endDate, excludeNonBudgetedCategories = false } = req.body;
+  const { startDate, endDate, showBudgetedCategoriesOnly = false } = req.body;
   if (!startDate || !endDate) {
     res.status(400).json({
       message: "Both start date and end date are required",
@@ -17,7 +17,7 @@ export default async function handler(req, res) {
       userId: user?.id,
       startDate,
       endDate,
-      excludeNonBudgetedCategories,
+      excludeNonBudgetedCategories: showBudgetedCategoriesOnly,
     });
 
     res.status(200).json(budget);

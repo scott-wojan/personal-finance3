@@ -6,22 +6,24 @@ import {
   Tooltip,
   NumberInput,
   Title,
-  Grid,
+  ActionIcon,
+  Menu,
 } from "@mantine/core";
 import axios from "axios";
 import { ChartRangeDropDown } from "components/dashboard/ChartRangeDropDown";
-import { GridCard } from "components/dashboard/GridCard";
-import { ResponsiveGrid } from "components/grid/ResponsiveGrid";
 import dayjs from "dayjs";
 import { getFormattedCurrency, groupBy } from "formatting";
 import { useApi } from "hooks/useApi";
 import numeral from "numeral";
 import React, { Fragment, useEffect, useState } from "react";
 import { useMutation } from "react-query";
-import { AlertCircle } from "tabler-icons-react";
+import { AlertCircle, Filter, Square, SquareCheck } from "tabler-icons-react";
 
 export function UserBudget() {
   const [numberOfMonths, setNumberOfMonths] = useState("12");
+  const [showBudgetedCategoriesOnly, setShowBudgetedCategoriesOnly] =
+    useState(true);
+
   const { isLoading, error, data } = useApi({
     url: "budget",
     payload: {
@@ -30,6 +32,7 @@ export function UserBudget() {
         .startOf("month")
         .format("YYYY-MM-DD"),
       endDate: dayjs().startOf("month").format("YYYY-MM-DD"),
+      showBudgetedCategoriesOnly,
     },
   });
 
@@ -38,17 +41,7 @@ export function UserBudget() {
   // }, [data]);
 
   return (
-    <span>
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <Title order={4}>Budget</Title>
-        <Tooltip
-          position="bottom"
-          label="The number of months used to calculate the spending stats"
-          withArrow
-        >
-          <ChartRangeDropDown onChange={setNumberOfMonths} />
-        </Tooltip>
-      </div>
+    <>
       {data && (
         <Table
           style={{ width: "auto" }}
@@ -76,11 +69,36 @@ export function UserBudget() {
         >
           <thead>
             <tr>
+              <th colSpan={6}>
+                <div
+                  style={{ display: "flex", justifyContent: "space-between" }}
+                >
+                  <Title order={4}>Budget</Title>
+
+                  <Tooltip
+                    width={180}
+                    wrapLines
+                    position="bottom"
+                    label="The number of months used to calculate the spending stats"
+                    withArrow
+                  >
+                    <ChartRangeDropDown onChange={setNumberOfMonths} />
+                  </Tooltip>
+                </div>
+              </th>
+            </tr>
+            <tr>
               <th>Category</th>
               <th style={{ width: 280, textAlign: "center" }}>Budget</th>
               <th>Min</th>
               <th>Max</th>
-              <th>Options</th>
+              <th style={{ display: "flex", alignItems: "center" }}>
+                Options
+                <OptionsMenu
+                  showBudgetedCategoriesOnly={showBudgetedCategoriesOnly}
+                  setShowBudgetedCategoriesOnly={setShowBudgetedCategoriesOnly}
+                />
+              </th>
               <th></th>
             </tr>
           </thead>
@@ -113,11 +131,62 @@ export function UserBudget() {
           </tbody>
         </Table>
       )}
-    </span>
+    </>
+  );
+}
+
+function OptionsMenu({
+  showBudgetedCategoriesOnly,
+  setShowBudgetedCategoriesOnly,
+}) {
+  const [showBudgetedOnly, setShowBudgetedOnly] = useState(
+    showBudgetedCategoriesOnly
+  );
+
+  useEffect(() => {
+    setShowBudgetedOnly(showBudgetedCategoriesOnly);
+  }, [showBudgetedCategoriesOnly]);
+
+  const BudgetedOnly = showBudgetedCategoriesOnly ? SquareCheck : Square;
+  const All = !showBudgetedCategoriesOnly ? SquareCheck : Square;
+  return (
+    <Menu
+      control={
+        <ActionIcon>
+          <Filter size={18} strokeWidth={1} color="gray" />
+        </ActionIcon>
+      }
+      styles={{
+        body: { width: 230 },
+      }}
+    >
+      <Menu.Item
+        icon={<BudgetedOnly size={14} />}
+        onClick={() => {
+          if (!showBudgetedCategoriesOnly) {
+            setShowBudgetedCategoriesOnly(true);
+          }
+        }}
+      >
+        Budgeted categories only
+      </Menu.Item>
+      <Menu.Item
+        icon={<All size={14} />}
+        onClick={() => {
+          if (showBudgetedCategoriesOnly) {
+            setShowBudgetedCategoriesOnly(false);
+          }
+        }}
+      >
+        Show all categories
+      </Menu.Item>
+    </Menu>
   );
 }
 
 function BudgetRow({ subcategory }) {
+  console.log(subcategory.do_not_budget);
+
   const [minBudgetedAmount, setMinBudgetedAmount] = useState(
     subcategory.min_budgeted_amount * -1
   );
@@ -140,7 +209,7 @@ function BudgetRow({ subcategory }) {
       max,
     });
   };
-  const onRowButtonClicked = () => {
+  const onRowButtonClicked = (doNotBudget) => {
     // @ts-ignore
     budgetItemMutation
       // @ts-ignore
@@ -148,10 +217,9 @@ function BudgetRow({ subcategory }) {
         userCategoryId: subcategory.user_category_id,
         min: minBudgetedAmount,
         max: maxBudgetedAmount,
-        doNotBudget: true,
+        doNotBudget: doNotBudget,
       })
       .then((x) => {
-        console.log("xxxx", x);
         setHide(true);
       })
       .catch(() => {
@@ -213,12 +281,26 @@ function BudgetRow({ subcategory }) {
           </td>
           <td>
             <Tooltip
+              width={180}
+              wrapLines
               position="bottom"
-              label="Do not budget for this category"
+              label={
+                subcategory.do_not_budget
+                  ? "Include this category in my budget"
+                  : "Do not include this category in my budget"
+              }
               withArrow
             >
-              <Button onClick={onRowButtonClicked} variant="default" size="xs">
-                No budget
+              <Button
+                onClick={() => {
+                  onRowButtonClicked(!subcategory.do_not_budget);
+                }}
+                variant="default"
+                size="xs"
+              >
+                {subcategory.do_not_budget
+                  ? "Include in budget"
+                  : "Do not budget"}
               </Button>
             </Tooltip>
           </td>
@@ -226,6 +308,8 @@ function BudgetRow({ subcategory }) {
             <>
               {budgetItemMutation.isError ? (
                 <Tooltip
+                  width={180}
+                  wrapLines
                   position="bottom"
                   label={budgetItemMutation.error.message}
                   withArrow
@@ -309,7 +393,7 @@ function MonetaryInput({ value, onChange }) {
       hideControls
       precision={2}
       size="xs"
-      style={{ width: 100 }}
+      style={{ width: 90 }}
       parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
       formatter={isFocused ? nonFormatter : formatter}
       onFocus={(e) => {
@@ -333,6 +417,8 @@ function Stat({ value, type, subcategory_name }) {
   const formattedValue = getFormattedCurrency(value);
   return (
     <Tooltip
+      width={200}
+      wrapLines
       label={`${formattedValue} is the ${type} monthly amount you have spent on ${subcategory_name}`}
       withArrow
       position="bottom"

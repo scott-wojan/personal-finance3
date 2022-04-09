@@ -492,6 +492,7 @@ RETURNS TABLE (
  , avg_monthly_spend numeric(28,2)	
  , max_monthly_spend numeric(28,2)	
  , total_spend numeric(28,2)
+ , do_not_budget bool
 )
 AS $$
 DECLARE 
@@ -506,7 +507,8 @@ RETURN QUERY
       , max(user_ledger.monthly_total)::numeric(28,2) as min_monthly_spend
       , avg(user_ledger.monthly_total)::numeric(28,2) as avg_monthly_spend   
       , min(user_ledger.monthly_total)::numeric(28,2) as max_monthly_spend
-      , sum(user_ledger.monthly_total)::numeric(28,2) as total_amount_spent   
+      , sum(user_ledger.monthly_total)::numeric(28,2) as total_amount_spent
+      , user_ledger.do_not_budget
     from (
           select timespan.user_category_id
               , timespan.end_of_month

@@ -24,6 +24,7 @@ export async function getUserBudget({
   endDate,
   excludeNonBudgetedCategories = false,
 }) {
+  console.log("XXXX");
   // @ts-ignore
   return await sql`
     select user_category_id
@@ -35,6 +36,7 @@ export async function getUserBudget({
          , avg_monthly_spend	
          , max_monthly_spend 
          , total_spend
+         , do_not_budget         
       from user_spending_metrics_by_category_subcategory(${userId},${startDate},${endDate},${excludeNonBudgetedCategories})
      where total_spend < 0
   `;

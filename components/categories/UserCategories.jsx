@@ -37,7 +37,9 @@ export default function UserCategories() {
   });
 
   // useEffect(() => {
+  //   if(data)
   //   console.log("data", data);
+  //   console.log("grouped", groupBy(data,"user_category"));
   // }, [data]);
 
   if (error) {
@@ -51,44 +53,36 @@ export default function UserCategories() {
       <Table  className={cx(classes.table)}>
         <thead>
           <tr>
-            <th>When imported as</th>
-            <th>Always change to</th>
+            <th>Category</th>
           </tr>
         </thead>
         <tbody>
-          {data &&
-            Object.entries(groupBy(data,"imported_category")).map(
+        {data &&
+            Object.entries(groupBy(data,"user_category")).map(
               ([key, value]) => {
                 return (
-                  <Fragment key={key}>
-                    <tr>
-                      <td className={cx(classes.category)}>{key}</td>
-                    </tr>
-                    {value.map((subcategory) => {
+                <Fragment key={key}>
+                  <tr>
+                    <td className={cx(classes.category)}>{key}</td>                   
+                  </tr>
+                  {value.map((subcategory) => {
+                      console.log("subcategory", subcategory)
                       return (
-                        <tr key={subcategory.imported_subcategory}>
-                          <td className={cx(classes.subcategory)}>
-                            {subcategory.imported_subcategory}
-                          </td>
-                          <td>
-                            <div style={{ display: "flex", gap: 4 }}>
-                              <CategorySubCategories
-                                categoryId={subcategory.category_id}
-                                category={subcategory.user_category}
-                                subcategory={subcategory.user_subcategory}
-                              />
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </Fragment>
-                );
+                      <tr key={subcategory.user_subcategory}>
+                        <td className={cx(classes.subcategory)}>
+                        {subcategory.user_subcategory}
+                        </td>
+                    </tr>
+                      )
+                    })}            
+                </Fragment>
+                )
               }
-            )}
+            )
+        }
         </tbody>
-      </Table>
-    </>
+      </Table>  
+    </>    
   );
 }
 

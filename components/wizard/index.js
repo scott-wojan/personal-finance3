@@ -17,7 +17,7 @@ export default function Wizard({ style = {}, children }) {
   const components = Array.isArray(children) ? children : [children];
 
   return (
-    <div style={{}}>
+    <div style={style}>
       <div>
         {/* {components.map((child, index) => {
           // console.log("child.props", child.props);
@@ -25,7 +25,7 @@ export default function Wizard({ style = {}, children }) {
         })} */}
         {components[currentStep]}
       </div>
-      <Group position="center" mt="xl">
+      <Group position="apart" mt="xl">
         <Button
           variant="default"
           onClick={prevStep}

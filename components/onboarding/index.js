@@ -13,25 +13,96 @@ import {
   ActionIcon,
   createStyles,
   Paper,
+  RadioGroup,
+  Radio,
+  TextInput,
+  Box,
 } from "@mantine/core";
 import Wizard from "components/wizard";
 import Step from "components/wizard/Step";
 import React, { useState } from "react";
-import { CircleCheck, MapPin, User } from "tabler-icons-react";
+import { CircleCheck, MapPin, Trash, User } from "tabler-icons-react";
 import Image from "next/image";
+import { MonetaryInput } from "components/inputs/MonetaryInput";
+import { useForm, formList } from "@mantine/form";
 
 export default function Onboarding() {
   const theme = useMantineTheme();
   const breakpoints = [{ maxWidth: "sm", cols: 1 }];
+  // return <ManualOrImport />;
+  // return <OnboardingAccordian />;
   return (
     <Center style={{ height: "100vh" }}>
       <Paper shadow="xs" p="md">
         <Wizard style={{ width: 600 }}>
+          <Demo />
           <ManualOrImport />
-          <Select />
+          <Savings />
+          <Checking />
         </Wizard>
       </Paper>
     </Center>
+  );
+}
+
+function Demo() {
+  const form = useForm({
+    initialValues: {
+      employees: formList([{ name: "", active: false }]),
+    },
+  });
+
+  const fields = form.values.employees.map((_, index) => (
+    <Group key={index} mt="xs">
+      <TextInput
+        placeholder="financial institution name"
+        required
+        sx={{ flex: 1 }}
+        {...form.getListInputProps("employees", index, "name")}
+      />
+      <MonetaryInput
+        {...form.getListInputProps("employees", index, "active")}
+      />
+      <ActionIcon
+        color="red"
+        variant="hover"
+        onClick={() => form.removeListItem("employees", index)}
+      >
+        <Trash size={16} />
+      </ActionIcon>
+    </Group>
+  ));
+
+  return (
+    <Box sx={{ maxWidth: 500 }} mx="auto">
+      {fields.length > 0 ? (
+        <Group mb="xs">
+          <Text weight={500} size="sm" sx={{ flex: 1 }}>
+            Financial Institution
+          </Text>
+          <Text weight={500} size="sm" pr={80}>
+            Amount
+          </Text>
+        </Group>
+      ) : (
+        <Text color="dimmed" align="center">
+          No one here...
+        </Text>
+      )}
+
+      {fields}
+
+      <Group position="left" mt="xs">
+        <Button
+          variant="outline"
+          onClick={() =>
+            form.addListItem("employees", { name: "", active: false })
+          }
+        >
+          Add more
+        </Button>
+      </Group>
+    </Box>
   );
 }
 
@@ -45,7 +116,7 @@ function ManualOrImport() {
     <SimpleGrid style={{ justifyItems: "center" }}>
       <Title order={2}>Let's start understanding your financial future</Title>
       <Title order={5} style={{ color: theme.colors.gray[6] }}>
-        How would you like to start
+        How would you like to get started?
       </Title>
       <SimpleGrid
         cols={2}
@@ -85,16 +156,70 @@ function ManualOrImport() {
   );
 }
 
-function Select() {
+function Savings() {
   const theme = useMantineTheme();
   const breakpoints = [{ maxWidth: "sm", cols: 1 }];
   return (
-    <SimpleGrid cols={1} breakpoints={breakpoints}>
-      <Title order={2}>Let's start understanding your financial future</Title>
+    <SimpleGrid cols={1} breakpoints={breakpoints} style={{}}>
+      <Title order={2}>Let's discover your assets</Title>
       <Title order={5} style={{ color: theme.colors.gray[6] }}>
-        Select all that apply to you
+        Do you have a savings account?
       </Title>
-      <SimpleGrid cols={5} breakpoints={breakpoints}>
+      <Group align="center">
+        <Image
+          width={40}
+          height={40}
+          alt="Savings"
+          src="/onboarding/icons8-bank-building-100.png"
+        />
+        <TextInput size="xs" label="Financial institution name" required />
+        <MonetaryInput label="Amount" value={0} required />
+      </Group>
+    </SimpleGrid>
+  );
+}
+
+function Checking() {
+  const theme = useMantineTheme();
+  const breakpoints = [{ maxWidth: "sm", cols: 1 }];
+  return (
+    <SimpleGrid cols={1} breakpoints={breakpoints} style={{}}>
+      <Title order={2}>Let's discover your assets</Title>
+      <Title order={5} style={{ color: theme.colors.gray[6] }}>
+        Do you have a checking account?
+      </Title>
+      <Group align="center">
+        <Image
+          width={40}
+          height={40}
+          alt="Savings"
+          src="/onboarding/icons8-merchant-account-100.png"
+        />
+        <TextInput size="xs" label="Financial institution name" required />
+        <MonetaryInput label="Amount" value={0} required />
+      </Group>
+    </SimpleGrid>
+  );
+}
+
+function Select2() {
+  const theme = useMantineTheme();
+  const breakpoints = [{ maxWidth: "sm", cols: 1 }];
+  return (
+    <SimpleGrid
+      cols={1}
+      breakpoints={breakpoints}
+      style={{ justifyItems: "center" }}
+    >
+      <Title order={2}>What types of assets do you have?</Title>
+      <Title order={5} style={{ color: theme.colors.gray[6] }}>
+        Select all that apply
+      </Title>
+      <SimpleGrid
+        cols={5}
+        breakpoints={breakpoints}
+        style={{ justifyItems: "center" }}
+      >
         <IconOption
           icon="/onboarding/icons8-money-100.png"
           text="Have a savings account"

@@ -152,7 +152,6 @@ export function TopNav({ opened, setOpened }) {
             onClick={() => setOpened((o) => !o)}
             size="sm"
             color={theme.colors.gray[6]}
-            mr="xl"
           />
         </MediaQuery>
       </div>

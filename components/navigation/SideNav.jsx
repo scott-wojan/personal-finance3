@@ -5,6 +5,7 @@ import {
   BellRinging,
   BuildingBank,
   DatabaseImport,
+  FileAnalytics,
   Fingerprint,
   Home2,
   Key,
@@ -83,6 +84,11 @@ const navLinks = [
   { link: "transactions", label: "Transactions", icon: Receipt2 },
   { link: "categories", label: "Categories", icon: List },
   { link: "budget", label: "Budget", icon: Wallet },
+  {
+    link: "financial-statement",
+    label: "Financial Statement",
+    icon: FileAnalytics,
+  },
   { link: "notifications", label: "Notifications", icon: BellRinging },
 ];
 

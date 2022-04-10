@@ -199,17 +199,6 @@ create or replace trigger user_category_update_trigger
  after update on user_categories
    for each row execute procedure user_category_update_values();
 
-create table years_and_months as
-select year, month
-  from generate_series(2015, 2075) as years(year)
- cross join generate_series(1, 12) as months(month)
- order by year, month;
-
-create index idx_years_and_months 
-    on years_and_months (year, month);  
-
-
-
 
     
 

@@ -1,9 +1,12 @@
 import LinkFirstAccount from "components/accounts/LinkFirstAccount";
 import Dashboard from "components/dashboard";
+import Onboarding from "components/onboarding";
 import { getUserFromCookie, removeUserCookie } from "cookies/user";
 import React from "react";
 
 export default function Index({ user }) {
+  return <Onboarding />;
+
   if (!user?.has_accounts) {
     return <LinkFirstAccount />;
   }

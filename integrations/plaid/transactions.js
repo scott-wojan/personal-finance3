@@ -13,13 +13,13 @@ export async function getTransactions(accessToken, startDate, endDate) {
     const response = await client.transactionsGet(request);
     let transactions = response.data.transactions;
 
-    const total_transactions = response.data.total_transactions;
+    const totalTransactions = response.data.total_transactions;
     let resultData = {
       transactions: response.data.transactions,
       accounts: response.data.accounts,
     };
 
-    while (transactions.length < total_transactions) {
+    while (transactions.length < totalTransactions) {
       const paginatedRequest = {
         access_token: request.access_token,
         start_date: request.start_date,
@@ -31,11 +31,11 @@ export async function getTransactions(accessToken, startDate, endDate) {
       const paginatedResponse = await client.transactionsGet(paginatedRequest);
 
       resultData = {
+        accounts: response.data.accounts,
         transactions: [
           ...resultData.transactions,
           ...paginatedResponse.data.transactions,
         ],
-        accounts: response.data.accounts,
       };
 
       transactions = transactions.concat(paginatedResponse.data.transactions);

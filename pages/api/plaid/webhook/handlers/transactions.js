@@ -14,7 +14,7 @@ async function updateTransactions(item_id, duration, measurement) {
 
   const accessInfo = await getAccessInfoByItemId(item_id);
   if (!accessInfo) {
-    console.log(`No institution_id found with item_id="${item_id}"`);
+    console.error(`No institution_id found with item_id="${item_id}"`);
     return;
   }
   const {

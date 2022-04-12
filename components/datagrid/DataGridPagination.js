@@ -12,7 +12,6 @@ export function DataGridPagination({}) {
   const handleRowCountChange = (newRowCount) => {
     onRowCountChange?.(parseInt(newRowCount));
   };
-  console.log("rows", rows);
 
   const pageSizes = ["10", "20", "30", "40", "50"];
   if (pageSize) {

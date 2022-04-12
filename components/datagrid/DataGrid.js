@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { createStyles, Table } from "@mantine/core";
 import { DataGridPagination } from "./DataGridPagination";
-import { DataGridProvider } from "./DataGridContext";
+import { DataGridProvider, useDataGrid } from "./DataGridContext";
 import { DataGridHeader } from "./DataGridHeader";
 import { DataGridRows } from "./DataGridRows";
+import { useClickOutside } from "@mantine/hooks";
 
 export function DataGrid({
   pagination = undefined,
@@ -28,28 +29,44 @@ export function DataGrid({
     );
   }, [rows]);
 
+  // https://htmldom.dev/resize-columns-of-a-table/
+  return (
+    <div>
+      <DataGridProvider
+        rows={gridData}
+        columns={columns}
+        getSubRow={getSubRow}
+        onCellChange={onCellChange}
+        onRowChange={onRowChange}
+        pagination={pagination}
+        onFilterAndSort={onFilterAndSort}
+      >
+        <DataTable>
+          <DataGridHeader />
+          <DataGridRows />
+          <DataGridPagination />
+        </DataTable>
+      </DataGridProvider>
+    </div>
+  );
+}
+
+function DataTable({ children }) {
+  const { setSelectedRow } = useDataGrid();
+  const handleClickOutside = () => {
+    console.log("Clicked outside of div");
+    setSelectedRow(undefined);
+  };
+  const ref = useClickOutside(handleClickOutside);
+
   const useStyles = createStyles((theme) => ({
     table: {},
   }));
 
   const { classes, cx } = useStyles();
-
-  // https://htmldom.dev/resize-columns-of-a-table/
   return (
-    <DataGridProvider
-      rows={gridData}
-      columns={columns}
-      getSubRow={getSubRow}
-      onCellChange={onCellChange}
-      onRowChange={onRowChange}
-      pagination={pagination}
-      onFilterAndSort={onFilterAndSort}
-    >
-      <Table highlightOnHover className={cx(classes.table)}>
-        <DataGridHeader />
-        <DataGridRows />
-        <DataGridPagination />
-      </Table>
-    </DataGridProvider>
+    <Table ref={ref} highlightOnHover className={cx(classes.table)}>
+      {children}
+    </Table>
   );
 }

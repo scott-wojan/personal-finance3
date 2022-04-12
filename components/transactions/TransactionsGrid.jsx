@@ -1,5 +1,14 @@
-import { createStyles, Title, useMantineTheme } from "@mantine/core";
-import React, { useEffect, useMemo } from "react";
+import {
+  Button,
+  Center,
+  createStyles,
+  Paper,
+  Popper,
+  TextInput,
+  Title,
+  useMantineTheme,
+} from "@mantine/core";
+import React, { useEffect, useMemo, useState } from "react";
 import { EditableCheckbox } from "components/datagrid/cellrenderers/EditableCheckbox";
 import { EditableTextInput } from "components/datagrid/cellrenderers/EditableTextInput";
 import { TransactionStatus } from "components/datagrid/cellrenderers/TransactionStatus";
@@ -72,7 +81,71 @@ export default function TransactionsGrid({
         Header: "Name",
         accessor: "name",
         dataType: "text",
-        Cell: EditableTextInput,
+        Cell: (props) => {
+          const [referenceElement, setReferenceElement] = useState(null);
+          const [visible, setVisible] = useState(false);
+          const onChange = (newVal, oldVal) => {
+            console.log(newVal, oldVal);
+            setVisible(true);
+            props?.onChange?.(newVal, oldVal);
+          };
+          const theme = useMantineTheme();
+          return (
+            <div>
+              {/* <Popper
+                position="bottom"
+                mounted={true}
+                referenceElement={referenceElement}
+                arrowSize={5}
+                withArrow
+                arrowStyle={{
+                  backgroundColor:
+                    theme.colorScheme === "dark"
+                      ? theme.colors.dark[5]
+                      : theme.colors.gray[1],
+                }}
+              >
+                <Paper
+                  zIndex={2}
+                  style={{
+                    backgroundColor:
+                      theme.colorScheme === "dark"
+                        ? theme.colors.dark[5]
+                        : theme.colors.gray[1],
+                  }}
+                >
+                  <div style={{ height: "100%", width: 400, padding: 12 }}>
+                    <Title order={5}>Create new rule?</Title>
+                    <Text size="xs">
+                      When name starts with{" "}
+                      <TextInput
+                        size="xs"
+                        value="USAA.COM PAY INT LIFE ACH WITHDRAWAL"
+                      />
+                    </Text>
+                    <Text size="xs">
+                      rename to{" "}
+                      <TextInput size="xs" value="USAA Life Insurance" />
+                      and categorize as <strong> Service/Insurance?</strong>
+                    </Text>
+                    <Button
+                      onClick={() => {
+                        alert("sss");
+                      }}
+                    >
+                      XXX
+                    </Button>
+                  </div>
+                </Paper>
+              </Popper> */}
+              <EditableTextInput
+                ref={setReferenceElement}
+                {...props}
+                onChange={onChange}
+              />
+            </div>
+          );
+        },
         width: 200,
         canFilter: true,
       },

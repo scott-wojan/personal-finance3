@@ -1,12 +1,18 @@
 import { TextInput } from "@mantine/core";
 import React, { useEffect, useState } from "react";
 
-export function EditableTextInput({
-  value,
-  formatting = undefined,
-  onChange = undefined,
-  disabled = false,
-}) {
+// @ts-ignore
+const EditableTextInput = React.forwardRef((props, ref) => {
+  const {
+    // @ts-ignore
+    value,
+    // @ts-ignore
+    formatting = undefined,
+    // @ts-ignore
+    onChange = undefined,
+    // @ts-ignore
+    disabled = false,
+  } = props;
   const [textValue, setTextValue] = useState(value);
 
   const onInputChange = (e) => {
@@ -21,10 +27,13 @@ export function EditableTextInput({
 
   return (
     <TextInput
+      ref={ref}
       value={textValue}
       size="xs"
       onChange={onInputChange}
       disabled={disabled}
     />
   );
-}
+});
+
+export { EditableTextInput };

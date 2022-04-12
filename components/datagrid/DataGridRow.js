@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { createStyles } from "@mantine/core";
+import { createStyles, Popper, useMantineTheme } from "@mantine/core";
 import { useDataGrid } from "./DataGridContext";
 import { DataGridCell } from "./DataGridCell";
 import { RowExpandCollapse } from "./RowExpandCollapse";
@@ -63,7 +63,9 @@ export function DataGridRow({ row }) {
       setDataRow(result);
     }
   };
-
+  const theme = useMantineTheme();
+  const [referenceElement, setReferenceElement] = useState(null);
+  const [visible, setVisible] = useState(true);
   return (
     <>
       <tr

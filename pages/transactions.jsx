@@ -1,7 +1,8 @@
-import { Title } from "@mantine/core";
+import { Button, Group, Title } from "@mantine/core";
 import { Application } from "components/app/Application";
 import TransactionsGrid from "components/transactions/TransactionsGrid";
 import React from "react";
+import { Bolt } from "tabler-icons-react";
 
 export default function transactions() {
   return (
@@ -16,10 +17,15 @@ export default function transactions() {
         </>
       }
     >
-      <Title order={3} pb="sm">
-        Transactions
-      </Title>
-      <TransactionsGrid pageSize={12} />
+      <Group position="apart" pb="md">
+        <Title order={3}>Transactions</Title>
+        <Button size="xs" leftIcon={<Bolt size={16} />}>
+          Manage Rules
+        </Button>
+      </Group>
+      <div>
+        <TransactionsGrid pageSize={12} />
+      </div>
     </Application>
   );
 }

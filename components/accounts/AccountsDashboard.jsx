@@ -7,6 +7,7 @@ import {
   Paper,
   Anchor,
   Button,
+  Group,
 } from "@mantine/core";
 import { CirclePlus } from "tabler-icons-react";
 
@@ -23,10 +24,10 @@ export default function AccountsDashboard() {
 
   return (
     <>
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
+      <Group position="apart" pb="md">
         <Title order={3}>Accounts</Title>
         <PlaidLinkButton text="Add new account" />
-      </div>
+      </Group>
       <>
         {
           data &&

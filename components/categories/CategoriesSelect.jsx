@@ -6,6 +6,7 @@ export function CategoriesSelect({
   size = "xs",
   onChange,
   value,
+  style = undefined,
   label = undefined,
 }) {
   const [selectedValue, setSelectedValue] = useState(value);
@@ -56,6 +57,7 @@ export function CategoriesSelect({
   return (
     <>
       <Select
+        style={style}
         error={error}
         autoComplete="off"
         ref={ref}

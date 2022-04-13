@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { createStyles, Popper, useMantineTheme } from "@mantine/core";
+import { createStyles, Popover, Popper, useMantineTheme } from "@mantine/core";
 import { useDataGrid } from "./DataGridContext";
 import { DataGridCell } from "./DataGridCell";
 import { RowExpandCollapse } from "./RowExpandCollapse";
@@ -63,9 +63,7 @@ export function DataGridRow({ row }) {
       setDataRow(result);
     }
   };
-  const theme = useMantineTheme();
-  const [referenceElement, setReferenceElement] = useState(null);
-  const [visible, setVisible] = useState(true);
+  const [opened, setOpened] = useState(false);
   return (
     <>
       <tr
@@ -75,6 +73,8 @@ export function DataGridRow({ row }) {
         onClick={() => {
           setSelectedRow(row);
         }}
+        onMouseEnter={() => setOpened(true)}
+        onMouseLeave={() => setOpened(false)}
       >
         {getSubRow && (
           <DataGridCell>
@@ -86,11 +86,11 @@ export function DataGridRow({ row }) {
           </DataGridCell>
         )}
 
-        {propertiesToShow.map((propertyName) => {
+        {propertiesToShow.map((propertyName, index) => {
           const column = getColumnByPropertyName(propertyName);
           return (
             <DataGridCell
-              key={propertyName}
+              key={propertyName + index}
               onChange={cellChange}
               value={dataRow[propertyName]}
               row={dataRow}

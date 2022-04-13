@@ -1,11 +1,16 @@
 import {
+  ActionIcon,
   Button,
   Center,
   createStyles,
+  Group,
   Paper,
+  Popover,
   Popper,
+  Select,
   TextInput,
   Title,
+  Tooltip,
   useMantineTheme,
 } from "@mantine/core";
 import React, { useEffect, useMemo, useState } from "react";
@@ -22,6 +27,8 @@ import { ResponsiveGrid } from "components/grid/ResponsiveGrid";
 import axios from "axios";
 import { useApi } from "hooks/useApi";
 import dayjs from "dayjs";
+import { Bolt } from "tabler-icons-react";
+import { useSetState } from "@mantine/hooks";
 
 export default function TransactionsGrid({
   pageSize = 10,
@@ -81,71 +88,7 @@ export default function TransactionsGrid({
         Header: "Name",
         accessor: "name",
         dataType: "text",
-        Cell: (props) => {
-          const [referenceElement, setReferenceElement] = useState(null);
-          const [visible, setVisible] = useState(false);
-          const onChange = (newVal, oldVal) => {
-            console.log(newVal, oldVal);
-            setVisible(true);
-            props?.onChange?.(newVal, oldVal);
-          };
-          const theme = useMantineTheme();
-          return (
-            <div>
-              {/* <Popper
-                position="bottom"
-                mounted={true}
-                referenceElement={referenceElement}
-                arrowSize={5}
-                withArrow
-                arrowStyle={{
-                  backgroundColor:
-                    theme.colorScheme === "dark"
-                      ? theme.colors.dark[5]
-                      : theme.colors.gray[1],
-                }}
-              >
-                <Paper
-                  zIndex={2}
-                  style={{
-                    backgroundColor:
-                      theme.colorScheme === "dark"
-                        ? theme.colors.dark[5]
-                        : theme.colors.gray[1],
-                  }}
-                >
-                  <div style={{ height: "100%", width: 400, padding: 12 }}>
-                    <Title order={5}>Create new rule?</Title>
-                    <Text size="xs">
-                      When name starts with{" "}
-                      <TextInput
-                        size="xs"
-                        value="USAA.COM PAY INT LIFE ACH WITHDRAWAL"
-                      />
-                    </Text>
-                    <Text size="xs">
-                      rename to{" "}
-                      <TextInput size="xs" value="USAA Life Insurance" />
-                      and categorize as <strong> Service/Insurance?</strong>
-                    </Text>
-                    <Button
-                      onClick={() => {
-                        alert("sss");
-                      }}
-                    >
-                      XXX
-                    </Button>
-                  </div>
-                </Paper>
-              </Popper> */}
-              <EditableTextInput
-                ref={setReferenceElement}
-                {...props}
-                onChange={onChange}
-              />
-            </div>
-          );
-        },
+        Cell: EditableTextInput,
         width: 200,
         canFilter: true,
       },
@@ -219,6 +162,142 @@ export default function TransactionsGrid({
       //   dataType: "select",
       //   canFilter: true,
       // },
+      {
+        Header: "",
+        Cell: ({ row }) => {
+          const [state, setState] = useSetState({
+            oldName: row.name,
+            name: row.name,
+            category: row.category,
+            subcategory: row.subcategory,
+            operator: "Equals",
+          });
+          const [visible, setVisible] = useState(false);
+          const onOldNameChange = (newValue) => {
+            setState({ oldName: newValue });
+          };
+          const onNameChange = (newValue) => {
+            setState({ name: newValue });
+          };
+          const onCategoryChange = (newValue) => {
+            setState({ category: newValue, subcategory: undefined });
+          };
+          const onSubCategoryChange = (newValue) => {
+            setState({ subcategory: newValue });
+          };
+          const onOperatorChange = (newValue) => {
+            setState({ operator: newValue });
+          };
+
+          return (
+            <Popover
+              position="bottom"
+              placement="start"
+              trapFocus={false}
+              opened={visible}
+              onClose={() => setVisible(false)}
+              target={
+                <Tooltip
+                  width={120}
+                  wrapLines
+                  position="bottom"
+                  label="Create a rule for this data"
+                  withArrow
+                >
+                  <ActionIcon
+                    onClick={() => {
+                      setVisible(true);
+                    }}
+                  >
+                    <Bolt size={16} />
+                  </ActionIcon>
+                </Tooltip>
+              }
+              width={360}
+              style={{ width: "100%" }}
+              withArrow
+              // onFocusCapture={() => setVisible(true)}
+              // onBlurCapture={() => setVisible(false)}
+            >
+              <Text size="md" weight={700}>
+                Create Rule?
+              </Text>
+              <Group>
+                <Text size="xs" weight={700}>
+                  When name
+                </Text>
+                <Select
+                  size="xs"
+                  value={state.operator}
+                  style={{ width: 110 }}
+                  data={["Equals", "Starts with", "Contains", "Ends with"]}
+                  onChange={(newValue) => {
+                    onOperatorChange(newValue);
+                  }}
+                />
+              </Group>
+              <Text size="xs" pb="sm">
+                <TextInput
+                  placeholder="Original name"
+                  size="xs"
+                  pb="sm"
+                  value={state.oldName}
+                  onChange={(e) => {
+                    onOldNameChange(e.target.value);
+                  }}
+                />
+              </Text>
+
+              <Text size="xs" weight={700}>
+                Rename to
+              </Text>
+              <TextInput
+                placeholder="New name"
+                size="xs"
+                pb="sm"
+                value={state.name}
+                onChange={(e) => {
+                  onNameChange(e.target.value);
+                }}
+              />
+              <Text size="xs" weight={700}>
+                And categorize as
+              </Text>
+              <Group pb="sm">
+                <CategoriesSelect
+                  style={{ width: 154 }}
+                  value={state.category}
+                  onChange={onCategoryChange}
+                />
+                <SubCategoriesSelect
+                  style={{ width: 154 }}
+                  category={state.category}
+                  onChange={onSubCategoryChange}
+                  value={state.subcategory}
+                />
+              </Group>
+              <Group position="right">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    alert("sss");
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={() => {
+                    alert("sss");
+                  }}
+                >
+                  Save
+                </Button>
+                <div>{JSON.stringify(state)}</div>
+              </Group>
+            </Popover>
+          );
+        },
+      },
       {
         Header: "Currency Code",
         accessor: "iso_currency_code",

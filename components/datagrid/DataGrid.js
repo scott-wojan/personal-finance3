@@ -54,9 +54,10 @@ export function DataGrid({
 function DataTable({ children }) {
   const { setSelectedRow, selectedRow } = useDataGrid();
   const handleClickOutside = () => {
-    if (selectedRow) {
-      setSelectedRow(undefined);
-    }
+    console.log("DataTable: handleClickOutside");
+    // if (selectedRow) {
+    //   setSelectedRow(undefined);
+    // }
   };
   const ref = useClickOutside(handleClickOutside);
 

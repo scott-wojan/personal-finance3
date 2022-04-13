@@ -12,6 +12,8 @@ const EditableTextInput = React.forwardRef((props, ref) => {
     onChange = undefined,
     // @ts-ignore
     disabled = false,
+    // @ts-ignore
+    autoComplete = false,
   } = props;
   const [textValue, setTextValue] = useState(value);
 
@@ -27,6 +29,7 @@ const EditableTextInput = React.forwardRef((props, ref) => {
 
   return (
     <TextInput
+      autoComplete={!autoComplete ? "off" : "on"}
       ref={ref}
       value={textValue}
       size="xs"
@@ -35,5 +38,7 @@ const EditableTextInput = React.forwardRef((props, ref) => {
     />
   );
 });
+
+EditableTextInput.displayName = "EditableTextInput";
 
 export { EditableTextInput };

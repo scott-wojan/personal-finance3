@@ -18,7 +18,7 @@ export default function transactions() {
       }
     >
       <Group position="apart" pb="md">
-        <Title order={3}>Transactions</Title>
+        <Title order={3}>Accounts</Title>
         <Button size="xs" leftIcon={<Bolt size={16} />}>
           Manage Rules
         </Button>

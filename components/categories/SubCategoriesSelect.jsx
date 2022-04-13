@@ -14,6 +14,8 @@ const SubCategoriesSelect = React.forwardRef((props, ref) => {
     value,
     // @ts-ignore
     label = undefined,
+    // @ts-ignore
+    style = undefined,
   } = props;
 
   const [selectedValue, setSelectedValue] = useState(value);
@@ -60,6 +62,7 @@ const SubCategoriesSelect = React.forwardRef((props, ref) => {
   return (
     <>
       <Select
+      style={style}
         error={error}
         autoComplete="off"
         ref={ref}

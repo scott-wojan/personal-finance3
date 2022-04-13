@@ -165,28 +165,34 @@ export default function TransactionsGrid({
       {
         Header: "",
         Cell: ({ row }) => {
+          const [popoverVisible, setPopoverVisible] = useState(false);
           const [state, setState] = useSetState({
+            hasChanged: false,
             oldName: row.name,
             name: row.name,
             category: row.category,
             subcategory: row.subcategory,
             operator: "Equals",
           });
-          const [visible, setVisible] = useState(false);
+
           const onOldNameChange = (newValue) => {
-            setState({ oldName: newValue });
+            setState({ oldName: newValue, hasChanged: true });
           };
           const onNameChange = (newValue) => {
-            setState({ name: newValue });
+            setState({ name: newValue, hasChanged: true });
           };
           const onCategoryChange = (newValue) => {
-            setState({ category: newValue, subcategory: undefined });
+            setState({
+              category: newValue,
+              subcategory: undefined,
+              hasChanged: true,
+            });
           };
           const onSubCategoryChange = (newValue) => {
-            setState({ subcategory: newValue });
+            setState({ subcategory: newValue, hasChanged: true });
           };
           const onOperatorChange = (newValue) => {
-            setState({ operator: newValue });
+            setState({ operator: newValue, hasChanged: true });
           };
 
           return (
@@ -194,8 +200,8 @@ export default function TransactionsGrid({
               position="bottom"
               placement="start"
               trapFocus={false}
-              opened={visible}
-              onClose={() => setVisible(false)}
+              opened={popoverVisible}
+              onClose={() => setPopoverVisible(false)}
               target={
                 <Tooltip
                   width={120}
@@ -206,7 +212,7 @@ export default function TransactionsGrid({
                 >
                   <ActionIcon
                     onClick={() => {
-                      setVisible(true);
+                      setPopoverVisible(true);
                     }}
                   >
                     <Bolt size={16} />
@@ -280,12 +286,13 @@ export default function TransactionsGrid({
                 <Button
                   variant="outline"
                   onClick={() => {
-                    alert("sss");
+                    setPopoverVisible(false);
                   }}
                 >
                   Cancel
                 </Button>
                 <Button
+                  disabled={!state.hasChanged}
                   onClick={() => {
                     alert("sss");
                   }}

@@ -49,6 +49,7 @@ const SubCategoriesSelect = React.forwardRef((props, ref) => {
     });    
   };
 
+  // @ts-ignore
   const useStyles = createStyles((theme) => ({
     select: {
       "&.mantine-Select-root  button": {
@@ -83,8 +84,11 @@ const SubCategoriesSelect = React.forwardRef((props, ref) => {
         clearable
         onBlur={() => {
           if (selectedValue === null) {
+            // @ts-ignore
             setError(true);
+            // @ts-ignore
             if(!ref?.current?.placeholder.includes(" is required")){
+              // @ts-ignore
               ref?.current?.placeholder = ref?.current?.placeholder + " is required";
             }            
           }

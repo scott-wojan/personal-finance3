@@ -9,15 +9,16 @@ import {
   Select,
 } from "@mantine/core";
 import { useSetState } from "@mantine/hooks";
+import axios from "axios";
 import { CategoriesSelect } from "components/categories/CategoriesSelect";
 import { SubCategoriesSelect } from "components/categories/SubCategoriesSelect";
-import { useDataGrid } from "components/datagrid/DataGridContext";
 import React, { useState } from "react";
+import { useMutation } from "react-query";
 import { Bolt } from "tabler-icons-react";
 
 export function RuleCell({ row, onChange }) {
   const [popoverVisible, setPopoverVisible] = useState(false);
-  const { rows, updateRow } = useDataGrid();
+
   const [state, setState] = useSetState({
     hasChanged: false,
     oldName: row.name,
@@ -30,7 +31,7 @@ export function RuleCell({ row, onChange }) {
   const onOldNameChange = (newValue) => {
     setState({ oldName: newValue, hasChanged: true });
   };
-  const onNameChange = (newValue) => {
+  const onNewNameChange = (newValue) => {
     setState({ name: newValue, hasChanged: true });
   };
   const onCategoryChange = (newValue) => {
@@ -45,6 +46,36 @@ export function RuleCell({ row, onChange }) {
   };
   const onOperatorChange = (newValue) => {
     setState({ operator: newValue, hasChanged: true });
+  };
+
+  const ruleMutation = useMutation((rule) => {
+    return axios.post("api/rules/create", rule);
+  });
+
+  const onCreateRule = () => {
+    const rule = {
+      oldName: state.oldName,
+      name: state.name,
+      operator: state.operator,
+    };
+    if (row.category != state.category) {
+      rule.category = state.category;
+    }
+    if (row.subcategory != state.subcategory) {
+      rule.subcategory = state.subcategory;
+    }
+
+    // @ts-ignore
+    ruleMutation
+      // @ts-ignore
+      .mutateAsync(rule)
+      .then((x) => {
+        setPopoverVisible(false);
+        onChange?.();
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   };
 
   return (
@@ -115,7 +146,7 @@ export function RuleCell({ row, onChange }) {
         pb="sm"
         value={state.name}
         onChange={(e) => {
-          onNameChange(e.target.value);
+          onNewNameChange(e.target.value);
         }}
       />
       <Text size="xs" weight={700}>
@@ -143,18 +174,7 @@ export function RuleCell({ row, onChange }) {
         >
           Cancel
         </Button>
-        <Button
-          disabled={!state.hasChanged}
-          onClick={() => {
-            // updateRow({
-            //   rowIndex: row.index,
-            //   propertyName: "name",
-            //   newValue: state.name,
-            // });
-            onChange?.();
-            row.name = state.name;
-          }}
-        >
+        <Button disabled={!state.hasChanged} onClick={onCreateRule}>
           Save
         </Button>
       </Group>

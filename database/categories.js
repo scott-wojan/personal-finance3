@@ -21,7 +21,7 @@ export async function saveCategories({ categories }) {
                          ${category.subcategory},
                          ${category.source}
                         )
-                        on conflict do nothing;;
+                        on conflict do nothing;
     `;
   });
 }

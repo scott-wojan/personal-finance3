@@ -105,6 +105,7 @@ export default function TransactionsGrid({
           const { row, onChange } = props;
           return (
             <SubCategoriesSelect
+              // @ts-ignore
               category={row.category}
               value={row.subcategory}
               onChange={onChange}

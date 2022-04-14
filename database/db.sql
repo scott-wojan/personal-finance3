@@ -207,13 +207,11 @@ CREATE TABLE IF NOT EXISTS user_rules
 (
   id SERIAL PRIMARY KEY,
   user_id integer references users(id) on delete cascade on update cascade,
-  match_column_name citext not null,
-  match_condition citext not null,
-  match_value citext not null,
-  set_column_name citext not null,	
-  set_value citext not null
+  rule jsonb,
+  created_at timestamptz default now()
 ); 
-CREATE UNIQUE INDEX user_rules_uidx ON user_rules(user_id, match_column_name, match_condition, match_value);
+CREATE UNIQUE INDEX user_rules_uidx ON user_rules(user_id,rule);
+
 -- -- starts with
 -- select * from transactions
 -- where imported_name ~* '^grub.*$';
@@ -241,24 +239,32 @@ CREATE TABLE IF NOT EXISTS transaction_import_history
 
 
 
-CREATE OR REPLACE FUNCTION update_transactions(
-	userId integer, 
-	match_column_name citext, 
-	match_condition citext, 
-	match_value citext, 
-	set_column_name citext,
-	set_value citext)
-  RETURNS VOID AS
-  $$
-  DECLARE update_statement TEXT := format('UPDATE transactions SET %s = ''%s'' WHERE user_id = %s and %s %s ''%s'' ',
-										  set_column_name, set_value, userId,match_column_name,match_condition,
-										  REPLACE(match_value,'''',''''''));
-
+create or replace function save_and_run_rule(userId integer, rule jsonb)
+  returns void as $$
+  declare
+    new_rule_id integer;
   BEGIN
-    -- RAISE NOTICE 'sql: %', update_statement;
-    EXECUTE update_statement;
+
+    insert into user_rules(user_id, rule) values (userId,rule) returning id into new_rule_id; --on conflict do nothing;
+
+    -- RAISE NOTICE 'new_rule_id: %', new_rule_id;
+    
+    execute (
+      select format('update %I set %s where user_id=%s and %s;',ur.rule->>'tablename', set_columns.cols,  user_id, where_columns.cols)
+        from user_rules ur
+        cross join lateral (
+              select string_agg(quote_ident(col->>'name') || '=' || '' ||  quote_literal(col->>'value'), ', ') AS cols
+                from jsonb_array_elements(ur.rule->'set') col
+              ) set_columns
+        cross join lateral (
+              select string_agg(quote_ident(col->>'name') || ' ' ||  (col->>'operator') || '' ||  quote_literal(col->>'value'), ' and ') AS cols
+                from jsonb_array_elements(ur.rule->'where') col
+              ) where_columns
+        where user_id=userId
+          and id=new_rule_id
+      );
   END;
-$$ LANGUAGE plpgsql; 
+$$ language plpgsql; 
 
 
 

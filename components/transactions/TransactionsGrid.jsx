@@ -1,20 +1,5 @@
-import {
-  ActionIcon,
-  Button,
-  Center,
-  createStyles,
-  Group,
-  Paper,
-  Popover,
-  Popper,
-  Select,
-  TextInput,
-  Title,
-  Tooltip,
-  useMantineTheme,
-} from "@mantine/core";
+import { createStyles, useMantineTheme } from "@mantine/core";
 import React, { useEffect, useMemo, useState } from "react";
-import { EditableCheckbox } from "components/datagrid/cellrenderers/EditableCheckbox";
 import { EditableTextInput } from "components/datagrid/cellrenderers/EditableTextInput";
 import { TransactionStatus } from "components/datagrid/cellrenderers/TransactionStatus";
 import { DataGrid } from "components/datagrid/DataGrid";
@@ -27,13 +12,13 @@ import { ResponsiveGrid } from "components/grid/ResponsiveGrid";
 import axios from "axios";
 import { useApi } from "hooks/useApi";
 import dayjs from "dayjs";
-import { Bolt } from "tabler-icons-react";
-import { useSetState } from "@mantine/hooks";
+import { RuleCell } from "./RuleCell";
 
 export default function TransactionsGrid({
   pageSize = 10,
   accountId = undefined,
 }) {
+  const [reloadData, setReloadData] = useState(false);
   const {
     isLoading,
     error,
@@ -46,6 +31,7 @@ export default function TransactionsGrid({
   } = usePagingAndFilteringApi({
     url: "transactions",
     payload: { accountId, pageSize },
+    reloadData,
   });
 
   // const accountColumn = accountId
@@ -161,148 +147,15 @@ export default function TransactionsGrid({
       //   Cell: EditableCheckbox,
       //   dataType: "select",
       //   canFilter: true,
-      // },
+      // }, setReloadData
       {
         Header: "",
-        Cell: ({ row }) => {
-          const [popoverVisible, setPopoverVisible] = useState(false);
-          const [state, setState] = useSetState({
-            hasChanged: false,
-            oldName: row.name,
-            name: row.name,
-            category: row.category,
-            subcategory: row.subcategory,
-            operator: "Equals",
-          });
-
-          const onOldNameChange = (newValue) => {
-            setState({ oldName: newValue, hasChanged: true });
+        Cell: (props) => {
+          const ruleChange = () => {
+            props?.onChange();
+            setReloadData(true);
           };
-          const onNameChange = (newValue) => {
-            setState({ name: newValue, hasChanged: true });
-          };
-          const onCategoryChange = (newValue) => {
-            setState({
-              category: newValue,
-              subcategory: undefined,
-              hasChanged: true,
-            });
-          };
-          const onSubCategoryChange = (newValue) => {
-            setState({ subcategory: newValue, hasChanged: true });
-          };
-          const onOperatorChange = (newValue) => {
-            setState({ operator: newValue, hasChanged: true });
-          };
-
-          return (
-            <Popover
-              position="bottom"
-              placement="start"
-              trapFocus={false}
-              opened={popoverVisible}
-              onClose={() => setPopoverVisible(false)}
-              target={
-                <Tooltip
-                  width={120}
-                  wrapLines
-                  position="bottom"
-                  label="Create a rule for this data"
-                  withArrow
-                >
-                  <ActionIcon
-                    onClick={() => {
-                      setPopoverVisible(true);
-                    }}
-                  >
-                    <Bolt size={16} />
-                  </ActionIcon>
-                </Tooltip>
-              }
-              width={360}
-              style={{ width: "100%" }}
-              withArrow
-              // onFocusCapture={() => setVisible(true)}
-              // onBlurCapture={() => setVisible(false)}
-            >
-              <Text size="md" weight={700}>
-                Create Rule?
-              </Text>
-              <Group>
-                <Text size="xs" weight={700}>
-                  When name
-                </Text>
-                <Select
-                  size="xs"
-                  value={state.operator}
-                  style={{ width: 110 }}
-                  data={["Equals", "Starts with", "Contains", "Ends with"]}
-                  onChange={(newValue) => {
-                    onOperatorChange(newValue);
-                  }}
-                />
-              </Group>
-              <Text size="xs" pb="sm">
-                <TextInput
-                  placeholder="Original name"
-                  size="xs"
-                  pb="sm"
-                  value={state.oldName}
-                  onChange={(e) => {
-                    onOldNameChange(e.target.value);
-                  }}
-                />
-              </Text>
-
-              <Text size="xs" weight={700}>
-                Rename to
-              </Text>
-              <TextInput
-                placeholder="New name"
-                size="xs"
-                pb="sm"
-                value={state.name}
-                onChange={(e) => {
-                  onNameChange(e.target.value);
-                }}
-              />
-              <Text size="xs" weight={700}>
-                And categorize as
-              </Text>
-              <Group pb="sm">
-                <CategoriesSelect
-                  style={{ width: 154 }}
-                  value={state.category}
-                  onChange={onCategoryChange}
-                />
-                <SubCategoriesSelect
-                  style={{ width: 154 }}
-                  category={state.category}
-                  onChange={onSubCategoryChange}
-                  value={state.subcategory}
-                />
-              </Group>
-              <Group position="right">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setPopoverVisible(false);
-                  }}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  disabled={!state.hasChanged}
-                  onClick={() => {
-                    alert("sss");
-                  }}
-                >
-                  Save
-                </Button>
-                <div>{JSON.stringify(state)}</div>
-              </Group>
-            </Popover>
-          );
+          return <RuleCell {...props} onChange={ruleChange} />;
         },
       },
       {

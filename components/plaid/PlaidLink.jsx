@@ -38,7 +38,6 @@ const PlaidLink = ({ text, token, redirectRoute = "/" }) => {
     onSuccess,
     onExit,
   };
-
   const { open, ready, error } = usePlaidLink(config);
 
   return (

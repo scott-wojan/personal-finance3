@@ -20,8 +20,9 @@ const plaid = {
   clientId: process.env.CLIENT_ID,
   secret: process.env.SECRET,
   environment: process.env.PLAID_ENV,
-  sandboxRedirectUri: process.env.PLAID_SANDBOX_REDIRECT_URI,
-  developmentRedirectUri: process.env.PLAID_DEVELOPMENT_REDIRECT_URI,
+  // sandboxRedirectUri: process.env.PLAID_SANDBOX_REDIRECT_URI,
+  // developmentRedirectUri: process.env.PLAID_DEVELOPMENT_REDIRECT_URI,
+  // productionRedirectUri: process.env.PLAID_PRODUCTION_REDIRECT_URI,
 };
 
 export { database, environment, plaid, application };

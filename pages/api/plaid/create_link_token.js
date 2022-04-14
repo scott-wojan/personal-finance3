@@ -5,22 +5,19 @@ import { getUserFromCookie } from "cookies/user";
 import { getLinkToken } from "integrations/plaid/tokens";
 
 async function getWebhookUrl() {
-  if (environment.isDevelopment) {
-    try {
-      const nGrokResponse = await axios.get(
-        "http://127.0.0.1:4040/api/tunnels"
-      );
-      const { tunnels } = await nGrokResponse.data;
-      const httpTunnel = tunnels.find((t) => t.proto === "http");
-      return httpTunnel.public_url;
-    } catch (error) {
-      if (error.code === "ECONNREFUSED") {
-        throw new Error("nGrok probably not running");
-      }
-      throw error;
+  //if (environment.isDevelopment) { //TODO: production should not use this
+  try {
+    const nGrokResponse = await axios.get("http://127.0.0.1:4040/api/tunnels");
+    const { tunnels } = await nGrokResponse.data;
+    const httpTunnel = tunnels.find((t) => t.proto === "http");
+    return httpTunnel.public_url;
+  } catch (error) {
+    if (error.code === "ECONNREFUSED") {
+      throw new Error("nGrok probably not running");
     }
+    throw error;
   }
-  //throw new Error("Need non-development webhook solution");
+  //}
 }
 
 export default async function handler(req, res) {
@@ -46,7 +43,15 @@ export default async function handler(req, res) {
       email_address: user.email,
     },
     client_name: application.name,
-    products: [Products.Auth, Products.Transactions],
+    products: [
+      Products.Auth,
+      Products.Transactions,
+      // Products.Investments,
+      // Products.Assets,
+      // Products.Balance,
+      // Products.Liabilities,
+      // Products.CreditDetails,
+    ],
     country_codes: [CountryCode.Us],
     webhook: webhookUrl,
     language: "en",

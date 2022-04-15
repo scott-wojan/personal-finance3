@@ -81,9 +81,11 @@ export function RuleCell({ row, onChange }) {
   return (
     <Popover
       position="bottom"
-      placement="start"
+      placement="end"
       trapFocus={false}
       opened={popoverVisible}
+      width={360}
+      withArrow
       onClose={() => setPopoverVisible(false)}
       target={
         <Tooltip
@@ -102,9 +104,7 @@ export function RuleCell({ row, onChange }) {
           </ActionIcon>
         </Tooltip>
       }
-      width={360}
-      style={{ width: "100%" }}
-      withArrow
+
       // onFocusCapture={() => setVisible(true)}
       // onBlurCapture={() => setVisible(false)}
     >

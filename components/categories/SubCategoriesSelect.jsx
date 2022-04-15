@@ -30,6 +30,7 @@ const SubCategoriesSelect = React.forwardRef((props, ref) => {
     const res = await axios.post("/api/select-options/subcategories", {
       category,
     });
+    console.log(res)
     setOptions(res.data);
   };
 

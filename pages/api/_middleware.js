@@ -2,7 +2,7 @@ import { getUserFromCookie } from "cookies/user";
 import { NextResponse } from "next/server";
 
 export function middleware(req, ev) {
-  if (req.url.includes("/api/auth/")) {
+  if (req.url.includes("/api/auth/") || req.url.includes("/api/plaid/")) {
     return NextResponse.next();
   }
 

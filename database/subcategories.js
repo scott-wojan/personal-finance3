@@ -8,7 +8,7 @@ async function getSubCategoriesAsSelectOptions({ userId, category }) {
         from user_categories 
        where user_id = ${userId} 
          and user_category=${category} 
-       order by user_category; `;
+       order by user_subcategory; `;
 }
 
 export { getSubCategoriesAsSelectOptions };

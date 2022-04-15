@@ -264,13 +264,13 @@ create or replace function save_and_run_rule(userId integer, rule jsonb)
           and id=new_rule_id
       );
   END;
-$$ language plpgsql; 
+$$ language plpgsql;
 
 
 
 
 CREATE OR REPLACE FUNCTION update_user_transactions(userId integer, requestId text)
-RETURNS text
+RETURNS void
 AS $$
 BEGIN
 
@@ -291,10 +291,10 @@ BEGIN
    on conflict do nothing;       
 
   -- apply rules
-  return(select update_transactions(userId,match_column_name,match_condition,match_value,set_column_name,set_value)
-    from user_rules
-  where user_id=userId
-  );
+  -- return(select update_transactions(userId,match_column_name,match_condition,match_value,set_column_name,set_value)
+  --   from user_rules
+  -- where user_id=userId
+  -- );
 
 END; $$ 
 LANGUAGE 'plpgsql';

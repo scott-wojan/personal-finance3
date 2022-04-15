@@ -6,7 +6,7 @@ export function usePagingAndFilteringApi(params) {
   if (!params.url) {
     throw new Error("No url specified");
   }
-  console.log("Calling API ", params);
+  // console.log("Calling API ", params);
 
   const { page = pagingDefaults.page, pageSize = pagingDefaults.pageSize } =
     params.payload;

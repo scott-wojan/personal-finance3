@@ -5,7 +5,7 @@ import { useApi } from "hooks/useApi";
 import React, { useEffect, useState } from "react";
 import { Bolt } from "tabler-icons-react";
 
-export default function transactions() {
+export default function Transactions() {
   const [opened, setOpened] = useState(false);
   return (
     <Application
@@ -53,7 +53,6 @@ function Rules() {
   });
 
   useEffect(() => {
-    console.log("data", data);
     setTableDate(
       data?.map((rule) => (
         <tr key={rule.id}>

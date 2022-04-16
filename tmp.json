@@ -1,16 +1,13 @@
 {
-  "table": "transactions",
-  "when": {
-    "name": {
-      "operator": "=",
-      "value": ""
-    }
-  },
-  "set": {
-    "available": 100,
-    "current": 110,
-    "iso_currency_code": "USD",
-    "limit": null,
-    "unofficial_currency_code": null
+  "id": 45,
+  "rule": {
+    "set": [
+      { "name": "name", "value": "Amazon" },
+      { "name": "category", "value": "Food and Drink" },
+      { "name": "subcategory", "value": "Restaurants" }
+    ],
+    "where": [
+      { "name": "name", "value": "AMAZON.COM", "condition": "starts with" }
+    ]
   }
 }

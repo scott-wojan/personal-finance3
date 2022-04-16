@@ -10,29 +10,25 @@ export async function handler(req, res) {
   const user = getUserFromCookie(req, res);
   if (!user) return res.status(401).json();
 
-  const { oldName, name, operator, category, subcategory } = req.body;
+  const { name, newName, condition, category, subcategory } = req.body;
 
-  if (!oldName || !name || !operator) {
+  if (!name || !newName || !condition) {
     return res.status(400).json({ message: "missing required data" });
   }
 
-  if (!operatorMap.has(operator)) {
+  if (!conditions.includes(condition)) {
     return res.status(400).json({ message: "invalid operator" });
   }
-  const formatted = operatorMap.get(operator)(oldName);
+
   const setValues = [];
-  if (oldName != name) {
-    setValues.push({
-      name: "name",
-      operator: "=",
-      value: name,
-    });
-  }
+  setValues.push({
+    name: "name",
+    value: newName,
+  });
 
   if (category) {
     setValues.push({
       name: "category",
-      operator: "=",
       value: category,
     });
   }
@@ -40,18 +36,16 @@ export async function handler(req, res) {
   if (subcategory) {
     setValues.push({
       name: "subcategory",
-      operator: "=",
       value: subcategory,
     });
   }
 
   const rule = {
-    tablename: "transactions",
     where: [
       {
         name: "name",
-        operator: formatted.operator,
-        value: formatted.value,
+        condition: condition,
+        value: newName,
       },
     ],
     set: setValues,
@@ -69,29 +63,4 @@ export async function handler(req, res) {
   }
 }
 
-const operatorMap = new Map([
-  [
-    "Equals",
-    (val) => {
-      return { operator: "=", value: `${val}` };
-    },
-  ],
-  [
-    "Starts with",
-    (val) => {
-      return { operator: "like", value: `${val}%` };
-    },
-  ],
-  [
-    "Contains",
-    (val) => {
-      return { operator: "like", value: `%${val}%` };
-    },
-  ],
-  [
-    "Ends with",
-    (val) => {
-      return { operator: "like", value: `%${val}` };
-    },
-  ],
-]);
+const conditions = ["equals", "starts with", "contains", "ends with"];

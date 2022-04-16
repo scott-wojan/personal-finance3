@@ -249,20 +249,35 @@ create or replace function save_and_run_rule(userId integer, rule jsonb)
 
     -- RAISE NOTICE 'new_rule_id: %', new_rule_id;
     
-    execute (
-      select format('update %I set %s where user_id=%s and %s;',ur.rule->>'tablename', set_columns.cols,  user_id, where_columns.cols)
-        from user_rules ur
-        cross join lateral (
-              select string_agg(quote_ident(col->>'name') || '=' || '' ||  quote_literal(col->>'value'), ', ') AS cols
-                from jsonb_array_elements(ur.rule->'set') col
-              ) set_columns
-        cross join lateral (
-              select string_agg(quote_ident(col->>'name') || ' ' ||  (col->>'operator') || '' ||  quote_literal(col->>'value'), ' and ') AS cols
-                from jsonb_array_elements(ur.rule->'where') col
-              ) where_columns
-        where user_id=userId
-          and id=new_rule_id
-      );
+    -- execute (
+    --   select format('update %I set %s where user_id=%s and %s;'
+    --                , 'tansactions' -- ur.rule->>'tablename'
+    --                , set_columns.cols
+    --                , user_id
+    --                , where_columns.cols
+    --                )
+    --     from user_rules ur
+    --     cross join lateral (
+    --           select string_agg(quote_ident(col->>'name') || '=' || '' ||  quote_literal(col->>'value'), ', ') AS cols
+    --             from jsonb_array_elements(ur.rule->'set') col
+    --           ) set_columns
+    --     cross join lateral (
+    --           select string_agg(quote_ident(col->>'name') || ' ' 
+    --                             || case (col->>'condition')::citext when 'equals' then '=' else 'like 'end 
+    --                             || '' 
+    --                             || 
+    --                            case (col->>'condition')::citext
+    --                            when 'equals' then quote_literal(col->>'value')
+    --                            when 'starts with' then quote_literal(col->>'value'||'%')
+    --                            when 'ends with' then quote_literal( format('%s%s', '%',col->>'value' )  )
+    --                            else 'like'
+    --                             end
+    --                            , ' and ') AS cols
+    --             from jsonb_array_elements(ur.rule->'where') col
+    --           ) where_columns
+    --     where user_id=userId
+    --       and id=new_rule_id
+    --   );
   END;
 $$ language plpgsql;
 

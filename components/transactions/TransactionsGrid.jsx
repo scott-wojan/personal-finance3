@@ -34,16 +34,6 @@ export default function TransactionsGrid({
     reloadData,
   });
 
-  // const accountColumn = accountId
-  //   ? {}
-  //   : {
-  //       Header: "Account",
-  //       accessor: "account",
-  //       dataType: "select",
-  //       filterUrl: "/select-options/accounts",
-  //       width: 100,
-  //       canFilter: true,
-  //     };
   const accountColumn = {
     Header: "Account",
     accessor: "account",

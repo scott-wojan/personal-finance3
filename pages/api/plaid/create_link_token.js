@@ -49,7 +49,7 @@ export default async function handler(req, res) {
       // Products.Investments,
       // Products.Assets,
       // Products.Balance,
-      Products.Liabilities,
+      // Products.Liabilities,
       // Products.CreditDetails,
     ],
     country_codes: [CountryCode.Us],

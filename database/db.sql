@@ -104,18 +104,18 @@ CREATE TABLE IF NOT EXISTS transactions
 );
 
 
-CREATE OR REPLACE FUNCTION set_transaction_values() RETURNS trigger AS $$
-  BEGIN
-    NEW.imported_category :=COALESCE(NEW.imported_category,'General');
-    NEW.imported_subcategory :=COALESCE(NEW.imported_subcategory,'General');
-    RETURN NEW;
-  END
-$$ LANGUAGE plpgsql;
+-- CREATE OR REPLACE FUNCTION set_transaction_values() RETURNS trigger AS $$
+--   BEGIN
+--     NEW.imported_category :=COALESCE(NEW.imported_category,'General');
+--     NEW.imported_subcategory :=COALESCE(NEW.imported_subcategory,'General');
+--     RETURN NEW;
+--   END
+-- $$ LANGUAGE plpgsql;
 
 
-CREATE TRIGGER transactions_set_transaction_values
-after insert or update on transactions
-FOR EACH ROW EXECUTE PROCEDURE set_transaction_values();
+-- CREATE TRIGGER transactions_set_transaction_values
+-- after insert or update on transactions
+-- FOR EACH ROW EXECUTE PROCEDURE set_transaction_values();
 
 
 create or replace function months_between (startDate timestamp, endDate timestamp)
@@ -150,17 +150,17 @@ CREATE UNIQUE INDEX categories_uidx ON categories(category, subcategory, source)
 -- unique index to not allow more than one null on subcategory
 CREATE UNIQUE INDEX categories_null_uidx ON categories (source, category, (subcategory IS NULL)) WHERE subcategory IS NULL;
 
-CREATE FUNCTION category_insert_values() RETURNS trigger AS $$
-  BEGIN
-    NEW.subcategory :=COALESCE(NEW.subcategory, 'General');
-    RETURN NEW;
-  END
-$$ LANGUAGE plpgsql;
+-- CREATE FUNCTION category_insert_values() RETURNS trigger AS $$
+--   BEGIN
+--     NEW.subcategory :=COALESCE(NEW.subcategory, 'General');
+--     RETURN NEW;
+--   END
+-- $$ LANGUAGE plpgsql;
 
 
-CREATE TRIGGER category_trigger
-BEFORE INSERT OR UPDATE ON categories
-FOR EACH ROW EXECUTE PROCEDURE category_insert_values();
+-- CREATE TRIGGER category_trigger
+-- BEFORE INSERT OR UPDATE ON categories
+-- FOR EACH ROW EXECUTE PROCEDURE category_insert_values();
 
 
 CREATE TABLE IF NOT EXISTS user_categories
@@ -401,7 +401,7 @@ BEGIN
   on conflict (id)
       do update set
       account_id = excluded.account_id,
-      amount = excluded.amount*-1, --for some reason, positive values like payroll come in as negative numbers and expenses come in as positive
+      amount = excluded.amount,
       authorized_date = excluded.authorized_date,
       category = excluded.category,
       subcategory = excluded.subcategory,

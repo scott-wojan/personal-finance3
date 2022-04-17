@@ -32,7 +32,7 @@ export async function getUserTransactions({
         ) AS data;
   `;
 
-  console.log("query", query);
+  // console.log("query", query);
 
   // @ts-ignore
   const rows = await sql.unsafe(query);

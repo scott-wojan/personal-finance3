@@ -326,7 +326,7 @@ END; $$
 LANGUAGE 'plpgsql';
 
 
-CREATE OR REPLACE FUNCTION insert_plaid_transactions(userId integer,  requestId text, jsonDoc JSON)
+CREATE OR REPLACE FUNCTION insert_plaid_transactions(userId integer, requestId text, jsonDoc JSON)
  RETURNS void 
  LANGUAGE 'plpgsql' 
  COST 100 

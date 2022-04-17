@@ -30,7 +30,7 @@ const SubCategoriesSelect = React.forwardRef((props, ref) => {
     const res = await axios.post("/api/select-options/subcategories", {
       category,
     });
-    console.log(res)
+
     setOptions(res.data);
   };
 
@@ -64,7 +64,8 @@ const SubCategoriesSelect = React.forwardRef((props, ref) => {
   return (
     <>
       <Select
-      style={style}
+        dropdownComponent="div"      
+        style={style}
         error={error}
         autoComplete="off"
         ref={ref}
@@ -95,7 +96,6 @@ const SubCategoriesSelect = React.forwardRef((props, ref) => {
           }
         }}
         // maxDropdownHeight={280}
-        dropdownComponent="div"
         // rightSection={<ChevronDown size={14} color={theme.colors.gray[7]} />}
         // rightSectionWidth={30}
       />

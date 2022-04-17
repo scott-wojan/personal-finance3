@@ -8,8 +8,10 @@ export default async function handler(req, res) {
   if (!user) {
     return res.status(401).json();
   }
-  if (!category)
+
+  if (!category) {
     return res.status(400).json({ message: "Must specifify category" });
+  }
 
   try {
     const subcategories = await getSubCategoriesAsSelectOptions({

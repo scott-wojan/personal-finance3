@@ -10,6 +10,6 @@ export async function getUserRules({ userId }) {
   ;`;
 }
 
-export async function saveRule({ userId, rule }) {
-  await sql`select save_and_run_rule (${userId},${rule});`;
+export async function saveRule({ userId, id, rule }) {
+  await sql`select save_and_run_rule (${userId},${rule},${id});`;
 }

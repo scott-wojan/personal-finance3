@@ -46,6 +46,11 @@ export function RuleEditor({
 
   const [state, setState] = useSetState(initialState);
   const [mode, setMode] = useState(initialMode);
+
+  const ruleMutation = useMutation((rule) => {
+    return axios.post("api/rules/manage", rule);
+  });
+
   const handleOnCancel = () => {
     if (data?.rule) {
       setMode("display");
@@ -54,10 +59,19 @@ export function RuleEditor({
   };
 
   const handleOnSave = () => {
-    if (data?.rule) {
-      setMode("display");
-    }
-    onSaved?.();
+    console.log("state", state);
+    ruleMutation
+      // @ts-ignore
+      .mutateAsync(state)
+      .then((x) => {
+        if (data?.rule) {
+          setMode("display");
+        }
+        onSaved?.();
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   };
 
   return (
@@ -76,7 +90,7 @@ export function RuleEditor({
               rename to "{state.newName}" and categorize as {state.category} /{" "}
               {state.subcategory}
             </Text>
-            <Group spacing={2}>
+            <div>
               <IconButton
                 icon={Edit}
                 tooltip="Edit"
@@ -85,7 +99,7 @@ export function RuleEditor({
                 }}
               />
               <IconButton icon={Trash} tooltip="Delete" />
-            </Group>
+            </div>
           </div>
         </>
       )}
@@ -94,7 +108,7 @@ export function RuleEditor({
           <Editor
             data={state}
             setState={setState}
-            onSaved={handleOnSave}
+            onSave={handleOnSave}
             onCancel={handleOnCancel}
           />
         </>
@@ -107,30 +121,14 @@ function IconButton({ onClick, icon, tooltip }) {
   const Icon = icon;
   return (
     <Tooltip label={tooltip} position="left" withArrow disabled={!tooltip}>
-      <ActionIcon variant="hover" color="green" onClick={onClick}>
+      <ActionIcon onClick={onClick}>
         <Icon size={16} strokeWidth={1} />
       </ActionIcon>
     </Tooltip>
   );
 }
 
-function Editor({ data, setState, onSaved, onCancel }) {
-  const ruleMutation = useMutation((rule) => {
-    return axios.post("api/rules/create", rule);
-  });
-
-  const onSave = () => {
-    ruleMutation
-      // @ts-ignore
-      .mutateAsync(state)
-      .then((x) => {
-        console.log(x);
-        onSaved?.();
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  };
+function Editor({ data, setState, onSave, onCancel }) {
   return (
     <>
       <Group spacing="xs" pb={4}>

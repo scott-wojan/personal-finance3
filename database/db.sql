@@ -239,13 +239,24 @@ CREATE TABLE IF NOT EXISTS transaction_import_history
 
 
 
-create or replace function save_and_run_rule(userId integer, rule jsonb)
+create or replace function save_and_run_rule(userId integer, rule jsonb, ruleId integer default null)
   returns void as $$
   declare
     new_rule_id integer;
   BEGIN
 
-    insert into user_rules(user_id, rule) values (userId,rule) returning id into new_rule_id; --on conflict do nothing;
+
+    if ruleId is NULL then
+        insert into user_rules(user_id, rule) 
+             values (userId,rule) 
+          returning id into new_rule_id; --on conflict do nothing;
+    else
+        update user_rules
+           set rule = $2
+         where user_id = userId
+           and id = ruleId;
+    end if;    
+
 
     -- RAISE NOTICE 'new_rule_id: %', new_rule_id;
     

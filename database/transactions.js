@@ -11,6 +11,7 @@ export async function getUserTransactions({
 }) {
   // const filterExample = [{ name: "account", value: "Capital One Venture One" }];
   // const sortExample = [{ name: "amount", direction: "asc" }];
+  const offset = page === 1 ? 0 : (page - 1) * pageSize;
 
   let where = toWhere(filter) ?? "";
   if (accountId) {
@@ -25,11 +26,13 @@ export async function getUserTransactions({
                 SELECT id, account, date, name, amount, category, subcategory, iso_currency_code, is_pending
                   FROM user_transactions WHERE user_id = '${userId}' ${where}
                  ORDER BY ${orderBy}
-                OFFSET ${page} - 1 --use 1 based indexing to match UI
+                OFFSET ${offset}
                  LIMIT ${pageSize}
              ) AS t
         ) AS data;
   `;
+
+  console.log("query", query);
 
   // @ts-ignore
   const rows = await sql.unsafe(query);

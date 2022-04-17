@@ -10,7 +10,7 @@ export async function handler(req, res) {
   const user = getUserFromCookie(req, res);
   if (!user) return res.status(401).json();
 
-  const { name, newName, condition, category, subcategory } = req.body;
+  const { id, name, newName, condition, category, subcategory } = req.body;
 
   if (!name || !newName || !condition) {
     return res.status(400).json({ message: "missing required data" });
@@ -54,6 +54,7 @@ export async function handler(req, res) {
   try {
     await saveRule({
       userId: user?.id,
+      id,
       rule,
     });
 

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Group,
   TextInput,
@@ -6,37 +6,115 @@ import {
   Select,
   Accordion,
   Button,
+  ActionIcon,
+  Tooltip,
 } from "@mantine/core";
 import { useSetState } from "@mantine/hooks";
 import { CategoriesSelect } from "components/categories/CategoriesSelect";
 import { SubCategoriesSelect } from "components/categories/SubCategoriesSelect";
 import { useMutation } from "react-query";
 import axios from "axios";
+import { Edit, Trash } from "tabler-icons-react";
 
-export function RuleEditor({ data, onCancel, onSaved }) {
+export function RuleEditor({
+  data,
+  onCancel,
+  onSaved,
+  mode: initialMode = "edit",
+}) {
   const initialState = {
     hasChanged: false,
-    id: data?.where ? data?.id : null,
-    name: data?.name ?? data?.where[0]?.value.replace("%", ""),
-    condition: data?.where?.[0]?.condition ?? "equals",
+    id: data?.rule ? data?.id : null,
+    name: data?.name ?? data?.rule?.where[0]?.value,
+    condition: data?.rule?.where?.[0]?.condition ?? "equals",
     newName:
       data?.name ??
-      data?.set.find((x) => {
+      data?.rule?.set.find((x) => {
         return x.name === "name";
-      }).value,
+      })?.value,
     category:
       data?.category ??
-      data?.set.find((x) => {
+      data?.rule?.set.find((x) => {
         return x.name === "category";
       })?.value,
     subcategory:
       data?.subcategory ??
-      data?.set.find((x) => {
+      data?.rule?.set.find((x) => {
         return x.name === "subcategory";
       })?.value,
   };
-  const [state, setState] = useSetState(initialState);
 
+  const [state, setState] = useSetState(initialState);
+  const [mode, setMode] = useState(initialMode);
+  const handleOnCancel = () => {
+    if (data?.rule) {
+      setMode("display");
+    }
+    onCancel?.();
+  };
+
+  const handleOnSave = () => {
+    if (data?.rule) {
+      setMode("display");
+    }
+    onSaved?.();
+  };
+
+  return (
+    <>
+      {mode !== "edit" && (
+        <>
+          <div style={{ display: "flex", flexDirection: "row" }}>
+            <Text size="sm" pb={4} component="span">
+              When a transaction name{" "}
+              <Text size="sm" component="span" style={{ fontStyle: "italic" }}>
+                {state.condition}
+              </Text>
+              <Text size="sm" component="span">
+                "{state.name}"
+              </Text>{" "}
+              rename to "{state.newName}" and categorize as {state.category} /{" "}
+              {state.subcategory}
+            </Text>
+            <Group spacing={2}>
+              <IconButton
+                icon={Edit}
+                tooltip="Edit"
+                onClick={() => {
+                  setMode("edit");
+                }}
+              />
+              <IconButton icon={Trash} tooltip="Delete" />
+            </Group>
+          </div>
+        </>
+      )}
+      {mode === "edit" && (
+        <>
+          <Editor
+            data={state}
+            setState={setState}
+            onSaved={handleOnSave}
+            onCancel={handleOnCancel}
+          />
+        </>
+      )}
+    </>
+  );
+}
+
+function IconButton({ onClick, icon, tooltip }) {
+  const Icon = icon;
+  return (
+    <Tooltip label={tooltip} position="left" withArrow disabled={!tooltip}>
+      <ActionIcon variant="hover" color="green" onClick={onClick}>
+        <Icon size={16} strokeWidth={1} />
+      </ActionIcon>
+    </Tooltip>
+  );
+}
+
+function Editor({ data, setState, onSaved, onCancel }) {
   const ruleMutation = useMutation((rule) => {
     return axios.post("api/rules/create", rule);
   });
@@ -53,7 +131,6 @@ export function RuleEditor({ data, onCancel, onSaved }) {
         console.log(err);
       });
   };
-
   return (
     <>
       <Group spacing="xs" pb={4}>
@@ -62,7 +139,7 @@ export function RuleEditor({ data, onCancel, onSaved }) {
         </Text>
         <Select
           size="xs"
-          value={state.condition}
+          value={data.condition}
           style={{ width: 110 }}
           data={["equals", "starts with", "contains", "ends with"]}
           onChange={(newValue) => {
@@ -80,7 +157,7 @@ export function RuleEditor({ data, onCancel, onSaved }) {
         placeholder="imported name"
         size="xs"
         pb="sm"
-        value={state.name}
+        value={data.name}
         onChange={(e) => {
           setState({ name: e.target.value, hasChanged: true });
         }}
@@ -94,7 +171,7 @@ export function RuleEditor({ data, onCancel, onSaved }) {
         placeholder="new name"
         size="xs"
         pb="sm"
-        value={state.newName}
+        value={data.newName}
         onChange={(e) => {
           setState({ newName: e.target.value, hasChanged: true });
         }}
@@ -102,7 +179,7 @@ export function RuleEditor({ data, onCancel, onSaved }) {
 
       <Accordion
         iconPosition="right"
-        initialItem={state.category ? 0 : -1}
+        initialItem={data.category ? 0 : -1}
         sx={(theme) => ({
           ".mantine-Accordion-label": {
             fontSize: theme.fontSizes.xs,
@@ -120,7 +197,7 @@ export function RuleEditor({ data, onCancel, onSaved }) {
           <Group pb="sm" position="apart" pt={4}>
             <CategoriesSelect
               style={{ width: "46%" }}
-              value={state.category ?? ""}
+              value={data.category ?? ""}
               onChange={(newValue) => {
                 setState({
                   category: newValue,
@@ -131,8 +208,8 @@ export function RuleEditor({ data, onCancel, onSaved }) {
             />
             <SubCategoriesSelect
               style={{ width: "46%" }}
-              category={state.category}
-              value={state.subcategory ?? ""}
+              category={data.category}
+              value={data.subcategory ?? ""}
               onChange={(newValue) => {
                 setState({ subcategory: newValue, hasChanged: true });
               }}
@@ -141,10 +218,10 @@ export function RuleEditor({ data, onCancel, onSaved }) {
         </Accordion.Item>
       </Accordion>
       <Group position="right">
-        <Button variant="outline" onClick={onCancel}>
+        <Button size="xs" variant="outline" onClick={onCancel}>
           Cancel
         </Button>
-        <Button disabled={!state.hasChanged} onClick={onSave}>
+        <Button size="xs" disabled={!data.hasChanged} onClick={onSave}>
           Save
         </Button>
       </Group>

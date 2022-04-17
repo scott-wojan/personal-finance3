@@ -1,5 +1,6 @@
 import { Button, Group, Modal, Table, Title } from "@mantine/core";
 import { Application } from "components/app/Application";
+import { RuleEditor } from "components/transactions/RuleEditor";
 import TransactionsGrid from "components/transactions/TransactionsGrid";
 import { useApi } from "hooks/useApi";
 import React, { useEffect, useState } from "react";
@@ -37,7 +38,7 @@ export default function Transactions() {
         centered
         opened={opened}
         onClose={() => setOpened(false)}
-        title="Your rules"
+        title="Your transaction rules"
       >
         <Rules />
       </Modal>
@@ -54,11 +55,15 @@ function Rules() {
 
   useEffect(() => {
     setTableDate(
-      data?.map((rule) => (
-        <tr key={rule.id}>
-          <td>{JSON.stringify(rule.rule)}</td>
-        </tr>
-      ))
+      data?.map((rule) => {
+        return (
+          <tr key={rule.id}>
+            <td>
+              <RuleEditor data={rule} mode={"display"} />
+            </td>
+          </tr>
+        );
+      })
     );
   }, [data]);
 
@@ -68,11 +73,6 @@ function Rules() {
       {error && <>Error!! {error?.message}</>}
       {data && (
         <Table>
-          <thead>
-            <tr>
-              <th style={{ width: "20%" }}>Rule</th>
-            </tr>
-          </thead>
           <tbody>{tableData}</tbody>
         </Table>
       )}

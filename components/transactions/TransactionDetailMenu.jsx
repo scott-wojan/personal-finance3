@@ -1,18 +1,9 @@
-import {
-  createStyles,
-  Group,
-  Navbar,
-  Stack,
-  Tooltip,
-  UnstyledButton,
-  useMantineTheme,
-} from "@mantine/core";
+import { createStyles, Stack, Tooltip, UnstyledButton } from "@mantine/core";
 import React, { useState } from "react";
 
 import { Bolt, ListSearch, Notes, History } from "tabler-icons-react";
 
 export function TransactionDetailMenu() {
-  const theme = useMantineTheme();
   const [active, setActive] = useState(0);
 
   const linkData = [

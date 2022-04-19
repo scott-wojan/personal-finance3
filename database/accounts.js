@@ -1,7 +1,7 @@
 import sql from "./db.js";
 import { toJsonEscaped } from "./helpers.js";
 
-async function getUserAccounts({ userId }) {
+export async function getUserAccounts({ userId }) {
   // @ts-ignore
   const rows = await sql`
       select *
@@ -12,7 +12,7 @@ async function getUserAccounts({ userId }) {
   return rows;
 }
 
-async function saveUserAccounts({
+export async function saveUserAccounts({
   userId,
   institutionId,
   accessToken,
@@ -24,12 +24,12 @@ async function saveUserAccounts({
   await sql.unsafe(query);
 }
 
-async function getAccountsAsSelectOptions({ userId }) {
+export async function getAccountsAsSelectOptions({ userId }) {
   // @ts-ignore
   return await sql`select name || ' x' || mask as label, name as value from accounts where user_id = ${userId} order by name;`;
 }
 
-async function getUserAccountById({ userId, accountId }) {
+export async function getUserAccountById({ userId, accountId }) {
   // @ts-ignore
   const rows = await sql`
     select *
@@ -39,10 +39,3 @@ async function getUserAccountById({ userId, accountId }) {
 `;
   return rows[0];
 }
-
-export {
-  getUserAccounts,
-  getUserAccountById,
-  getAccountsAsSelectOptions,
-  saveUserAccounts,
-};

@@ -15,7 +15,7 @@ export async function getAccessToken(public_token) {
 
 /**
  * Gets a link token
- *
+ * https://plaid.com/docs/api/tokens/#itempublic_tokenexchange
  * @param {Object} request the request settings.
  * @returns the accounts at the bank.
  */

@@ -9,11 +9,14 @@ async function saveInstitution(institution) {
       name,
       url,
       primary_color,
-      logo
+      logo,
+      jsonDoc
     )
     VALUES (${institution.institution_id}, ${institution.name ?? null}, ${
     institution.url ?? null
-  }, ${institution.primary_color ?? null}, ${institution.logo ?? null})
+  }, ${institution.primary_color ?? null}, ${
+    institution.logo ?? null
+  }, ${institution})
     ON CONFLICT (id)
     DO UPDATE SET
       name=${institution.name ?? null},

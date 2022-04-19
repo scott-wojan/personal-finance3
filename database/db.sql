@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS users
   updated_at timestamptz default now()
 );
 
-insert into users(email) values('test@test.com')
+-- insert into users(email) values('test@test.com')
 
 
 CREATE TABLE IF NOT EXISTS institutions
@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS institutions
     url citext,
     primary_color citext,
     logo citext,
+    jsonDoc jsonb,
     created_at timestamp with time zone DEFAULT now(),
     updated_at timestamp with time zone DEFAULT now()
 );
@@ -49,7 +50,6 @@ CREATE TABLE IF NOT EXISTS user_institutions
 CREATE TABLE IF NOT EXISTS accounts
 (
     id text PRIMARY KEY,
-    access_token text NOT NULL,    
     name citext NOT NULL,
     mask citext NOT NULL,
     official_name citext,
@@ -64,7 +64,6 @@ CREATE TABLE IF NOT EXISTS accounts
     user_id integer REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE,    
     institution_id citext REFERENCES institutions(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
-
 
 CREATE TABLE IF NOT EXISTS transactions
 (
@@ -104,39 +103,6 @@ CREATE TABLE IF NOT EXISTS transactions
 );
 
 
--- CREATE OR REPLACE FUNCTION set_transaction_values() RETURNS trigger AS $$
---   BEGIN
---     NEW.imported_category :=COALESCE(NEW.imported_category,'General');
---     NEW.imported_subcategory :=COALESCE(NEW.imported_subcategory,'General');
---     RETURN NEW;
---   END
--- $$ LANGUAGE plpgsql;
-
-
--- CREATE TRIGGER transactions_set_transaction_values
--- after insert or update on transactions
--- FOR EACH ROW EXECUTE PROCEDURE set_transaction_values();
-
-
-create or replace function months_between (startDate timestamp, endDate timestamp)
-returns integer as 
-$$
-select ((extract('years' from $2)::int -  extract('years' from $1)::int) * 12) 
-    - extract('month' from $1)::int + extract('month' from $2)::int
-$$ 
-LANGUAGE SQL
-immutable
-returns NULL on NULL input;
-
-create or replace function end_of_month(date)
-returns date as
-$$
-select (date_trunc('month', $1) + interval '1 month' - interval '1 day')::date;
-$$ 
-language SQL
-immutable strict;
-
-
 CREATE TABLE IF NOT EXISTS categories
 (
   id serial PRIMARY KEY,
@@ -149,18 +115,6 @@ CREATE TABLE IF NOT EXISTS categories
 CREATE UNIQUE INDEX categories_uidx ON categories(category, subcategory, source);;
 -- unique index to not allow more than one null on subcategory
 CREATE UNIQUE INDEX categories_null_uidx ON categories (source, category, (subcategory IS NULL)) WHERE subcategory IS NULL;
-
--- CREATE FUNCTION category_insert_values() RETURNS trigger AS $$
---   BEGIN
---     NEW.subcategory :=COALESCE(NEW.subcategory, 'General');
---     RETURN NEW;
---   END
--- $$ LANGUAGE plpgsql;
-
-
--- CREATE TRIGGER category_trigger
--- BEFORE INSERT OR UPDATE ON categories
--- FOR EACH ROW EXECUTE PROCEDURE category_insert_values();
 
 
 CREATE TABLE IF NOT EXISTS user_categories
@@ -228,15 +182,148 @@ CREATE UNIQUE INDEX user_rules_uidx ON user_rules(user_id,rule);
 -- select * from transactions
 -- where imported_name ~* '^COSERV ELECTRIC$'
 
+create or replace function months_between (startDate timestamp, endDate timestamp)
+returns integer as 
+$$
+select ((extract('years' from $2)::int -  extract('years' from $1)::int) * 12) 
+    - extract('month' from $1)::int + extract('month' from $2)::int
+$$ 
+LANGUAGE SQL
+immutable
+returns NULL on NULL input;
 
-CREATE TABLE IF NOT EXISTS transaction_import_history
+create or replace function end_of_month(date)
+returns date as
+$$
+select (date_trunc('month', $1) + interval '1 month' - interval '1 day')::date;
+$$ 
+language SQL
+immutable strict;
+
+
+-- CREATE OR REPLACE FUNCTION set_transaction_values() RETURNS trigger AS $$
+--   BEGIN
+--     NEW.imported_category :=COALESCE(NEW.imported_category,'General');
+--     NEW.imported_subcategory :=COALESCE(NEW.imported_subcategory,'General');
+--     RETURN NEW;
+--   END
+-- $$ LANGUAGE plpgsql;
+
+
+-- CREATE TRIGGER transactions_set_transaction_values
+-- after insert or update on transactions
+-- FOR EACH ROW EXECUTE PROCEDURE set_transaction_values();
+
+CREATE TABLE IF NOT EXISTS plaid_webhook_history
 (
-  plaid_request_id text primary key, 
-  user_id integer references users(id) on delete cascade on update cascade,
-  data jsonb not null,
+  id SERIAL PRIMARY KEY,
+  item_id text NOT NULL,
+  webhook_code citext NOT NULL,
+  webhook_type citext NOT NULL,
+  error jsonb,
+  jsonDoc jsonb NOT NULL,
   created_at timestamptz default now()
 );
 
+
+CREATE TABLE IF NOT EXISTS plaid_webhook_transaction_history
+(
+  id SERIAL PRIMARY KEY,
+  plaid_webhook_history_id integer REFERENCES plaid_webhook_history(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  user_id integer REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE,    
+  institution_id text REFERENCES institutions(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  jsonDoc jsonb NOT NULL,  
+  importError jsonb,
+  imported_at timestamptz,
+  created_at timestamptz default now()    
+);
+
+create or replace function import_plaid_transactions() 
+  returns trigger 
+ language plpgsql
+ as $$
+  declare
+    schemaName text;
+    tableName text;
+    columnName text;    
+    sqlErrorCode text;
+    constraintName text;
+    dataType text;
+    exceptionMessage text;
+    exceptionDetail text;
+    exceptionHint text;
+    exceptionContext text;
+    jsonError jsonb;
+  begin
+  
+    perform plaid_insert_or_update_acounts(NEW.plaid_webhook_history_id);
+    perform plaid_insert_or_update_transactions(NEW.plaid_webhook_history_id);
+    perform plaid_insert_or_update_categories(NEW.plaid_webhook_history_id);
+    perform plaid_insert_or_update_user_categories(NEW.plaid_webhook_history_id);
+    
+    -- raise notice 'import complete for: %', NEW.plaid_webhook_history_id;
+    update plaid_webhook_transaction_history 
+       set imported_at=now()
+     where id=NEW.id;
+     
+    return null;
+
+  exception when others then
+      get stacked diagnostics
+          schemaName=SCHEMA_NAME, -- the name of the schema related to exception
+          tableName=TABLE_NAME,   -- the name of the table related to exception
+          columnName=COLUMN_NAME, -- the name of the column related to exception          
+          sqlErrorCode=RETURNED_SQLSTATE, -- the SQLSTATE error code of the exception
+          constraintName=CONSTRAINT_NAME, -- the name of the constraint related to exception
+          dataType=PG_DATATYPE_NAME,      -- the name of the data type related to exception
+          exceptionMessage=MESSAGE_TEXT,  -- the text of the exception's primary message
+          exceptionDetail=PG_EXCEPTION_DETAIL,   -- the text of the exception's detail message, if any
+          exceptionHint=PG_EXCEPTION_HINT,       -- the text of the exception's hint message, if any
+          exceptionContext=PG_EXCEPTION_CONTEXT -- line(s) of text describing the call stack at the time of the exception
+      ;
+      
+    jsonError=jsonb_build_object(
+            'schemaName', schemaName,
+            'tableName', tableName,
+            'columnName', columnName,
+            'sqlErrorCode', sqlErrorCode,
+            'constraintName', constraintName,
+            'dataType', dataType,
+            'exceptionMessage', exceptionMessage,
+            'exceptionDetail', exceptionDetail,
+            'exceptionHint', exceptionHint,
+            'exceptionContext', exceptionContext
+         );
+         
+    raise notice 'error: %', jsonError;         
+
+    update plaid_webhook_transaction_history
+       set importError = jsonError
+     where id=NEW.id;
+
+    return null;
+   
+  end
+$$;
+
+create or replace trigger plaid_webhook_transaction_history_trigger
+ after insert on plaid_webhook_transaction_history
+   for each row execute procedure import_plaid_transactions();
+
+
+
+
+-- CREATE FUNCTION category_insert_values() RETURNS trigger AS $$
+--   BEGIN
+--     NEW.subcategory :=COALESCE(NEW.subcategory, 'General');
+--     RETURN NEW;
+--   END
+-- $$ LANGUAGE plpgsql;
+
+
+-- CREATE TRIGGER category_trigger
+-- BEFORE INSERT OR UPDATE ON categories
+-- FOR EACH ROW EXECUTE PROCEDURE category_insert_values();
 
 
 create or replace function save_and_run_rule(userId integer, rule jsonb, ruleId integer default null)
@@ -294,39 +381,112 @@ $$ language plpgsql;
 
 
 
+CREATE OR REPLACE FUNCTION plaid_insert_or_update_acounts(webhookHistoryId integer)
+ returns void
+ language 'plpgsql' 
+ cost 100 
+ volatile 
+ PARALLEL 
+ unsafe
+as $BODY$
+begin
 
-CREATE OR REPLACE FUNCTION update_user_transactions(userId integer, requestId text)
+    insert into accounts(
+          id
+        , user_id
+        , name
+        , mask
+        , official_name
+        , type
+        , subtype
+        , available_balance
+        , current_balance
+        , account_limit
+        , iso_currency_code
+        , institution_id
+    )
+    select account->>'account_id' "id"
+         , user_id
+         , account->>'name' "name"	 
+         , account->>'mask' "mask"
+         , account->>'official_name' "official_name"		 
+         , account->>'type' "type"
+         , account->>'subtype' "subtype"
+         , (account->'balances'->>'available')::numeric(28,4) "available_balance"
+         , (account->'balances'->>'current')::numeric(28,4) "current_balance"	   
+         , (account->'balances'->>'limit')::numeric(28,4) "account_limit"	 
+         , account->'balances'->>'iso_currency_code' "iso_currency_code"
+         , institution_id
+    from(
+        select user_id, institution_id, jsonb_array_elements(jsondoc->'accounts') "account"
+          from plaid_webhook_transaction_history
+         where plaid_webhook_history_id=webhookHistoryId
+    ) as accounts
+    ON CONFLICT (ID)
+    DO UPDATE SET
+    official_name = excluded.official_name,
+    subtype = excluded.subtype,
+    type = excluded.type,
+    available_balance = excluded.available_balance,
+    current_balance = excluded.current_balance,
+    account_limit = excluded.account_limit,
+    iso_currency_code = excluded.iso_currency_code;
+
+  end;
+$BODY$;
+
+
+
+
+CREATE OR REPLACE FUNCTION plaid_insert_or_update_user_categories(webhookHistoryId integer)
 RETURNS void
 AS $$
 BEGIN
 
   insert into user_categories(user_id, user_category, user_subcategory)
-	select userId as user_id
-	     , transaction->'category'->>0 as category
-		   , transaction->'category'->>1 as subcategory
-	  from transaction_import_history,
-         lateral jsonb_array_elements(transaction_import_history.data) transaction
-   where user_id = userId
-     and plaid_request_id = requestId
-     and not exists (
-             select 1 
-					     from user_categories 
-					    where user_category = transaction->'category'->>0 
-					      and user_subcategory = transaction->'category'->>1
+  select user_id
+       , transaction->'category'->>0 as category
+       , transaction->'category'->>1 as subcategory
+   from  (
+         select user_id, institution_id, jsonb_array_elements(jsondoc->'transactions') "transaction"
+           from plaid_webhook_transaction_history
+          where plaid_webhook_history_id=webhookHistoryId
+       ) as transactions
+   where not exists (
+         select 1 
+           from user_categories uc
+          where user_category = transaction->'category'->>0 
+            and user_subcategory = transaction->'category'->>1
+            and uc.user_id=transactions.user_id
 		)
-   on conflict do nothing;       
-
-  -- apply rules
-  -- return(select update_transactions(userId,match_column_name,match_condition,match_value,set_column_name,set_value)
-  --   from user_rules
-  -- where user_id=userId
-  -- );
+      on conflict do nothing;
 
 END; $$ 
 LANGUAGE 'plpgsql';
 
 
-CREATE OR REPLACE FUNCTION insert_plaid_transactions(userId integer, requestId text, jsonDoc JSON)
+CREATE OR REPLACE FUNCTION plaid_insert_or_update_categories(webhookHistoryId integer)
+RETURNS void
+AS $$
+BEGIN
+
+  insert into categories(category, subcategory, source)
+  select transaction->'category'->>0 as category
+       , transaction->'category'->>1 as subcategory
+       , 'Plaid' as source
+   from  (
+         select user_id, institution_id, jsonb_array_elements(jsondoc->'transactions') "transaction"
+           from plaid_webhook_transaction_history
+          where plaid_webhook_history_id=webhookHistoryId
+       ) as transactions  
+      on conflict do nothing; 
+
+END; $$ 
+LANGUAGE 'plpgsql';
+
+
+
+CREATE OR REPLACE FUNCTION plaid_insert_or_update_transactions(webhookHistoryId integer)
  RETURNS void 
  LANGUAGE 'plpgsql' 
  COST 100 
@@ -336,68 +496,51 @@ CREATE OR REPLACE FUNCTION insert_plaid_transactions(userId integer, requestId t
 AS $BODY$
 BEGIN
 
-  insert into transaction_import_history(user_id,plaid_request_id,data) values(userId,requestId,jsonDoc);
-
-  insert into transactions(
-    id,
-    user_id,
-    account_id,
-    amount,
-    authorized_date,
-    imported_category,
-    imported_subcategory,
-    category,
-    subcategory,
-    check_number,
-    date,
-    iso_currency_code,
-    merchant_name,
-    imported_name,
-    name,
-    payment_channel,
-    is_pending,
-    transaction_code,
-    type
-  )
-  select id 
-      , userId as user_id
-      , account_id
-      , amount
-      , authorized_date
-      , category as imported_category
-      , subcategory as imported_subcategory
-      , category
-      , subcategory
-      , check_number
-      , date
-      , iso_currency_code
-      , merchant_name	 
-      , name as imported_name 
-      , name
-      , payment_channel
-      , is_pending
-      , transaction_code
-      , type
-  from(
-        select transaction->>'transaction_id' "id" 
-             , transaction->>'account_id' "account_id"
-             , (transaction->>'amount')::numeric(28,4) * -1 "amount" --for some reason, positive values like payroll come in as negative numbers and expenses come in as positive
-             , (transaction->>'authorized_date')::date "authorized_date"
-             , transaction->'category'->>0 as category
-             , transaction->'category'->>1 as subcategory	
-             , transaction->>'check_number' "check_number"	 
-             , (transaction->>'date')::date "date"
-             , transaction->>'iso_currency_code' "iso_currency_code"	 
-             , transaction->>'merchant_name' "merchant_name"		 
-             , transaction->>'name' "name" 	 
-             , transaction->>'payment_channel' "payment_channel"	 
-             , (transaction->>'pending')::bool "is_pending"
-             , transaction->>'transaction_code' "transaction_code"
-             , transaction->>'transaction_type' "type"	 
-          from transaction_import_history,
-               lateral jsonb_array_elements(transaction_import_history.data) transaction
-         where plaid_request_id = requestId
-  ) as transaction_date
+    insert into transactions(
+           id
+         , user_id
+         , account_id
+         , amount
+         , authorized_date
+         , imported_category
+         , imported_subcategory
+         , category
+         , subcategory
+         , check_number
+         , date
+         , iso_currency_code
+         , merchant_name
+         , imported_name
+         , name
+         , payment_channel
+         , is_pending
+         , transaction_code
+         , type
+    )
+    select transaction->>'transaction_id' "id" 
+         , user_id
+         , transaction->>'account_id' "account_id"
+         , (transaction->>'amount')::numeric(28,4) * -1 "amount" --for some reason, positive values like payroll come in as negative numbers and expenses come in as positive
+         , (transaction->>'authorized_date')::date "authorized_date"
+         , transaction->'category'->>0 as imported_category
+         , transaction->'category'->>1 as imported_subcategory	         
+         , transaction->'category'->>0 as category
+         , transaction->'category'->>1 as subcategory	
+         , transaction->>'check_number' "check_number"	 
+         , (transaction->>'date')::date "date"
+         , transaction->>'iso_currency_code' "iso_currency_code"	 
+         , transaction->>'merchant_name' "merchant_name"		 
+         , transaction->>'name' "imported_name"          
+         , transaction->>'name' "name" 	 
+         , transaction->>'payment_channel' "payment_channel"	 
+         , (transaction->>'pending')::bool "is_pending"
+         , transaction->>'transaction_code' "transaction_code"
+         , transaction->>'transaction_type' "type"	 
+    from(
+        select user_id, institution_id, jsonb_array_elements(jsondoc->'transactions') "transaction"
+          from plaid_webhook_transaction_history
+         where plaid_webhook_history_id=webhookHistoryId
+    ) as transactions
   on conflict (id)
       do update set
       account_id = excluded.account_id,
@@ -415,91 +558,11 @@ BEGIN
       transaction_code = excluded.transaction_code,
       type = excluded.type;
 
-
-  --keep categories up to date
-  insert into categories(category, subcategory, source)
-	select transaction->'category'->>0 as category
-		   , transaction->'category'->>1 as subcategory
-		   , 'Plaid' as source
-	  from transaction_import_history,
-         lateral jsonb_array_elements(transaction_import_history.data) transaction
-   where plaid_request_id = requestId
-         on conflict do nothing; 
-         
-
-    perform update_user_transactions(userId,requestId);
 	
-  END;    
-$BODY$;
-
-
-
-CREATE TABLE IF NOT EXISTS account_import_history
-(
-  plaid_request_id text primary key,  
-  user_id integer references users(id) on delete cascade on update cascade,
-  data jsonb not null,
-  created_at timestamptz default now()
-);
-
-
-CREATE OR REPLACE FUNCTION insert_plaid_accounts(userId integer, requestId text, institutionId text, accessToken text, jsonDoc JSON)
- RETURNS void 
- LANGUAGE 'plpgsql' 
- COST 100 
- VOLATILE 
- PARALLEL 
- UNSAFE 
-AS $BODY$
-BEGIN
-
-insert into account_import_history(user_id, plaid_request_id, data) 
-                            values(userId, requestId, jsonDoc);
-
-insert into accounts(
-	  id
-	, user_id
-	, name
-	, mask
-	, official_name
-	, subtype
-	, type
-	, available_balance
-	, current_balance
-	, account_limit
-	, iso_currency_code
-	, access_token
-	, institution_id
-)
-select account->>'account_id' "id"
-     , userId as user_id
-     , account->>'name' "name"	 
-     , account->>'mask' "mask"
-     , account->>'official_name' "official_name"		 
-     , account->>'subtype' "subtype"
-     , account->>'type' "type"
-     , (account->'balances'->>'available')::numeric(28,4) "available_balance"
-     , (account->'balances'->>'current')::numeric(28,4) "current_balance"	   
-     , (account->'balances'->>'limit')::numeric(28,4) "account_limit"	 
-     , account->'balances'->>'iso_currency_code' "iso_currency_code"
-	   , accessToken as access_token
-	   , institutionId as institution_id
- from account_import_history,
-lateral jsonb_array_elements(account_import_history.data) account
-where plaid_request_id = requestId
-  ON CONFLICT (ID)
-  DO UPDATE SET
-  official_name = excluded.official_name,
-	subtype = excluded.subtype,
-	type = excluded.type,
-	available_balance = excluded.available_balance,
-	current_balance = excluded.current_balance,
-	account_limit = excluded.account_limit,
-	iso_currency_code = excluded.iso_currency_code,
-	access_token = excluded.access_token;
-
   END;
 $BODY$;
+
+
 
 
 CREATE OR REPLACE FUNCTION user_spending_metrics_by_category_subcategory(userId integer, startDate date, endDate date, exclude_non_budgeted_categories bool default false)
@@ -1288,15 +1351,7 @@ from (
 -- ) as transaction_date
 
 
--- select account->>'account_id' "name"
---      , account->>'mask' "mask"
---      , account->>'name' "name"
---      , account->>'type' "type"
---      , account->>'subtype' "name"
---      , account->>'account_id' "account_id"
---      , (account->'balances'->>'limit')::numeric(28,4) "limit"	
---      , (account->'balances'->>'current')::numeric(28,4) "current"	 
---      , (account->'balances'->>'available')::numeric(28,4) "available"
---      , account->'balances'->>'iso_currency_code' "iso_currency_code"
---   from account_import_history,
--- lateral jsonb_array_elements(account_import_history.data) account;
+
+
+
+

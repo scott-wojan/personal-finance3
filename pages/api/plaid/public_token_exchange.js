@@ -1,7 +1,7 @@
 import { getAccessToken } from "integrations/plaid/tokens";
 import { getInstitutionById } from "integrations/plaid/institutions";
 import { getUserFromCookie, setUserCookie } from "cookies/user";
-import { getUserAccountsForBank } from "integrations/plaid/accounts";
+import { getUserAccountsForInstitution } from "integrations/plaid/accounts";
 import { saveUserAccounts } from "database/accounts";
 import {
   associateInstitutionToUser,
@@ -18,14 +18,14 @@ export default async function handler(req, res) {
       request_id: requestId,
     } = await getAccessToken(public_token);
 
-    // insert institution
+    // insert institution details
     const institution = await getInstitutionById(
       metadata.institution.institution_id
     );
 
     await saveInstitution(institution);
 
-    // associate institution to user
+    // associate institution to user, saving the user's access token for that institution
     await associateInstitutionToUser({
       itemId,
       institutionId: institution.institution_id,
@@ -33,8 +33,9 @@ export default async function handler(req, res) {
       accessToken,
     });
 
-    const accounts = await getUserAccountsForBank(accessToken);
+    const accounts = await getUserAccountsForInstitution(accessToken);
 
+    // save the user's accounts with the user's access token for that account
     await saveUserAccounts({
       userId: user.id,
       requestId,

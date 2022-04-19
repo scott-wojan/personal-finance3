@@ -7,11 +7,11 @@ import { usePlaidLink } from "react-plaid-link";
 import { AlertCircle } from "tabler-icons-react";
 import { environment } from "appconfig";
 
-const PlaidLink = ({ text, token, redirectRoute = "/" }) => {
+const PlaidLink = ({ text, linkToken, redirectRoute = "/" }) => {
   const router = useRouter();
   const onSuccess = useCallback(
     async (public_token, metadata) => {
-      await axios.post("/api/plaid/token_exchange", {
+      await axios.post("/api/plaid/public_token_exchange", {
         public_token,
         metadata,
       });
@@ -34,7 +34,7 @@ const PlaidLink = ({ text, token, redirectRoute = "/" }) => {
   }, []);
 
   const config = {
-    token,
+    token: linkToken,
     onSuccess,
     onExit,
   };
@@ -59,7 +59,7 @@ export default function PlaidLinkButton({
   text = "Connect Accounts",
   redirectRoute = undefined,
 }) {
-  const [token, setToken] = useState(null);
+  const [linkToken, setLinkToken] = useState(null);
 
   const { error, data } = useApi({
     url: "plaid/create_link_token",
@@ -68,7 +68,7 @@ export default function PlaidLinkButton({
   useEffect(() => {
     if (data) {
       const { link_token } = data;
-      setToken(link_token);
+      setLinkToken(link_token);
     }
   }, [data]);
 
@@ -76,6 +76,7 @@ export default function PlaidLinkButton({
     return (
       <>
         <Tooltip
+          withArrow
           width={320}
           color="red"
           wrapLines
@@ -85,7 +86,6 @@ export default function PlaidLinkButton({
               ? "There was an error connecting with our partner"
               : JSON.stringify(error)
           }
-          withArrow
         >
           <Button
             color="red"
@@ -98,5 +98,11 @@ export default function PlaidLinkButton({
     );
   }
 
-  return <PlaidLink redirectRoute={redirectRoute} text={text} token={token} />;
+  return (
+    <PlaidLink
+      redirectRoute={redirectRoute}
+      text={text}
+      linkToken={linkToken}
+    />
+  );
 }

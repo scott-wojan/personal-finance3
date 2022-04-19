@@ -6,7 +6,7 @@ import client from "./client.js";
  * @param {string} access_token the access token for the bank.
  * @returns the accounts at the bank.
  */
-export async function getUserAccountsForBank(access_token) {
+export async function getUserAccountsForInstitution(access_token) {
   const accountsResponse = await client.accountsGet({
     access_token,
   });

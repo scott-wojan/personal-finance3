@@ -44,6 +44,8 @@ export default async function handler(req, res) {
     },
     client_name: application.name,
     products: [
+      //List of Plaid product(s) you wish to use. If launching Link in update mode, should be omitted; required otherwise.
+      //Only institutions that support all requested products will be shown in Link; to maximize the number of institutions listed, it is recommended to initialize Link with the minimal product set required for your use case. Additional products can be added after Link initialization by calling the relevant endpoints. For details and exceptions, see Choosing when to initialize products.
       Products.Auth,
       Products.Transactions,
       // Products.Investments,

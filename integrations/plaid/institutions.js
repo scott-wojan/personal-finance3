@@ -11,6 +11,9 @@ export async function getInstitutionById(institutionId) {
   const request = {
     institution_id: institutionId,
     country_codes: [CountryCode.Us],
+    options: {
+      include_optional_metadata: true,
+    },
   };
 
   const response = await client.institutionsGetById(request);

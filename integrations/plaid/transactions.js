@@ -46,3 +46,11 @@ export async function getTransactions(accessToken, startDate, endDate) {
     return error.response.data;
   }
 }
+
+export async function refreshTransactions(accessToken) {
+  try {
+    const response = await client.transactionsRefresh({
+      access_token: accessToken,
+    });
+  } catch (error) {}
+}

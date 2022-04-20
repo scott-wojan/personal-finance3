@@ -103,6 +103,76 @@ CREATE TABLE IF NOT EXISTS transactions
 );
 
 
+create or replace function apply_transactions_rules() 
+  returns trigger 
+ language plpgsql
+ as $$
+  declare
+    record_count integer;
+    statements record;
+  begin
+    
+    select count(*) 
+      from affected_rows 
+      into record_count;
+
+    for statements in        
+        select format( 'update %I set %s where user_id=%s and %s;'
+                       , 'transactions' -- ur.rule->>'tablename'
+                       , set_columns.cols
+                       , user_id
+                       , where_columns.cols
+                       ) as statement
+            from user_rules ur
+            cross join lateral (
+                  select string_agg(quote_ident(col->>'name') || '=' || '' ||  quote_literal(col->>'value'), ', ') AS cols
+                    from jsonb_array_elements(ur.rule->'set') col
+                  ) set_columns
+            cross join lateral (
+                  select string_agg(quote_ident(col->>'name') || ' ' 
+                                    || case (col->>'condition')::citext when 'equals' then '=' else 'like 'end 
+                                    || '' 
+                                    || 
+                                   case (col->>'condition')::citext
+                                   when 'equals' then quote_literal(col->>'value')
+                                   when 'starts with' then quote_literal(col->>'value'||'%')
+                                   when 'ends with' then quote_literal( format('%s%s', '%',col->>'value' )  )
+                                   else 'like'
+                                    end
+                                   , ' and ') AS cols
+                    from jsonb_array_elements(ur.rule->'where') col
+                  ) where_columns
+            where user_id in (select user_id from affected_rows)
+      loop 
+      -- raise notice '%', statements.statement;
+      execute (
+        statements.statement
+      );  
+      end loop;
+
+
+    -- raise notice 'affected %:%', TG_OP, record_count;
+
+    return null;   
+  end
+$$;
+
+
+create or replace trigger transactions_insert_trigger
+ after insert on transactions
+ REFERENCING NEW TABLE AS affected_rows
+   FOR EACH STATEMENT 
+   WHEN (pg_trigger_depth() < 1)
+   execute procedure apply_transactions_rules();
+
+create or replace trigger transactions_update_trigger
+ after update on transactions
+ REFERENCING OLD TABLE AS affected_rows  
+   FOR EACH STATEMENT 
+   WHEN (pg_trigger_depth() < 1)
+   execute procedure apply_transactions_rules();
+
+
 CREATE TABLE IF NOT EXISTS categories
 (
   id serial PRIMARY KEY,
@@ -258,6 +328,7 @@ create or replace function import_plaid_transactions()
   
     perform plaid_insert_or_update_acounts(NEW.plaid_webhook_history_id);
     perform plaid_insert_or_update_transactions(NEW.plaid_webhook_history_id);
+
     perform plaid_insert_or_update_categories(NEW.plaid_webhook_history_id);
     perform plaid_insert_or_update_user_categories(NEW.plaid_webhook_history_id);
     
@@ -265,7 +336,7 @@ create or replace function import_plaid_transactions()
     update plaid_webhook_transaction_history 
        set imported_at=now()
      where id=NEW.id;
-     
+
     return null;
 
   exception when others then
@@ -295,7 +366,7 @@ create or replace function import_plaid_transactions()
             'exceptionContext', exceptionContext
          );
          
-    raise notice 'error: %', jsonError;         
+    -- raise notice 'error: %', jsonError;         
 
     update plaid_webhook_transaction_history
        set importError = jsonError
@@ -348,7 +419,7 @@ create or replace function save_and_run_rule(userId integer, rule jsonb, ruleId 
     -- RAISE NOTICE 'new_rule_id: %', new_rule_id;
     
     -- execute (
-    --   select format('update %I set %s where user_id=%s and %s;'
+    --   select format( 'update %I set %s where user_id=%s and %s;'
     --                , 'tansactions' -- ur.rule->>'tablename'
     --                , set_columns.cols
     --                , user_id

@@ -1,9 +1,5 @@
-import { saveUserAccounts } from "database/accounts";
 import { getAccessInfoByItemId } from "database/institutions";
-import {
-  deleteTransactions,
-  saveUserTransactions,
-} from "database/transactions";
+import { deleteTransactions } from "database/transactions";
 import { saveTransactionWebhook } from "database/webook";
 import dayjs from "dayjs";
 import { getTransactions } from "integrations/plaid/transactions";
@@ -32,18 +28,6 @@ async function updateTransactions(webhookId, item_id, duration, measurement) {
     userId,
     json: data,
   });
-
-  // const { accounts, transactions, request_id } = data;
-
-  // await saveUserAccounts({
-  //   userId: userId,
-  //   institutionId: institutionId,
-  //   accessToken: access_token,
-  //   accounts,
-  //   requestId: request_id,
-  // });
-
-  // await saveUserTransactions({ userId, requestId: request_id, transactions });
 }
 
 async function initialUpdate(webhookId, requestBody) {
@@ -61,7 +45,7 @@ async function defaultUpdate(webhookId, requestBody) {
   await updateTransactions(webhookId, item_id, 14, "days");
 }
 
-async function transactioinsRemoved(webhookId, requestBody) {
+async function transactionsRemoved(webhookId, requestBody) {
   const { removed_transactions } = requestBody;
   try {
     await deleteTransactions({ transactionIds: removed_transactions });
@@ -74,7 +58,7 @@ const transactionHandlers = new Map([
   ["INITIAL_UPDATE", initialUpdate],
   ["HISTORICAL_UPDATE", historicalUpdate],
   ["DEFAULT_UPDATE", defaultUpdate],
-  ["TRANSACTIONS_REMOVED", transactioinsRemoved],
+  ["TRANSACTIONS_REMOVED", transactionsRemoved],
 ]);
 
 export { transactionHandlers };

@@ -25,7 +25,7 @@ function setUserCookie(req, res, user) {
       res,
       maxAge: 60 * 60 * 24,
       httpOnly: true,
-      sameSite: false, //environment.isProduction,
+      sameSite: true, //environment.isProduction,
     }
   );
 }

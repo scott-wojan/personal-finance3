@@ -150,13 +150,11 @@ create or replace function apply_transactions_rules()
       );  
       end loop;
 
-
     -- raise notice 'affected %:%', TG_OP, record_count;
 
     return null;   
   end
 $$;
-
 
 create or replace trigger transactions_insert_trigger
  after insert on transactions

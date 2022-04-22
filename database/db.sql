@@ -514,8 +514,8 @@ BEGIN
 
   insert into user_categories(user_id, user_category, user_subcategory)
   select user_id
-       , transaction->'category'->>0 as category
-       , transaction->'category'->>1 as subcategory
+       , coalesce(transaction->'category'->>0, 'Unassigned') as category
+       , coalesce(transaction->'category'->>1, 'Unassigned') as subcategory
    from  (
          select user_id, institution_id, jsonb_array_elements(jsondoc->'transactions') "transaction"
            from plaid_webhook_transaction_history
@@ -540,8 +540,8 @@ AS $$
 BEGIN
 
   insert into categories(category, subcategory, source)
-  select transaction->'category'->>0 as category
-       , transaction->'category'->>1 as subcategory
+  select coalesce(transaction->'category'->>0, 'Unassigned') as category
+       , coalesce(transaction->'category'->>1, 'Unassigned') as subcategory
        , 'Plaid' as source
    from  (
          select user_id, institution_id, jsonb_array_elements(jsondoc->'transactions') "transaction"
@@ -591,10 +591,10 @@ BEGIN
          , transaction->>'account_id' "account_id"
          , (transaction->>'amount')::numeric(28,4) * -1 "amount" --for some reason, positive values like payroll come in as negative numbers and expenses come in as positive
          , (transaction->>'authorized_date')::date "authorized_date"
-         , transaction->'category'->>0 as imported_category
-         , transaction->'category'->>1 as imported_subcategory	         
-         , transaction->'category'->>0 as category
-         , transaction->'category'->>1 as subcategory	
+         , coalesce(transaction->'category'->>0, 'Unassigned') as imported_category
+         , coalesce(transaction->'category'->>1, 'Unassigned') as imported_subcategory	         
+         , coalesce(transaction->'category'->>0, 'Unassigned') as category
+         , coalesce(transaction->'category'->>1, 'Unassigned') as subcategory
          , transaction->>'check_number' "check_number"	 
          , (transaction->>'date')::date "date"
          , transaction->>'iso_currency_code' "iso_currency_code"	 
@@ -1270,9 +1270,9 @@ select
    a.available_balance,
    a.account_limit,
    a.iso_currency_code,
+   a.type,
    a.subtype
 from accounts a inner join institutions i on a.institution_id = i.id;
-
 
 
 

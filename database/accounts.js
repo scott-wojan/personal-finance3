@@ -4,38 +4,63 @@ import { toJsonEscaped } from "./helpers.js";
 export async function getUserAccounts({ userId }) {
   // @ts-ignore
   const rows = await sql`
-      select *
-        from user_accounts
-       where user_id = ${userId}
-       order by institution, name
+      WITH type_subtype_grouped_accounts as (
+        select type
+            , subtype
+            , json_agg( 
+              json_build_object(
+                'id', id
+              , 'institution', institution
+              , 'name', name
+              , 'mask', mask
+              , 'official_name', official_name
+              , 'current_balance', current_balance
+              , 'available_balance', available_balance
+              , 'account_limit', account_limit
+              , 'iso_currency_code', iso_currency_code
+              )) AS accounts
+        from user_accounts ua
+      where user_id = ${userId}     
+      GROUP BY type, subtype
+      )
+      select type, json_object_agg(subtype, accounts) as accounts
+        from (select type, subtype,  accounts from type_subtype_grouped_accounts) x
+        group by type   
   `;
   return rows;
-}
-
-export async function saveUserAccounts({
-  userId,
-  institutionId,
-  accessToken,
-  accounts,
-  requestId,
-}) {
-  const json = toJsonEscaped(accounts);
-  const query = `select * from insert_plaid_accounts(${userId},'${requestId}','${institutionId}','${accessToken}','${json}')`;
-  await sql.unsafe(query);
-}
-
-export async function getAccountsAsSelectOptions({ userId }) {
-  // @ts-ignore
-  return await sql`select name || ' x' || mask as label, name as value from accounts where user_id = ${userId} order by name;`;
 }
 
 export async function getUserAccountById({ userId, accountId }) {
   // @ts-ignore
   const rows = await sql`
-    select *
-      from user_accounts
-     where id=${accountId} 
-       and user_id = ${userId}
+        WITH type_subtype_grouped_accounts as (
+          select type
+              , subtype
+              , json_agg( 
+                json_build_object(
+                  'id', id
+                , 'institution', institution
+                , 'name', name
+                , 'mask', mask
+                , 'official_name', official_name
+                , 'current_balance', current_balance
+                , 'available_balance', available_balance
+                , 'account_limit', account_limit
+                , 'iso_currency_code', iso_currency_code
+                )) AS accounts
+          from user_accounts ua
+        where user_id = ${userId}    
+          and id = ${accountId} 
+        GROUP BY type, subtype
+        )
+        select type, json_object_agg(subtype, accounts) as accounts
+          from (select type, subtype,  accounts from type_subtype_grouped_accounts) x
+          group by type   
 `;
   return rows[0];
+}
+
+export async function getAccountsAsSelectOptions({ userId }) {
+  // @ts-ignore
+  return await sql`select name || ' x' || mask as label, name as value from accounts where user_id = ${userId} order by name;`;
 }

@@ -13,255 +13,327 @@ import {
   ActionIcon,
   createStyles,
   Paper,
-  RadioGroup,
-  Radio,
   TextInput,
   Box,
 } from "@mantine/core";
-import Wizard from "components/wizard";
-import Step from "components/wizard/Step";
-import React, { useState } from "react";
+
+import React, { useReducer, useState } from "react";
 import { CircleCheck, MapPin, Trash, User } from "tabler-icons-react";
 import Image from "next/image";
 import { MonetaryInput } from "components/inputs/MonetaryInput";
 import { useForm, formList } from "@mantine/form";
+import { useSetState } from "@mantine/hooks";
+
+const ON_GOALS_SELECTED = "ON_GOALS_SELECTED";
+const ON_DEPOSITORY_SELECTED = "ON_DEPOSITORY_SELECTED";
+const ON_INVESTMENTS_SELECTED = "ON_INVESTMENTS_SELECTED";
+
+function onboardingWizardReducer(state, { type, payload }) {
+  switch (type) {
+    case ON_GOALS_SELECTED:
+      return {
+        ...state,
+        currentStep: state.currentStep + 1,
+        goals: payload,
+      };
+    case ON_DEPOSITORY_SELECTED:
+    case ON_INVESTMENTS_SELECTED:
+      return {
+        ...state,
+        currentStep: state.currentStep + 1,
+      };
+    default:
+      throw new Error(`Unhandled action type: ${type}`);
+  }
+}
+
+const onboardingWizardDefaults = {
+  currentStep: 0,
+  goals: {
+    budget: false,
+    financialHeath: false,
+  },
+};
 
 export default function Onboarding() {
-  const theme = useMantineTheme();
-  const breakpoints = [{ maxWidth: "sm", cols: 1 }];
+  const [state, setState] = useSetState({
+    isNextButtonEnabled: false,
+    wantsToBudget: undefined,
+    wantsFinancialUnderstading: undefined,
+  });
+
   // return <ManualOrImport />;
   // return <OnboardingAccordian />;
   return (
+    <OnboardingWizard>
+      <Goals />
+      <DepositoryAccounts />
+      <InvestmentAccounts />
+      <LoanAccounts />
+      <Review />
+      {/* <SelectTypesOfAccounts state={state} setState={setState} /> */}
+      {/* <Demo /> */}
+      {/* <ManualOrImport />
+      <Savings />
+      <Checking /> */}
+    </OnboardingWizard>
+  );
+}
+
+function OnboardingWizard({ children }) {
+  const [state, dispatch] = useReducer(
+    onboardingWizardReducer,
+    onboardingWizardDefaults
+  );
+  const components = (Array.isArray(children) ? children : [children]).map(
+    (component) => {
+      return React.cloneElement(component, { state, dispatch }, null);
+    }
+  );
+  return (
     <Center style={{ height: "100vh" }}>
-      <Paper shadow="xs" p="md">
-        <Wizard style={{ width: 600 }}>
-          <Demo />
-          <ManualOrImport />
-          <Savings />
-          <Checking />
-        </Wizard>
+      <Paper shadow="xs" p="md" style={{ width: 800 }}>
+        {components[state.currentStep]}
       </Paper>
     </Center>
   );
 }
 
-function Demo() {
-  const form = useForm({
-    initialValues: {
-      employees: formList([{ name: "", active: false }]),
-    },
-  });
+function Goals({ state: wizardState, dispatch }) {
+  const [state, setState] = useSetState(wizardState.goals);
 
-  const fields = form.values.employees.map((_, index) => (
-    <Group key={index} mt="xs">
-      <TextInput
-        placeholder="financial institution name"
-        required
-        sx={{ flex: 1 }}
-        {...form.getListInputProps("employees", index, "name")}
-      />
-      <MonetaryInput
-        {...form.getListInputProps("employees", index, "active")}
-      />
-      <ActionIcon
-        color="red"
-        variant="hover"
-        onClick={() => form.removeListItem("employees", index)}
-      >
-        <Trash size={16} />
-      </ActionIcon>
-    </Group>
-  ));
+  const onNextClicked = () => {
+    dispatch({ type: ON_GOALS_SELECTED, payload: state });
+  };
 
   return (
-    <Box sx={{ maxWidth: 500 }} mx="auto">
-      {fields.length > 0 ? (
-        <Group mb="xs">
-          <Text weight={500} size="sm" sx={{ flex: 1 }}>
-            Financial Institution
-          </Text>
-          <Text weight={500} size="sm" pr={80}>
-            Amount
-          </Text>
-        </Group>
-      ) : (
-        <Text color="dimmed" align="center">
-          No one here...
-        </Text>
-      )}
-
-      {fields}
-
-      <Group position="left" mt="xs">
-        <Button
-          variant="outline"
-          onClick={() =>
-            form.addListItem("employees", { name: "", active: false })
-          }
-        >
-          Add more
-        </Button>
-      </Group>
-    </Box>
+    <OnboardingTile
+      title="What are your goals today?"
+      subtitle="Select all options that apply"
+    >
+      <OnboardingContentGrid numberOfColumns={2}>
+        <IconOption
+          height={200}
+          width={200}
+          icon={{ src: "/onboarding/icons8-accounting-80.png", size: 60 }}
+          isSelected={state.budget}
+          setIsSelected={(selected) => {
+            setState({ budget: selected });
+          }}
+          text={{
+            text: "I'd like to create a budget",
+            size: "md",
+          }}
+        />
+        <IconOption
+          height={200}
+          width={200}
+          isSelected={state.financialHeath}
+          setIsSelected={(selected) => {
+            setState({ financialHeath: selected });
+          }}
+          icon={{ src: "/onboarding/icons8-combo-chart-80.png", size: 60 }}
+          text={{
+            text: "I’d like to understand my financial health",
+            size: "md",
+          }}
+        />
+      </OnboardingContentGrid>
+      <WizardButtons
+        nextButton={{
+          isDisabled: !state.budget && !state.financialHeath,
+          onClick: onNextClicked,
+        }}
+      />
+    </OnboardingTile>
   );
 }
 
-function ManualOrImport() {
-  const theme = useMantineTheme();
-  const breakpoints = [{ maxWidth: "sm", cols: 1 }];
-  const [isManualEntry, setIsManualEntry] = useState(false);
-  const [isImport, setIsImport] = useState(false);
+function IconListItem({ imgSrc, text }) {
+  return (
+    <List.Item
+      icon={
+        <Image width={24} height={24} alt="xxx" src={`/onboarding/${imgSrc}`} />
+      }
+    >
+      {text}
+    </List.Item>
+  );
+}
 
+function DepositoryAccounts({ dispatch }) {
+  const onNextClicked = () => {
+    dispatch({ type: ON_DEPOSITORY_SELECTED, payload: null });
+  };
+
+  return (
+    <OnboardingTile
+      title="Let's connect your depository accounts"
+      subtitle="Connecting these will help you with budgeting, cash flow and determining net worth"
+    >
+      <OnboardingContentGrid numberOfColumns={2}>
+        <List>
+          <IconListItem text="Savings" imgSrc="icons8-money-100.png" />
+          <IconListItem text="Checking" imgSrc="icons8-check-book-80.png" />
+        </List>
+        <List>
+          <IconListItem
+            text="Certificate of deposit"
+            imgSrc="icons8-contract-80.png"
+          />
+          <IconListItem text="Money market" imgSrc="icons8-coins-80.png" />
+        </List>
+      </OnboardingContentGrid>
+      <WizardButtons
+        nextButton={{
+          text: "Connect depository accounts",
+          isDisabled: false,
+          onClick: onNextClicked,
+        }}
+      />
+    </OnboardingTile>
+  );
+}
+
+function LoanAccounts({ dispatch }) {
+  const onNextClicked = () => {
+    dispatch({ type: ON_DEPOSITORY_SELECTED, payload: null });
+  };
+
+  return (
+    <OnboardingTile
+      title="Finally, let's connect your loan accounts"
+      subtitle="Connecting these will help you determine your net worth"
+    >
+      <OnboardingContentGrid numberOfColumns={2}>
+        <List>
+          <IconListItem
+            text="Credit cards"
+            imgSrc="icons8-debit-card-100.png"
+          />
+
+          <IconListItem text="Auto loans" imgSrc="icons8-car-80.png" />
+          <IconListItem
+            text="Construction loans"
+            imgSrc="icons8-construction-80.png"
+          />
+        </List>
+        <List>
+          <IconListItem
+            text="Home equity line of credit"
+            imgSrc="icons8-rent-80.png"
+          />
+          <IconListItem text="Mortgage" imgSrc="icons8-house-80.png" />
+          <IconListItem
+            text="Student loan"
+            imgSrc="icons8-graduation-cap-80.png"
+          />
+        </List>
+      </OnboardingContentGrid>
+      <WizardButtons
+        nextButton={{
+          text: "Connect accounts",
+          isDisabled: false,
+          onClick: onNextClicked,
+        }}
+      />
+    </OnboardingTile>
+  );
+}
+
+function InvestmentAccounts({ state: wizardState, dispatch }) {
+  const onNextClicked = () => {
+    dispatch({ type: ON_DEPOSITORY_SELECTED, payload: null });
+  };
+
+  /*
+  https://smartasset.com/investing/types-of-investment
+  */
+
+  return (
+    <OnboardingTile
+      title="Let's connect your investment accounts"
+      subtitle="Connecting these will help you determine your net worth"
+    >
+      <OnboardingContentGrid numberOfColumns={2}>
+        <List>
+          <IconListItem text="401K" imgSrc="icons8-money-box-100.png" />
+          <IconListItem text="Stocks" imgSrc="icons8-diploma-80.png" />
+          <IconListItem
+            text="Exchange-Traded funds"
+            imgSrc="icons8-investment-portfolio-80.png"
+          />
+          <IconListItem
+            text="Mutual funds"
+            imgSrc="icons8-crowdfunding-80.png"
+          />
+        </List>
+        <List>
+          <IconListItem text="IRA" imgSrc="icons8-money-bag-80.png" />
+          <IconListItem text="Bonds" imgSrc="icons8-bonds-100.png" />
+
+          <IconListItem
+            text="Annuities"
+            imgSrc="icons8-duration-finance-80.png"
+          />
+          <IconListItem
+            text="Education savings eg: 529"
+            imgSrc="icons8-university-80.png"
+          />
+        </List>
+      </OnboardingContentGrid>
+      <WizardButtons
+        nextButton={{
+          text: "Connect accounts",
+          isDisabled: false,
+          onClick: onNextClicked,
+        }}
+      />
+    </OnboardingTile>
+  );
+}
+
+function Review() {
+  return <div>Review</div>;
+}
+
+function OnboardingTile({ title, subtitle, children }) {
+  const theme = useMantineTheme();
   return (
     <SimpleGrid style={{ justifyItems: "center" }}>
-      <Title order={2}>Let's start understanding your financial future</Title>
+      <Title order={2}>{title}</Title>
       <Title order={5} style={{ color: theme.colors.gray[6] }}>
-        How would you like to get started?
+        {subtitle}
       </Title>
-      <SimpleGrid
-        cols={2}
-        breakpoints={breakpoints}
-        style={{ justifyItems: "center" }}
-      >
-        <IconOption
-          height={200}
-          width={200}
-          icon={{ src: "/onboarding/icons8-import-100.png", size: 60 }}
-          isSelected={isImport}
-          setIsSelected={(isSelected) => {
-            setIsImport(isSelected);
-            setIsManualEntry(false);
-          }}
-          text={{
-            text: "Import my information for me",
-            size: "md",
-          }}
-        />
-        <IconOption
-          height={200}
-          width={200}
-          isSelected={isManualEntry}
-          setIsSelected={(isManual) => {
-            setIsManualEntry(isManual);
-            setIsImport(false);
-          }}
-          icon={{ src: "/onboarding/icons8-form-100.png", size: 60 }}
-          text={{
-            text: "I'll enter all information manually",
-            size: "md",
-          }}
-        />
-      </SimpleGrid>
+      {children}
     </SimpleGrid>
   );
 }
 
-function Savings() {
-  const theme = useMantineTheme();
-  const breakpoints = [{ maxWidth: "sm", cols: 1 }];
-  return (
-    <SimpleGrid cols={1} breakpoints={breakpoints} style={{}}>
-      <Title order={2}>Let's discover your assets</Title>
-      <Title order={5} style={{ color: theme.colors.gray[6] }}>
-        Do you have a savings account?
-      </Title>
-      <Group align="center">
-        <Image
-          width={40}
-          height={40}
-          alt="Savings"
-          src="/onboarding/icons8-bank-building-100.png"
-        />
-        <TextInput size="xs" label="Financial institution name" required />
-        <MonetaryInput label="Amount" value={0} required />
-      </Group>
-    </SimpleGrid>
-  );
-}
-
-function Checking() {
-  const theme = useMantineTheme();
-  const breakpoints = [{ maxWidth: "sm", cols: 1 }];
-  return (
-    <SimpleGrid cols={1} breakpoints={breakpoints} style={{}}>
-      <Title order={2}>Let's discover your assets</Title>
-      <Title order={5} style={{ color: theme.colors.gray[6] }}>
-        Do you have a checking account?
-      </Title>
-      <Group align="center">
-        <Image
-          width={40}
-          height={40}
-          alt="Savings"
-          src="/onboarding/icons8-merchant-account-100.png"
-        />
-        <TextInput size="xs" label="Financial institution name" required />
-        <MonetaryInput label="Amount" value={0} required />
-      </Group>
-    </SimpleGrid>
-  );
-}
-
-function Select2() {
-  const theme = useMantineTheme();
+function OnboardingContentGrid({ numberOfColumns, children }) {
   const breakpoints = [{ maxWidth: "sm", cols: 1 }];
   return (
     <SimpleGrid
-      cols={1}
+      cols={numberOfColumns}
+      // @ts-ignore
       breakpoints={breakpoints}
       style={{ justifyItems: "center" }}
     >
-      <Title order={2}>What types of assets do you have?</Title>
-      <Title order={5} style={{ color: theme.colors.gray[6] }}>
-        Select all that apply
-      </Title>
-      <SimpleGrid
-        cols={5}
-        breakpoints={breakpoints}
-        style={{ justifyItems: "center" }}
-      >
-        <IconOption
-          icon="/onboarding/icons8-money-100.png"
-          text="Have a savings account"
-        />
-        <IconOption
-          icon="/onboarding/icons8-merchant-account-100.png"
-          text="Have a checking account"
-        />
-        <IconOption
-          icon="/onboarding/icons8-debit-card-100.png"
-          text="Have a credit card"
-        />
-        <IconOption
-          icon="/onboarding/icons8-clinic-100.png"
-          text="Have life insurance"
-        />
-        <IconOption
-          icon="/onboarding/icons8-bonds-100.png"
-          text="Have Stocks, bonds, or funds"
-        />
-        <IconOption
-          icon="/onboarding/icons8-home-100.png"
-          text="Own a home or investment property"
-        />
-        <IconOption
-          icon="/onboarding/icons8-car-100.png"
-          text="Own an automobile"
-        />
-        <IconOption
-          icon="/onboarding/icons8-money-box-100.png"
-          text="Have IRA or 401k accounts"
-        />
-        <IconOption
-          icon="/onboarding/icons8-bank-building-100.png"
-          text="Collect Social Security"
-        />
-        <IconOption
-          icon="/onboarding/icons8-university-100.png"
-          text="Student or other loans"
-        />
-      </SimpleGrid>
+      {children}
     </SimpleGrid>
+  );
+}
+
+function WizardButtons({ nextButton }) {
+  return (
+    <Group position="apart" mt="xl">
+      <Button
+        disabled={nextButton?.isDisabled ?? true}
+        onClick={nextButton?.onClick}
+      >
+        {nextButton?.text ?? "Next"}
+      </Button>
+    </Group>
   );
 }
 
@@ -446,24 +518,5 @@ function IconOption({
         </Text>
       </Stack>
     </div>
-  );
-}
-
-function WizardForm() {
-  return (
-    <Center style={{ height: "100vh" }}>
-      <Wizard style={{ width: 600 }}>
-        <Step
-          title="Step 1"
-          label="Getting Started"
-          description="Create an account"
-        >
-          Step 1
-        </Step>
-        <Step label="Assets" description="Create an account" title="Step 2">
-          Step 2
-        </Step>
-      </Wizard>
-    </Center>
   );
 }

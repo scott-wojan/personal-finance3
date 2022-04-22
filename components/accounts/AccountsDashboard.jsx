@@ -30,25 +30,63 @@ export default function AccountsDashboard() {
       </Group>
       <>
         {
-          data &&
-            Object.entries(groupBy(data, "institution")).map(([key, value]) => {
-              return (
-                <div key={key}>
-                  <Title pb="sm" order={4}>
-                    {key}
-                  </Title>
-                  <ResponsiveGrid columns={4}>
-                    {value.map((account, accountIndex) => {
-                      return (
-                        <AccountCard key={account.name} account={account} />
-                      );
-                    })}
-                  </ResponsiveGrid>
-                </div>
-              );
-            })
-          // data.map((account) => {
-          //   return <AccountCard key={account.name} account={account} />;
+          data && (
+            <>
+              {data.map((entry) => {
+                return (
+                  <div key={entry.type}>
+                    <Title
+                      pb="sm"
+                      order={4}
+                      style={{ textTransform: "capitalize" }}
+                    >
+                      {entry.type}
+                    </Title>
+                    {Object.entries(entry.accounts).map(
+                      ([subtype, accounts]) => {
+                        return (
+                          <div key={subtype}>
+                            <Title
+                              pb="sm"
+                              order={5}
+                              style={{ textTransform: "capitalize" }}
+                            >
+                              {subtype}
+                            </Title>
+                            {accounts.map((account) => {
+                              return (
+                                <div key={account.id}>
+                                  <Anchor href={`/accounts/${account.id}`}>
+                                    {account.name} x{account.mask}
+                                  </Anchor>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        );
+                      }
+                    )}
+                  </div>
+                );
+              })}
+            </>
+          )
+
+          // Object.entries(groupBy(data, "institution")).map(([key, value]) => {
+          //   return (
+          //     <div key={key}>
+          //       <Title pb="sm" order={4}>
+          //         {key}
+          //       </Title>
+          //       <ResponsiveGrid columns={4}>
+          //         {value.map((account, accountIndex) => {
+          //           return (
+          //             <AccountCard key={account.name} account={account} />
+          //           );
+          //         })}
+          //       </ResponsiveGrid>
+          //     </div>
+          //   );
           // })
         }
       </>

@@ -1,7 +1,7 @@
 import { Button, Group, Stepper } from "@mantine/core";
 import React, { useState } from "react";
 
-export default function Wizard({ style = {}, children }) {
+export default function Wizard({ isNextButtonEnabled, children, style = {} }) {
   const [currentStep, setCurent] = useState(0);
   if (!children) return null;
 
@@ -33,7 +33,7 @@ export default function Wizard({ style = {}, children }) {
         >
           Back
         </Button>
-        <Button onClick={nextStep}>
+        <Button disabled={!isNextButtonEnabled} onClick={nextStep}>
           {currentStep === numberOfChildren ? "Complete" : "Next step"}
         </Button>
       </Group>

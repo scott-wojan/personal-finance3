@@ -1,13 +1,84 @@
-{
-  "id": 45,
-  "rule": {
-    "set": [
-      { "name": "name", "value": "Amazon" },
-      { "name": "category", "value": "Food and Drink" },
-      { "name": "subcategory", "value": "Restaurants" }
-    ],
-    "where": [
-      { "name": "name", "value": "AMAZON.COM", "condition": "starts with" }
-    ]
+[
+  {
+    "type": "depository",
+    "accounts": {
+      "savings": [
+        {
+          "id": "usaa_savings",
+          "institution": "USAA",
+          "name": "USAA Savings",
+          "mask": "9864",
+          "official_name": "USAA Super Sacubgs",
+          "current_balance": null,
+          "available_balance": null,
+          "account_limit": null,
+          "iso_currency_code": "USA"
+        },
+        {
+          "id": "7QbzLpRygvU3DKJojjw1ty4NBY4x5NiDavrdm",
+          "institution": "USAA",
+          "name": "USAA SAVINGS",
+          "mask": "9864",
+          "official_name": null,
+          "current_balance": 102820.76,
+          "available_balance": 102820.76,
+          "account_limit": null,
+          "iso_currency_code": "USD"
+        }
+      ],
+      "checking": [
+        {
+          "id": "usaa_checking",
+          "institution": "USAA",
+          "name": "USAA Checking",
+          "mask": "9872",
+          "official_name": "USAA Super Checking",
+          "current_balance": null,
+          "available_balance": null,
+          "account_limit": null,
+          "iso_currency_code": "USA"
+        },
+        {
+          "id": "9omM1NJk9jT8KvD4mmpNiY7J8q7ZwJUkLYzOA",
+          "institution": "USAA",
+          "name": "USAA CLASSIC CHECKING",
+          "mask": "9872",
+          "official_name": null,
+          "current_balance": 24077.91,
+          "available_balance": 24077.91,
+          "account_limit": null,
+          "iso_currency_code": "USD"
+        }
+      ]
+    }
+  },
+  {
+    "type": "credit",
+    "accounts": {
+      "credit card": [
+        {
+          "id": "credit_card1",
+          "institution": "Capital One",
+          "name": "Capital One Venture One",
+          "mask": "1036",
+          "official_name": "Capital One Venture One",
+          "current_balance": null,
+          "available_balance": null,
+          "account_limit": null,
+          "iso_currency_code": "USA"
+        },
+        {
+          "id": "credit_card2",
+          "institution": "Capital One",
+          "name": "Capital One Venture One",
+          "mask": "3381",
+          "official_name": "Capital One Venture One",
+          "current_balance": null,
+          "available_balance": null,
+          "account_limit": null,
+          "iso_currency_code": "USA"
+        }
+      ]
+    }
   }
-}
+]

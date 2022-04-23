@@ -26,7 +26,7 @@ export default function AccountsDashboard() {
     <>
       <Group position="apart" pb="md">
         <Title order={3}>Accounts</Title>
-        <PlaidLinkButton text="Add new account" />
+        {/* <PlaidLinkButton text="Add new account" /> */}
       </Group>
       <>
         {

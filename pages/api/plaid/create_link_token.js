@@ -26,14 +26,14 @@ export default async function handler(req, res) {
     return res.status(401);
   }
 
-  let baseUrl = null;
+  const { products } = req.body;
+
+  let webhookUrl = null;
   try {
-    baseUrl = await getWebhookUrl();
+    webhookUrl = `${await getWebhookUrl()}/api/plaid/webhook`;
   } catch (error) {
     return res.status(500).json(error);
   }
-
-  const webhookUrl = `${baseUrl}/api/plaid/webhook`;
 
   const request = {
     user: {
@@ -43,17 +43,18 @@ export default async function handler(req, res) {
       email_address: user.email,
     },
     client_name: application.name,
-    products: [
-      //List of Plaid product(s) you wish to use. If launching Link in update mode, should be omitted; required otherwise.
-      //Only institutions that support all requested products will be shown in Link; to maximize the number of institutions listed, it is recommended to initialize Link with the minimal product set required for your use case. Additional products can be added after Link initialization by calling the relevant endpoints. For details and exceptions, see Choosing when to initialize products.
-      Products.Auth,
-      Products.Transactions,
-      // Products.Investments,
-      // Products.Assets,
-      // Products.Balance,
-      // Products.Liabilities,
-      // Products.CreditDetails,
-    ],
+    products,
+    // [
+    //   //List of Plaid product(s) you wish to use. If launching Link in update mode, should be omitted; required otherwise.
+    //   //Only institutions that support all requested products will be shown in Link; to maximize the number of institutions listed, it is recommended to initialize Link with the minimal product set required for your use case. Additional products can be added after Link initialization by calling the relevant endpoints. For details and exceptions, see Choosing when to initialize products.
+    //   // Products.Auth,
+    //   // Products.Transactions,
+    //   // Products.Investments,
+    //   // Products.Assets,
+    //   // Products.Balance,
+    //   // Products.Liabilities,
+    //   // Products.CreditDetails,
+    // ]
     country_codes: [CountryCode.Us],
     webhook: webhookUrl,
     language: "en",
@@ -63,6 +64,6 @@ export default async function handler(req, res) {
     const createTokenResponse = await getLinkToken(request);
     res.status(200).json(createTokenResponse.data);
   } catch (error) {
-    res.status(400).json(error);
+    res.status(400).json(error.response.data);
   }
 }

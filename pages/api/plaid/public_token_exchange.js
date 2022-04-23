@@ -7,6 +7,7 @@ import {
   associateInstitutionToUser,
   saveInstitution,
 } from "database/institutions";
+import { saveUserAccounts } from "database/accounts";
 
 export default async function handler(req, res) {
   const { public_token, metadata } = req.body;
@@ -35,14 +36,12 @@ export default async function handler(req, res) {
 
     // const accounts = await getUserAccountsForInstitution(accessToken);
 
-    // // save the user's accounts with the user's access token for that account
-    // await saveUserAccounts({
-    //   userId: user.id,
-    //   requestId,
-    //   institutionId: institution.institution_id,
-    //   accessToken,
-    //   accounts,
-    // });
+    // save the user's accounts
+    await saveUserAccounts({
+      userId: user.id,
+      institutionId: institution.institution_id,
+      accounts: metadata.accounts,
+    });
 
     setUserCookie(req, res, { ...user, has_accounts: true });
 

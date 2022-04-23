@@ -1,14 +1,12 @@
 import { Button, Tooltip } from "@mantine/core";
 import axios from "axios";
 import { useApi } from "hooks/useApi";
-import { useRouter } from "next/router";
 import React, { useCallback, useEffect, useState } from "react";
 import { usePlaidLink } from "react-plaid-link";
 import { AlertCircle } from "tabler-icons-react";
 import { environment } from "appconfig";
 
-const PlaidLink = ({ text, linkToken, redirectRoute = "/" }) => {
-  const router = useRouter();
+const PlaidLink = ({ text, linkToken, onLinkSuccess, products }) => {
   const onSuccess = useCallback(
     async (public_token, metadata) => {
       await axios.post("/api/plaid/public_token_exchange", {
@@ -16,9 +14,9 @@ const PlaidLink = ({ text, linkToken, redirectRoute = "/" }) => {
         metadata,
       });
 
-      router.push(redirectRoute);
+      onLinkSuccess?.(metadata);
     },
-    [redirectRoute, router]
+    [onLinkSuccess]
   );
 
   const onExit = useCallback(async (error, metadata) => {
@@ -56,13 +54,18 @@ const PlaidLink = ({ text, linkToken, redirectRoute = "/" }) => {
 };
 
 export default function PlaidLinkButton({
+  products,
   text = "Connect Accounts",
-  redirectRoute = undefined,
+  onLinkSuccess = undefined,
 }) {
   const [linkToken, setLinkToken] = useState(null);
+  if (!products || products?.length === 0) {
+    throw new Error("Must specify one or more products");
+  }
 
   const { error, data } = useApi({
     url: "plaid/create_link_token",
+    payload: { products },
   });
 
   useEffect(() => {
@@ -100,9 +103,10 @@ export default function PlaidLinkButton({
 
   return (
     <PlaidLink
-      redirectRoute={redirectRoute}
+      onLinkSuccess={onLinkSuccess}
       text={text}
       linkToken={linkToken}
+      products={products}
     />
   );
 }

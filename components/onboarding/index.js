@@ -10,22 +10,19 @@ import {
   useMantineTheme,
   List,
   Title,
-  ActionIcon,
   createStyles,
   Paper,
-  TextInput,
-  Box,
 } from "@mantine/core";
 
 import React, { useReducer, useState } from "react";
-import { CircleCheck, MapPin, Trash, User } from "tabler-icons-react";
+import { CircleCheck, MapPin, User } from "tabler-icons-react";
 import Image from "next/image";
-import { MonetaryInput } from "components/inputs/MonetaryInput";
-import { useForm, formList } from "@mantine/form";
 import { useSetState } from "@mantine/hooks";
+import PlaidLinkButton from "components/plaid/PlaidLink";
 
 const ON_GOALS_SELECTED = "ON_GOALS_SELECTED";
 const ON_DEPOSITORY_SELECTED = "ON_DEPOSITORY_SELECTED";
+const ON_LOAN_SELECTED = "ON_LOAN_SELECTED";
 const ON_INVESTMENTS_SELECTED = "ON_INVESTMENTS_SELECTED";
 
 function onboardingWizardReducer(state, { type, payload }) {
@@ -36,6 +33,7 @@ function onboardingWizardReducer(state, { type, payload }) {
         currentStep: state.currentStep + 1,
         goals: payload,
       };
+    case ON_LOAN_SELECTED:
     case ON_DEPOSITORY_SELECTED:
     case ON_INVESTMENTS_SELECTED:
       return {
@@ -149,11 +147,16 @@ function Goals({ state: wizardState, dispatch }) {
   );
 }
 
-function IconListItem({ imgSrc, text }) {
+function IconListItem({ imgSrc, text, isChecked = false }) {
   return (
     <List.Item
       icon={
-        <Image width={24} height={24} alt="xxx" src={`/onboarding/${imgSrc}`} />
+        <Image
+          width={24}
+          height={24}
+          alt="xxx"
+          src={`/onboarding/${isChecked ? "icons8-done-80.png" : imgSrc}`}
+        />
       }
     >
       {text}
@@ -162,8 +165,18 @@ function IconListItem({ imgSrc, text }) {
 }
 
 function DepositoryAccounts({ dispatch }) {
+  const [state, setState] = useState([]);
   const onNextClicked = () => {
     dispatch({ type: ON_DEPOSITORY_SELECTED, payload: null });
+  };
+
+  const onLinkSuccess = (metadata) => {
+    setState([
+      ...state,
+      ...metadata.accounts.map((account) => {
+        return account.subtype;
+      }),
+    ]);
   };
 
   return (
@@ -173,31 +186,54 @@ function DepositoryAccounts({ dispatch }) {
     >
       <OnboardingContentGrid numberOfColumns={2}>
         <List>
-          <IconListItem text="Savings" imgSrc="icons8-money-100.png" />
-          <IconListItem text="Checking" imgSrc="icons8-check-book-80.png" />
+          <IconListItem
+            text="Savings"
+            isChecked={state.includes("savings")}
+            imgSrc="icons8-money-100.png"
+          />
+          <IconListItem
+            text="Checking"
+            isChecked={state.includes("checking")}
+            imgSrc="icons8-check-book-80.png"
+          />
         </List>
         <List>
           <IconListItem
             text="Certificate of deposit"
+            isChecked={state.includes("cd")}
             imgSrc="icons8-contract-80.png"
           />
-          <IconListItem text="Money market" imgSrc="icons8-coins-80.png" />
+          <IconListItem
+            text="Money market"
+            imgSrc="icons8-coins-80.png"
+            isChecked={state.includes("money market")}
+          />
         </List>
       </OnboardingContentGrid>
-      <WizardButtons
-        nextButton={{
-          text: "Connect depository accounts",
-          isDisabled: false,
-          onClick: onNextClicked,
-        }}
+      <PlaidLinkButton
+        onLinkSuccess={onLinkSuccess}
+        products={["auth", "transactions"]}
       />
+      <Button variant="outline" onClick={onNextClicked}>
+        Next
+      </Button>
     </OnboardingTile>
   );
 }
 
 function LoanAccounts({ dispatch }) {
+  const [state, setState] = useState([]);
   const onNextClicked = () => {
-    dispatch({ type: ON_DEPOSITORY_SELECTED, payload: null });
+    dispatch({ type: ON_INVESTMENTS_SELECTED, payload: null });
+  };
+
+  const onLinkSuccess = (metadata) => {
+    setState([
+      ...state,
+      ...metadata.accounts.map((account) => {
+        return account.subtype;
+      }),
+    ]);
   };
 
   return (
@@ -210,40 +246,59 @@ function LoanAccounts({ dispatch }) {
           <IconListItem
             text="Credit cards"
             imgSrc="icons8-debit-card-100.png"
+            isChecked={state.includes("credit card")}
           />
 
           <IconListItem text="Auto loans" imgSrc="icons8-car-80.png" />
           <IconListItem
             text="Construction loans"
             imgSrc="icons8-construction-80.png"
+            isChecked={state.includes("construction")}
           />
         </List>
         <List>
           <IconListItem
             text="Home equity line of credit"
             imgSrc="icons8-rent-80.png"
+            isChecked={state.includes("home equity")}
           />
-          <IconListItem text="Mortgage" imgSrc="icons8-house-80.png" />
+          <IconListItem
+            text="Mortgage"
+            imgSrc="icons8-house-80.png"
+            isChecked={state.includes("mortgage")}
+          />
           <IconListItem
             text="Student loan"
             imgSrc="icons8-graduation-cap-80.png"
+            isChecked={state.includes("student")}
           />
         </List>
       </OnboardingContentGrid>
-      <WizardButtons
-        nextButton={{
-          text: "Connect accounts",
-          isDisabled: false,
-          onClick: onNextClicked,
-        }}
+      <PlaidLinkButton
+        onLinkSuccess={onLinkSuccess}
+        products={["liabilities", "transactions"]}
       />
+      <Button variant="outline" onClick={onNextClicked}>
+        Next
+      </Button>
     </OnboardingTile>
   );
 }
 
-function InvestmentAccounts({ state: wizardState, dispatch }) {
+function InvestmentAccounts({ dispatch }) {
+  const [state, setState] = useState([]);
+
   const onNextClicked = () => {
     dispatch({ type: ON_DEPOSITORY_SELECTED, payload: null });
+  };
+
+  const onLinkSuccess = (metadata) => {
+    setState([
+      ...state,
+      ...metadata.accounts.map((account) => {
+        return account.subtype;
+      }),
+    ]);
   };
 
   /*
@@ -257,38 +312,63 @@ function InvestmentAccounts({ state: wizardState, dispatch }) {
     >
       <OnboardingContentGrid numberOfColumns={2}>
         <List>
-          <IconListItem text="401K" imgSrc="icons8-money-box-100.png" />
-          <IconListItem text="Stocks" imgSrc="icons8-diploma-80.png" />
           <IconListItem
-            text="Exchange-Traded funds"
+            text="401k"
+            imgSrc="icons8-money-box-100.png"
+            isChecked={state.includes("401k") || state.includes("roth 401k")}
+          />
+
+          <IconListItem
+            text="Brokerage"
             imgSrc="icons8-investment-portfolio-80.png"
+            isChecked={
+              state.includes("brokerage") ||
+              state.includes("non-taxable brokerage account")
+            }
           />
           <IconListItem
             text="Mutual funds"
             imgSrc="icons8-crowdfunding-80.png"
+            isChecked={state.includes("mutual fund")}
           />
         </List>
         <List>
-          <IconListItem text="IRA" imgSrc="icons8-money-bag-80.png" />
-          <IconListItem text="Bonds" imgSrc="icons8-bonds-100.png" />
+          <IconListItem
+            text="IRA"
+            imgSrc="icons8-money-bag-80.png"
+            isChecked={
+              state.includes("ira") ||
+              state.includes("roth") ||
+              state.includes("sep ira") ||
+              state.includes("simple ira")
+            }
+          />
 
           <IconListItem
             text="Annuities"
             imgSrc="icons8-duration-finance-80.png"
+            isChecked={
+              state.includes("variable annuity") ||
+              state.includes("other annuity")
+            }
           />
           <IconListItem
             text="Education savings eg: 529"
             imgSrc="icons8-university-80.png"
+            isChecked={
+              state.includes("529") ||
+              state.includes("education savings account")
+            }
           />
         </List>
       </OnboardingContentGrid>
-      <WizardButtons
-        nextButton={{
-          text: "Connect accounts",
-          isDisabled: false,
-          onClick: onNextClicked,
-        }}
+      <PlaidLinkButton
+        onLinkSuccess={onLinkSuccess}
+        products={["investments", "transactions"]}
       />
+      <Button variant="outline" onClick={onNextClicked}>
+        Next
+      </Button>
     </OnboardingTile>
   );
 }

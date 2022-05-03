@@ -405,7 +405,9 @@ create or replace function save_and_run_rule(userId integer, rule jsonb, ruleId 
     if ruleId is NULL then
         insert into user_rules(user_id, rule) 
              values (userId,rule) 
-          returning id into new_rule_id; --on conflict do nothing;
+                 on conflict do nothing
+          returning id into new_rule_id ;
+
     else
         update user_rules
            set rule = $2

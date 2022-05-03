@@ -5,11 +5,11 @@ import { getUserFromCookie, removeUserCookie } from "cookies/user";
 import React from "react";
 
 export default function Index({ user }) {
-  return <Onboarding />;
+  // return <Onboarding />;
 
-  if (!user?.has_accounts) {
-    return <LinkFirstAccount />;
-  }
+  // if (!user?.has_accounts) {
+  //   return <LinkFirstAccount />;
+  // }
 
   return <Dashboard user={user} />;
 }

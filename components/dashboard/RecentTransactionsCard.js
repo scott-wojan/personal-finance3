@@ -4,6 +4,7 @@ import { Eye } from "tabler-icons-react";
 import Link from "next/link";
 import { GridCard } from "./GridCard";
 import { usePagingAndFilteringApi } from "hooks/usePagingAndFilteringApi";
+import { getFormattedCurrency } from "formatting";
 
 export function RecentTransactionsCard() {
   const theme = useMantineTheme();
@@ -34,13 +35,15 @@ function RecentTransactions() {
     payload: { pageSize: 6 },
   });
 
+  console.log("data", data);
+
   useEffect(() => {
     setTableDate(
       data?.data?.map((transaction) => (
         <tr key={transaction.id}>
           <td style={{ whiteSpace: "nowrap" }}>{transaction.date}</td>
           <td className="truncate-text">{transaction.name}</td>
-          <td>{transaction.amount}</td>
+          <td>{getFormattedCurrency(transaction.amount)}</td>
         </tr>
       ))
     );

@@ -1,31 +1,39 @@
 import { Badge, Title, Text, useMantineTheme } from "@mantine/core";
 import { AccountLineChart } from "components/accounts/AccountLineChart";
 import { useRouter } from "next/router";
-import React from "react";
-import { useApi } from "hooks/useApi";
+import React, { useEffect, useState } from "react";
 import { Application } from "components/app/Application";
 import { AccountStats } from "components/accounts/AccountStats";
 import TransactionsGrid from "components/transactions/TransactionsGrid";
+import axios from "axios";
 
 //https://nextjs.org/docs/routing/dynamic-routes
 
 export default function AccountDetail() {
-  const router = useRouter();
-  const { id } = router.query;
   const theme = useMantineTheme();
-  const { isLoading, error, data } = useApi({
-    url: "accounts",
-    payload: { accountId: id?.[0] },
-  });
 
-  // if (data) {
-  //   console.log(isLoading, error, data);
-  // }
+  const router = useRouter();
+  const [data, setData] = useState();
+
+  useEffect(() => {
+    async function fetchData() {
+      if (router.isReady) {
+        const res = await axios.post(`/api/accounts`, {
+          accountId: router.query.id[0],
+        });
+        setData(res.data);
+        console.log("data", res.data);
+      }
+    }
+    fetchData();
+  }, [router.isReady, router.query.id]); // Or [] if effect doesn't need props or state
+
+  if (!data) return <></>;
 
   return (
     <Application sidebar={<AccountStats />}>
       <Title order={3}>Account Details</Title>
-      {!isLoading && data && (
+      {data && (
         <>
           <div style={{ display: "flex", justifyContent: "space-between" }}>
             <Text weight={700}>{data.institution}</Text>
@@ -62,7 +70,7 @@ export default function AccountDetail() {
           <div style={{ display: "flex", justifyContent: "space-between" }}>
             <div style={{ width: "100%" }}>
               <div style={{ paddingBottom: theme.spacing.md }}>
-                <AccountLineChart numberOfMonths={12} accountId={id} />
+                <AccountLineChart numberOfMonths={12} accountId={data.id} />
               </div>
               <div style={{ paddingRight: theme.spacing.md }}>
                 <Title pb="sm" order={4}>

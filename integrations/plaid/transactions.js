@@ -1,9 +1,7 @@
 import client from "./client";
 
 export async function getTransactions(accessToken, startDate, endDate) {
-  let request;
-
-  request = {
+  const request = {
     start_date: new Date(startDate).toISOString().substring(0, 10),
     end_date: new Date(endDate).toISOString().substring(0, 10),
     access_token: accessToken,

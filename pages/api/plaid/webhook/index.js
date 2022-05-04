@@ -1,4 +1,5 @@
 import { saveWebhook, saveWebhookError } from "database/webook";
+import { liabilitiesHandlers } from "./handlers/liabilities";
 import { transactionHandlers } from "./handlers/transactions";
 
 export default async function handler(req, res) {
@@ -16,6 +17,7 @@ export default async function handler(req, res) {
   try {
     const webhookHandlers = new Map([
       ["TRANSACTIONS", transactionHandlers],
+      ["LIABILITIES", liabilitiesHandlers],
       // ["HOLDINGS", holdingsHandlers],
     ]);
     const webhookHandler = webhookHandlers.get(webhook_type);

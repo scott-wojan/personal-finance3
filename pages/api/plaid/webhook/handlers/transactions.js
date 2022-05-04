@@ -1,6 +1,6 @@
 import { getAccessInfoByItemId } from "database/institutions";
 import { deleteTransactions } from "database/transactions";
-import { saveTransactionWebhook } from "database/webook";
+import { saveWebhookData } from "database/webook";
 import dayjs from "dayjs";
 import { getTransactions } from "integrations/plaid/transactions";
 
@@ -22,7 +22,7 @@ async function updateTransactions(webhookId, item_id, duration, measurement) {
   } = accessInfo;
 
   const data = await getTransactions(accessToken, startDate, endDate);
-  saveTransactionWebhook({
+  saveWebhookData({
     webhookId,
     institutionId,
     userId,

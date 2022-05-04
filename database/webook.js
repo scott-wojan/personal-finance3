@@ -17,14 +17,14 @@ export async function saveWebhookError({ id, error }) {
   await sql` update plaid_webhook_history set error=${error} where id=${id};`;
 }
 
-export async function saveTransactionWebhook({
+export async function saveWebhookData({
   institutionId,
   userId,
   webhookId,
   json,
 }) {
   const escapedJson = toJsonEscaped(json);
-  const query = `insert into plaid_webhook_transaction_history(plaid_webhook_history_id, institution_id, user_id, jsonDoc) values ('${webhookId}','${institutionId}', '${userId}','${escapedJson}') returning id`;
+  const query = `insert into plaid_webhook_history_data(plaid_webhook_history_id, institution_id, user_id, jsonDoc) values ('${webhookId}','${institutionId}', '${userId}','${escapedJson}') returning id`;
   const result = await sql.unsafe(query);
   return result[0];
 }

@@ -847,21 +847,6 @@ $$;
 
 
 
---TODO: Remove from account table??
-CREATE TABLE IF NOT EXISTS depository_accounts
-(
-    id text PRIMARY KEY REFERENCES accounts(id) ON DELETE CASCADE ON UPDATE CASCADE,
-    current_balance numeric(28,10),
-    available_balance numeric(28,10),
-    account_limit numeric(28,10),
-    created_at timestamp with time zone DEFAULT now(),
-    updated_at timestamp with time zone DEFAULT now()
-);
---todo need trigger to audit/log changes
-
-
-
-
 CREATE TABLE IF NOT EXISTS credit_accounts
 (
     id text PRIMARY KEY REFERENCES accounts(id) ON DELETE CASCADE ON UPDATE CASCADE,

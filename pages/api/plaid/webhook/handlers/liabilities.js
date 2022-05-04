@@ -15,7 +15,6 @@ async function updateLiabilities(item_id, webhookId) {
   } = accessInfo;
 
   const data = await getLiabilities(accessToken);
-  console.log(data, accessInfo);
 
   saveWebhookData({
     webhookId,

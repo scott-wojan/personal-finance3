@@ -8,7 +8,7 @@ export async function getLiabilities(accessToken, accountIds) {
       // },
     };
     const response = await client.liabilitiesGet(request);
-    return response.data.liabilities;
+    return response.data;
   } catch (error) {
     return error.response.data;
   }

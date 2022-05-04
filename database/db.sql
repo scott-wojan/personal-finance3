@@ -685,7 +685,7 @@ begin
     from(
         select user_id, institution_id, jsonb_array_elements(jsondoc->'accounts') "account"
           from plaid_webhook_history_data
-         where plaid_webhook_history_id=webhookHistoryId
+         where plaid_webhook_history_id = webhookHistoryId
     ) as accounts
     ON CONFLICT (ID)
     DO UPDATE SET
@@ -715,7 +715,7 @@ BEGIN
    from  (
          select user_id, institution_id, jsonb_array_elements(jsondoc->'transactions') "transaction"
            from plaid_webhook_history_data
-          where plaid_webhook_history_id=webhookHistoryId
+          where plaid_webhook_history_id = webhookHistoryId
        ) as transactions  
       on conflict do nothing; 
 
@@ -735,7 +735,7 @@ BEGIN
    from  (
          select user_id, institution_id, jsonb_array_elements(jsondoc->'transactions') "transaction"
            from plaid_webhook_history_data
-          where plaid_webhook_history_id=webhookHistoryId
+          where plaid_webhook_history_id = webhookHistoryId
        ) as transactions
    where not exists (
          select 1 
@@ -806,7 +806,7 @@ BEGIN
     from(
         select user_id, institution_id, jsonb_array_elements(jsondoc->'transactions') "transaction"
           from plaid_webhook_history_data
-         where plaid_webhook_history_id=webhookHistoryId
+         where plaid_webhook_history_id = webhookHistoryId
     ) as transactions
   on conflict (id)
       do update set
@@ -996,8 +996,8 @@ begin
         select user_id
              , institution_id
              , jsonb_array_elements(
-                case jsonb_typeof(jsondoc->'credit') 
-                    when 'array' then jsondoc->'credit' 
+                case jsonb_typeof(jsondoc->'liabilities'->'credit') 
+                    when 'array' then jsondoc->'liabilities'->'credit' 
                     else '[]' end
                 ) as credit     
           from plaid_webhook_history_data
@@ -1099,13 +1099,13 @@ begin
         select user_id
              , institution_id
              , jsonb_array_elements(
-                case jsonb_typeof(jsondoc->'student') 
-                     when 'array' then jsondoc->'student' 
+                case jsonb_typeof(jsondoc->'liabilities'->'student') 
+                     when 'array' then jsondoc->'liabilities'->'student' 
                      else '[]' 
                 end
                 ) as student_loan
           from plaid_webhook_history_data
-         where plaid_webhook_history_id=webhookHistoryId
+         where plaid_webhook_history_id = webhookHistoryId
     ) as student_loan_accounts
     ON CONFLICT (ID)
     DO UPDATE SET
@@ -1209,8 +1209,8 @@ begin
         select user_id
              , institution_id
              , jsonb_array_elements(
-                case jsonb_typeof(jsondoc->'mortgage') 
-                     when 'array' then jsondoc->'mortgage' 
+                case jsonb_typeof(jsondoc->'liabilities'->'mortgage') 
+                     when 'array' then jsondoc->'liabilities'->'mortgage' 
                      else '[]' 
                 end
                 ) as mortgage
@@ -1254,7 +1254,7 @@ create or replace function import_plaid_liabilities(plaid_webhook_history_id int
  as $$
 
   begin
-
+    perform plaid_insert_or_update_accounts(plaid_webhook_history_id);
     perform plaid_insert_or_update_credit_accounts(plaid_webhook_history_id);
     perform plaid_insert_or_update_student_loan_accounts(plaid_webhook_history_id);
     perform plaid_insert_or_update_mortgage_accounts(plaid_webhook_history_id);
@@ -1279,15 +1279,19 @@ create or replace function import_plaid_webhook_history_data()
     exceptionHint text;
     exceptionContext text;
     jsonError jsonb;
+    webhooktype text;
   begin
-  
-    if NEW.webhook_type = 'TRANSACTIONS' then
+    select webhook_type from plaid_webhook_history where id = NEW.plaid_webhook_history_id into webhooktype;
+    -- raise notice 'webhook_type: %', webhooktype;
+
+    if webhooktype = 'LIABILITIES' then
        perform import_plaid_liabilities(NEW.plaid_webhook_history_id);
-    elsif NEW.webhook_type = 'LIABILITIES' then
+    elsif webhooktype = 'TRANSACTIONS' then
        perform import_plaid_transactions(NEW.plaid_webhook_history_id);      
     end if;
+
+
     
-    -- raise notice 'import complete for: %', NEW.plaid_webhook_history_id;
     update plaid_webhook_history_data 
        set imported_at=now()
      where id=NEW.id;

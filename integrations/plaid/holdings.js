@@ -5,10 +5,6 @@ export async function getHoldings(accessToken) {
     access_token: accessToken,
   };
 
-  try {
-    const response = await client.investmentsHoldingsGet(request);
-    return response.data;
-  } catch (error) {
-    return error.response.data;
-  }
+  const response = await client.investmentsHoldingsGet(request);
+  return response.data;
 }

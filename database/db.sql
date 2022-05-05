@@ -847,6 +847,28 @@ $$;
 
 
 
+/************************************************************************************************************
+PLAID webook holdings processing
+************************************************************************************************************/
+
+-- create or replace function import_plaid_holdings(plaid_webhook_history_id integer) 
+--   returns void
+--   language plpgsql
+--  as $$
+
+--   begin
+  
+--     perform plaid_insert_or_update_accounts(plaid_webhook_history_id);
+--     perform plaid_insert_or_update_holdingss(plaid_webhook_history_id);
+--     -- perform plaid_insert_or_update_categories(plaid_webhook_history_id);
+--     -- perform plaid_insert_or_update_user_categories(plaid_webhook_history_id);  
+   
+--   end
+-- $$;
+
+
+
+
 CREATE TABLE IF NOT EXISTS credit_accounts
 (
     id text PRIMARY KEY REFERENCES accounts(id) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -1272,7 +1294,11 @@ create or replace function import_plaid_webhook_history_data()
     if webhooktype = 'LIABILITIES' then
        perform import_plaid_liabilities(NEW.plaid_webhook_history_id);
     elsif webhooktype = 'TRANSACTIONS' then
-       perform import_plaid_transactions(NEW.plaid_webhook_history_id);      
+       perform import_plaid_transactions(NEW.plaid_webhook_history_id);
+    -- elsif webhooktype = 'HOLDINGS' then
+    --    perform import_plaid_holdings(NEW.plaid_webhook_history_id);
+    -- elsif webhooktype = 'INVESTMENTS_TRANSACTIONS' then
+    --    perform import_plaid_investment_holdings(NEW.plaid_webhook_history_id);             
     end if;
 
 

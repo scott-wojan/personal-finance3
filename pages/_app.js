@@ -3,6 +3,7 @@ import { MantineProvider } from "@mantine/core";
 import { QueryClientProvider, QueryClient } from "react-query";
 import "../styles/globals.css";
 import theme from "styles/theme";
+import "./api/axiosInterceptor";
 
 const MyApp = (props) => {
   const { Component, pageProps } = props;

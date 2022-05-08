@@ -14,6 +14,8 @@ function formatCurrency(val, { currencyCode }) {
 }
 
 function formatDate(val, settings) {
+  if (!val) return val;
+
   if (settings) {
     return dayjs(val).format(settings.format);
   }

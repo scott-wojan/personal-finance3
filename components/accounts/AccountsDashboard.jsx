@@ -8,6 +8,9 @@ import {
   Anchor,
   Button,
   Group,
+  Grid,
+  Image,
+  Table,
 } from "@mantine/core";
 import { CirclePlus } from "tabler-icons-react";
 
@@ -16,6 +19,10 @@ import { ResponsiveGrid } from "components/grid/ResponsiveGrid";
 
 import { getShortCurrency, groupBy } from "formatting";
 import PlaidLinkButton from "components/plaid/PlaidLink";
+import {
+  formatCurrency,
+  formatDate,
+} from "components/datagrid/cellrenderers/formatting";
 
 export default function AccountsDashboard() {
   const { isLoading, error, data } = useApi({
@@ -28,7 +35,76 @@ export default function AccountsDashboard() {
         <Title order={3}>Accounts</Title>
         {/* <PlaidLinkButton text="Add new account" /> */}
       </Group>
-      <>
+
+      {data && (
+        <Table>
+          <thead>
+            <tr>
+              <th>Institution</th>
+              <th>Type</th>
+              <th>Account</th>
+              <th>Balance</th>
+              <th>Last Import</th>
+              <th style={{ textAlign: "right" }}>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.map((account, i) => {
+              return (
+                <tr key={i}>
+                  <td>
+                    <div style={{ display: "flex" }}>
+                      <Image
+                        pr="xs"
+                        radius="xl"
+                        width={24}
+                        height={24}
+                        alt=""
+                        src={
+                          !account.institution_logo
+                            ? null
+                            : `data:image/png;base64, ${account.institution_logo}`
+                        }
+                      />
+                      <Anchor
+                        href={`https://www.capitalone.com/`}
+                        target="_blank"
+                      >
+                        {account.institution}
+                      </Anchor>
+                    </div>
+                  </td>
+                  <td>{account.subtype}</td>
+                  <td>
+                    <Anchor href={`/accounts/${123}`}>
+                      {account.name} x{account.mask}
+                    </Anchor>
+                  </td>
+
+                  <td>
+                    {formatCurrency(account.current_balance, {
+                      currencyCode: account.iso_currency_code,
+                    })}
+                  </td>
+                  <td>{formatDate(account.last_import_date)}</td>
+                  <td style={{ textAlign: "right" }}>
+                    <Image
+                      width={24}
+                      height={24}
+                      alt="Status"
+                      src="/images/ok.png"
+                      align="right"
+                      // src={`/onboarding/${isChecked ? "icons8-done-80.png" : imgSrc}`}
+                    />
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </Table>
+      )}
+
+      {/* <>
         {
           data && (
             <>
@@ -89,7 +165,7 @@ export default function AccountsDashboard() {
           //   );
           // })
         }
-      </>
+      </> */}
     </>
   );
 }

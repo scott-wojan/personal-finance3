@@ -17,6 +17,7 @@ CREATE EXTENSION citext;
 /************************************************************************************************************
 Lookup tables
 ************************************************************************************************************/
+-- https://plaid.com/docs/errors/item/#access_not_granted
 DROP TABLE IF EXISTS plaid_errors;
 
 CREATE TABLE IF NOT EXISTS plaid_errors
@@ -32,7 +33,6 @@ CREATE TABLE IF NOT EXISTS plaid_errors
  , sample_response jsonb
  , user_friendly_error citext
 );
-
 
 insert into plaid_errors(error_type,error_code, subtitle, is_server_side, is_client_side, common_causes, troubleshooting,sample_response,user_friendly_error) values
 ('ITEM_ERROR','ACCESS_NOT_GRANTED','The user did not grant necessary permissions for their account.','TRUE','FALSE','<ul><li>This Item''s access is affected by institution-hosted access controls.</li><li>The user did not agree to share, or has revoked, access to the data required for the requested product. Note that for some institutions, the end user may need to specifically opt-in during the OAuth flow to share specific details, such as identity data, or account and routing number information, even if they have already opted in to sharing information about a specific account.</li></ul>','<ul><li>Prompt the end user to allow Plaid to access identity data and/or account and routing number data. The end user should do this during the Link flow if they were unable to successfully complete the Link flow for the Item, or via Link‚Äôs <a class="Touchable-module_resetButtonOrLink__hwe7O InlineLink-module_inlinelink__3SEIo" href="/docs/link/update-mode/"><span class="InlineLink-module_text__3pIL1">update mode</span></a> if the Item has already been added.</li><li>If there are other security settings on the user''s account that prevent sharing data with aggregators, they should adjust their security preferences on their institution''s online banking portal. It may take up to 48 hours for changes to take effect.</li></ul>','{ "error_type": "ITEM_ERROR", "error_code": "ACCESS_NOT_GRANTED", "error_message": "access to this product was not granted for the account", "display_message": "The user did not grant the necessary permissions for this product on their account.", "request_id": "HNTDNrA8F1shFEW"}','need friendly message'),
@@ -511,6 +511,7 @@ CREATE TABLE IF NOT EXISTS accounts
     account_limit numeric(28,10),
     type citext NOT NULL,
     subtype citext NOT NULL,
+    last_import_date  timestamp with time zone,
     created_at timestamp with time zone DEFAULT now(),
     updated_at timestamp with time zone DEFAULT now(),
     user_id integer REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE,    
@@ -1052,7 +1053,52 @@ CREATE TABLE IF NOT EXISTS mortgage_accounts
     created_at timestamp with time zone DEFAULT now(),
     updated_at timestamp with time zone DEFAULT now()
 );
+
 --todo need trigger to audit/log changes
+
+
+create or replace view mortgages as
+select user_id
+     , i.name as institution_name
+     , i.url as institution_url
+     , i.primary_color as institution_color
+     , i.logo as institution_logo
+     , a.name as account_name
+     , a.mask as account_mask
+     , a.current_balance as account_balance
+     , a.iso_currency_code
+     , a.created_at as account_created_at
+     , a.updated_at as account_updated_at
+     , ma.account_number
+     , ma.current_late_fee
+     , ma.escrow_balance
+     , ma.has_pmi
+     , ma.has_prepayment_penalty
+     , ma.interest_rate_percentage
+     , ma.interest_rate_type
+     , ma.last_payment_amount
+     , ma.last_payment_date
+     , ma.loan_type_description
+     , ma.loan_term
+     , ma.maturity_date
+     , ma.next_monthly_payment
+     , ma.next_payment_due_date
+     , ma.origination_date
+     , ma.origination_principal_amount
+     , ma.past_due_amount
+     , ma.street
+     , ma.city
+     , ma.region
+     , ma.postal_code
+     , ma.country
+     , ma.ytd_interest_paid
+     , ma.ytd_principal_paid
+  from accounts a
+       inner join institutions i on i.id = a.institution_id
+       inner join mortgage_accounts ma on ma.id = a.id
+ where type='loan'
+   and subtype = 'mortgage';
+
 
 CREATE TABLE IF NOT EXISTS student_loan_accounts
 (
@@ -2193,19 +2239,24 @@ select a.user_id
 
 create or replace view user_accounts as
 select 
-   a.id,
-   a.user_id,
-   i.name as institution,
-   a.name,
-   a.mask,
-   a.official_name,
-   a.current_balance,
-   a.available_balance,
-   a.account_limit,
-   a.iso_currency_code,
-   a.type,
-   a.subtype
-from accounts a inner join institutions i on a.institution_id = i.id;
+    a.id
+  , a.user_id
+  , i.name as institution
+  , i.url as institution_url
+  , i.primary_color as institution_color
+  , i.logo as institution_logo   
+  , a.name
+  , a.mask
+  , a.official_name
+  , a.current_balance
+  , a.available_balance
+  , a.account_limit
+  , a.iso_currency_code
+  , a.type
+  , a.subtype
+  , a.last_import_date
+from accounts a 
+     inner join institutions i on a.institution_id = i.id;
 
 
 
@@ -2357,3 +2408,25 @@ from (
 
 
 
+      -- WITH type_subtype_grouped_accounts as (
+      --   select type
+      --       , subtype
+      --       , json_agg( 
+      --         json_build_object(
+      --           'id', id
+      --         , 'institution', institution
+      --         , 'name', name
+      --         , 'mask', mask
+      --         , 'official_name', official_name
+      --         , 'current_balance', current_balance
+      --         , 'available_balance', available_balance
+      --         , 'account_limit', account_limit
+      --         , 'iso_currency_code', iso_currency_code
+      --         )) AS accounts
+      --   from user_accounts ua
+      -- where user_id = ${userId}     
+      -- GROUP BY type, subtype
+      -- )
+      -- select type, json_object_agg(subtype, accounts) as accounts
+      --   from (select type, subtype,  accounts from type_subtype_grouped_accounts) x
+      --   group by type   

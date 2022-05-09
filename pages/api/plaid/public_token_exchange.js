@@ -10,6 +10,7 @@ import {
 import { saveUserAccounts } from "database/accounts";
 
 export default async function handler(req, res) {
+  // metadata received is from https://plaid.com/docs/link/web/#onsuccess in PlaidLink.jsx
   const { public_token, metadata } = req.body;
   const user = getUserFromCookie(req, res);
   try {

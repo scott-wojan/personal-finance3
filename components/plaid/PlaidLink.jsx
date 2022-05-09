@@ -7,6 +7,7 @@ import { AlertCircle } from "tabler-icons-react";
 import { environment } from "appconfig";
 
 const PlaidLink = ({ text, linkToken, onLinkSuccess, products }) => {
+  //https://plaid.com/docs/link/web/#onsuccess
   const onSuccess = useCallback(
     async (public_token, metadata) => {
       await axios.post("/api/plaid/public_token_exchange", {

@@ -3,6 +3,10 @@ import { Badge, Title, Text, useMantineTheme } from "@mantine/core";
 import { AccountLineChart } from "../AccountLineChart";
 import TransactionsGrid from "components/transactions/TransactionsGrid";
 import { useApi } from "hooks/useApi";
+import {
+  formatCurrency,
+  formatDate,
+} from "components/datagrid/cellrenderers/formatting";
 
 export default function Credit({ account }) {
   const theme = useMantineTheme();
@@ -13,16 +17,8 @@ export default function Credit({ account }) {
 
   if (!data) return <></>;
 
-  /*
-APR apr_percentage 
-*/
-
   return (
     <>
-      <div style={{ color: "red" }}>
-        Add additional credit account properties
-        {/* {JSON.stringify(data)}         */}
-      </div>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <Text weight={700}>{account.institution}</Text>
 
@@ -53,6 +49,52 @@ APR apr_percentage
       </div>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <Text size="xs">{account.official_name}</Text>
+      </div>
+
+      <div>apr_percentage: {data.apr_percentage}</div>
+      <div>apr_type: {data.apr_type}</div>
+      <div>
+        balance_subject_to_apr:
+        {formatCurrency(data.balance_subject_to_apr, {
+          currencyCode: account.iso_currency_code,
+        })}
+      </div>
+      <div>
+        interest_charge_amount:
+        {formatCurrency(data.interest_charge_amount, {
+          currencyCode: account.iso_currency_code,
+        })}
+      </div>
+      <div>is_overdue: {data.is_overdue}</div>
+      <div>
+        last_payment_amount:
+        {formatCurrency(data.last_payment_amount, {
+          currencyCode: account.iso_currency_code,
+        })}
+      </div>
+      <div>
+        last_payment_date:
+        {formatDate(data.last_payment_date)}
+      </div>
+      <div>
+        last_statement_issue_date:
+        {formatDate(data.last_statement_issue_date)}
+      </div>
+      <div>
+        last_statement_balance:
+        {formatCurrency(data.last_statement_balance, {
+          currencyCode: account.iso_currency_code,
+        })}
+      </div>
+      <div>
+        minimum_payment_amount:
+        {formatCurrency(data.minimum_payment_amount, {
+          currencyCode: account.iso_currency_code,
+        })}
+      </div>
+      <div>
+        next_payment_due_date:
+        {formatDate(data.next_payment_due_date)}
       </div>
 
       <div style={{ display: "flex", justifyContent: "space-between" }}>

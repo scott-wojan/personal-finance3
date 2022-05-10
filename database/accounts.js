@@ -1,5 +1,28 @@
 import sql from "./db.js";
-import { toJsonEscaped } from "./helpers.js";
+
+export async function getUserMortgageAccountById({ userId, accountId }) {
+  // @ts-ignore
+  const rows = await sql`
+    select ma.*
+    from mortgage_accounts ma
+         join accounts a on a.id=ma.id 
+   where a.user_id = ${userId}
+     and a.id = ${accountId};
+  `;
+  return rows[0];
+}
+
+export async function getUserCreditAccountById({ userId, accountId }) {
+  // @ts-ignore
+  const rows = await sql`
+    select ca.*
+    from credit_accounts ca
+         join accounts a on a.id=ca.id
+   where a.user_id = ${userId}
+     and a.id = ${accountId};
+  `;
+  return rows[0];
+}
 
 export async function getUserAccounts({ userId }) {
   // @ts-ignore

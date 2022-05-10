@@ -76,7 +76,7 @@ export default function AccountsDashboard() {
                   </td>
                   <td>{account.subtype}</td>
                   <td>
-                    <Anchor href={`/accounts/${123}`}>
+                    <Anchor href={`/accounts/${account.id}`}>
                       {account.name} x{account.mask}
                     </Anchor>
                   </td>

@@ -1,15 +1,15 @@
 import { getUserFromCookie } from "cookies/user";
-import { getUserAccountById, getUserAccounts } from "database/accounts";
+import { getUserCreditAccountById } from "database/accounts";
 
 export default async function handler(req, res) {
   const user = getUserFromCookie(req, res);
   if (!user) return res.status(401).json();
 
-  const { accountId } = req.body;
+  const { accountId } = req.query;
 
   if (accountId) {
     try {
-      const account = await getUserAccountById({
+      const account = await getUserCreditAccountById({
         userId: user?.id,
         accountId,
       });
@@ -18,16 +18,5 @@ export default async function handler(req, res) {
     } catch (error) {
       return res.status(400).json(error.response);
     }
-  }
-
-  try {
-    const accounts = await getUserAccounts({
-      userId: user?.id,
-    });
-
-    res.status(200).json(accounts);
-  } catch (error) {
-    console.error(error);
-    res.status(400).json(error.response);
   }
 }

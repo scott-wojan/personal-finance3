@@ -115,7 +115,7 @@ export function AccountLineChart({ accountId, numberOfMonths }) {
       return;
     }
     const groupedApiData = groupBy(apiData, "type");
-    console.log(groupedApiData, groupedApiData);
+    // console.log(groupedApiData, groupedApiData);
 
     const incomeData = groupedApiData?.income?.map((income) => {
       return {

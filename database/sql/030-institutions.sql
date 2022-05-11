@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS user_institutions
     user_id integer REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE,    
     institution_id text REFERENCES institutions(id) ON DELETE CASCADE ON UPDATE CASCADE,
     access_token text NOT NULL,
+    is_login_invalid bool not null default false,
     created_at timestamp with time zone DEFAULT now(),
     updated_at timestamp with time zone DEFAULT now()
 );

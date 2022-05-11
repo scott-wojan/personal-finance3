@@ -31,8 +31,9 @@ export default async function handler(req, res) {
 
     saveWebhookError({
       id: webhookId,
-      error: error.response.data,
+      error: error?.response?.data,
     });
+
     return res.status(500).json();
   }
 

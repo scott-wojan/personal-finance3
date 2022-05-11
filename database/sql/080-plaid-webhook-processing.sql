@@ -1,7 +1,8 @@
 
 /************************************************************************************************************
-PLAID webook account processing
+ACCOUNT webook processing
 ************************************************************************************************************/
+
 CREATE OR REPLACE FUNCTION plaid_insert_or_update_accounts(webhookHistoryId integer)
  returns void
  language 'plpgsql' 
@@ -25,6 +26,7 @@ begin
         , account_limit
         , iso_currency_code
         , institution_id
+        , last_import_date
     )
     select account->>'account_id' "id"
          , user_id
@@ -38,6 +40,7 @@ begin
          , (account->'balances'->>'limit')::numeric(28,4) "account_limit"	 
          , account->'balances'->>'iso_currency_code' "iso_currency_code"
          , institution_id
+         , now() as last_import_date
     from(
         select user_id, institution_id, jsonb_array_elements(jsondoc->'accounts') "account"
           from plaid_webhook_history_data
@@ -51,13 +54,15 @@ begin
     available_balance = excluded.available_balance,
     current_balance = excluded.current_balance,
     account_limit = excluded.account_limit,
-    iso_currency_code = excluded.iso_currency_code;
+    iso_currency_code = excluded.iso_currency_code,
+    last_import_date = excluded.last_import_date
+    ;
 
   end;
 $BODY$;
 
 /************************************************************************************************************
-PLAID webook category processing
+CATEGORY webook processing
 ************************************************************************************************************/
 CREATE OR REPLACE FUNCTION plaid_insert_or_update_categories(webhookHistoryId integer)
 RETURNS void
@@ -107,7 +112,7 @@ LANGUAGE 'plpgsql';
 
 
 /************************************************************************************************************
-PLAID webook transaction processing
+TRANSACTION webhook processing
 ************************************************************************************************************/
 CREATE OR REPLACE FUNCTION plaid_insert_or_update_transactions(webhookHistoryId integer)
  RETURNS void 
@@ -202,7 +207,7 @@ create or replace function import_plaid_transactions(plaid_webhook_history_id in
 $$;
 
 /************************************************************************************************************
-PLAID webook liabilities processing
+LIABILITIES webook processing
 ************************************************************************************************************/
 
 CREATE OR REPLACE FUNCTION plaid_insert_or_update_credit_accounts(webhookHistoryId integer)
@@ -268,6 +273,7 @@ begin
 
   end;
 $BODY$;
+
 
 CREATE OR REPLACE FUNCTION plaid_insert_or_update_student_loan_accounts(webhookHistoryId integer)
  returns void
@@ -506,10 +512,14 @@ create or replace function import_plaid_liabilities(plaid_webhook_history_id int
     perform plaid_insert_or_update_credit_accounts(plaid_webhook_history_id);
     perform plaid_insert_or_update_student_loan_accounts(plaid_webhook_history_id);
     perform plaid_insert_or_update_mortgage_accounts(plaid_webhook_history_id);
-
   end
 $$;
 
+
+
+/************************************************************************************************************
+Webook processing
+************************************************************************************************************/
 
 create or replace function import_plaid_webhook_history_data() 
   returns trigger
@@ -543,7 +553,6 @@ create or replace function import_plaid_webhook_history_data()
     end if;
 
 
-    
     update plaid_webhook_history_data 
        set imported_at=now()
      where id=NEW.id;
@@ -588,7 +597,50 @@ create or replace function import_plaid_webhook_history_data()
   end
 $$;
 
-
 create or replace trigger plaid_webhook_history_data_trigger
  after insert on plaid_webhook_history_data
    for each row execute procedure import_plaid_webhook_history_data();
+
+
+
+/************************************************************************************************************
+Webook ERROR processing
+************************************************************************************************************/
+create or replace function process_webhook_history_error() 
+  returns trigger
+  language plpgsql
+ as $$
+  declare
+    error_type citext;
+    error_code citext;
+    itemid text;
+  begin
+    
+    select pwh.item_id
+         , pwh.error->>'error_type' "error_type"
+         , pwh.error->>'error_code' "error_code"
+      into itemid, error_type, error_code
+      from plaid_webhook_history pwh
+     where id = NEW.id;
+
+    if (error_type = 'ITEM_ERROR' and error_code = 'ITEM_LOGIN_REQUIRED') 
+        or 
+       (error_type = 'ITEM' and error_code = 'PENDING_EXPIRATION')       
+    then
+      update user_institutions
+         set is_login_invalid = true
+       where item_id = itemid;
+       
+    -- elsif a < b then
+    --   RAISE NOTICE 'a is less than b';
+
+    else
+      RAISE NOTICE 'unhandled error: % %', error_type, error_code;
+    END IF;
+
+  end
+$$;
+
+create or replace trigger plaid_webhook_history_error_trigger
+ after update of error on plaid_webhook_history
+   for each row execute procedure process_webhook_history_error();    

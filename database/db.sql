@@ -608,10 +608,12 @@ create or replace view user_accounts as
 select 
     a.id
   , a.user_id
+  , i.id as institution_id
   , i.name as institution
   , i.url as institution_url
   , i.primary_color as institution_color
   , i.logo as institution_logo   
+  , ui.is_login_invalid
   , a.name
   , a.mask
   , a.official_name
@@ -623,7 +625,8 @@ select
   , a.subtype
   , a.last_import_date
 from accounts a 
-     inner join institutions i on a.institution_id = i.id;
+     inner join institutions i on a.institution_id = i.id
+     inner join user_institutions ui on ui.institution_id = i.id;
 
 
 

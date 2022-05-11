@@ -6,6 +6,8 @@ import { usePlaidLink } from "react-plaid-link";
 import { AlertCircle } from "tabler-icons-react";
 import { environment } from "appconfig";
 
+// https://plaid.com/docs/link/
+
 const PlaidLink = ({ text, linkToken, onLinkSuccess, products }) => {
   //https://plaid.com/docs/link/web/#onsuccess
   const onSuccess = useCallback(
@@ -29,6 +31,17 @@ const PlaidLink = ({ text, linkToken, onLinkSuccess, products }) => {
     if (error != null) {
       // The user encountered a Plaid API error prior to exiting.
       console.error(error);
+    }
+  }, []);
+
+  const onEvent = useCallback(async (eventName, metadata) => {
+    // metadata contains the most recent API request ID and the
+    // Link session ID. Storing this information is helpful
+    // for support.
+    // console.log(metadata);
+
+    if (eventName != null) {
+      console.error(eventName, metadata);
     }
   }, []);
 

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   Card,
   Text,
@@ -6,19 +6,13 @@ import {
   createStyles,
   Paper,
   Anchor,
-  Button,
   Group,
-  Grid,
   Image,
   Table,
 } from "@mantine/core";
-import { CirclePlus } from "tabler-icons-react";
 
 import { useApi } from "hooks/useApi";
-import { ResponsiveGrid } from "components/grid/ResponsiveGrid";
-
-import { getShortCurrency, groupBy } from "formatting";
-import PlaidLinkButton from "components/plaid/PlaidLink";
+import { getShortCurrency } from "formatting";
 import {
   formatCurrency,
   formatDate,

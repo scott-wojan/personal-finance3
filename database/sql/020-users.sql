@@ -10,6 +10,8 @@ CREATE TABLE IF NOT EXISTS users
   updated_at timestamptz default now()
 );
 
+select * from create_updated_at_trigger_for_table('users');
+
 
 /************************************************************************************************************
 user rules
@@ -59,8 +61,7 @@ create or replace function save_and_run_rule(userId integer, rule jsonb, ruleId 
            set rule = $2
          where user_id = userId
            and id = ruleId;
-    end if;    
-
+    end if;
 
     -- RAISE NOTICE 'new_rule_id: %', new_rule_id;
     

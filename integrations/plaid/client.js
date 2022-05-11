@@ -7,6 +7,7 @@ const configuration = new Configuration({
     headers: {
       "PLAID-CLIENT-ID": settings.clientId,
       "PLAID-SECRET": settings.secret,
+      "Plaid-Version": "2020-09-14", //https://plaid.com/docs/api/versioning/
     },
   },
 });

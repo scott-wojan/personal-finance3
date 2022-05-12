@@ -614,6 +614,9 @@ select
   , i.primary_color as institution_color
   , i.logo as institution_logo   
   , ui.is_login_invalid
+  , case when ui.is_login_invalid then access_token
+    else null
+    end as access_token
   , a.name
   , a.mask
   , a.official_name
@@ -627,6 +630,8 @@ select
 from accounts a 
      inner join institutions i on a.institution_id = i.id
      inner join user_institutions ui on ui.institution_id = i.id;
+     
+
 
 
 

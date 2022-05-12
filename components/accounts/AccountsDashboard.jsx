@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Card,
   Text,
@@ -9,6 +9,9 @@ import {
   Group,
   Image,
   Table,
+  Popover,
+  ActionIcon,
+  Button,
 } from "@mantine/core";
 
 import { useApi } from "hooks/useApi";
@@ -17,6 +20,7 @@ import {
   formatCurrency,
   formatDate,
 } from "components/datagrid/cellrenderers/formatting";
+import PlaidLinkButton from "components/plaid/PlaidLink";
 
 export default function AccountsDashboard() {
   const { isLoading, error, data } = useApi({
@@ -82,14 +86,7 @@ export default function AccountsDashboard() {
                   </td>
                   <td>{formatDate(account.last_import_date)}</td>
                   <td style={{ textAlign: "right" }}>
-                    <Image
-                      width={24}
-                      height={24}
-                      alt="Status"
-                      src="/images/ok.png"
-                      align="right"
-                      // src={`/onboarding/${isChecked ? "icons8-done-80.png" : imgSrc}`}
-                    />
+                    <AccountStatus account={account} />
                   </td>
                 </tr>
               );
@@ -161,6 +158,53 @@ export default function AccountsDashboard() {
         }
       </> */}
     </>
+  );
+}
+
+function AccountStatus({ account }) {
+  const [popoverVisible, setPopoverVisible] = useState(false);
+
+  const StatusImage = () => (
+    <Image
+      width={24}
+      height={24}
+      alt="Status"
+      align="right"
+      src={`/images/${account.is_login_invalid ? "alert" : "ok"}.png`}
+    />
+  );
+
+  if (!account.is_login_invalid) {
+    return <StatusImage />;
+  }
+
+  return (
+    <Popover
+      position="left"
+      placement="end"
+      trapFocus={false}
+      opened={popoverVisible}
+      width={280}
+      withArrow
+      onClose={() => setPopoverVisible(false)}
+      target={
+        <ActionIcon
+          onClick={() => {
+            setPopoverVisible(true);
+          }}
+        >
+          <StatusImage />
+        </ActionIcon>
+      }
+    >
+      The connection with {account.institution} is invalid
+      <br />
+      <PlaidLinkButton
+        products={undefined}
+        access_token={account.access_token}
+        text="Reconnect my account"
+      />
+    </Popover>
   );
 }
 

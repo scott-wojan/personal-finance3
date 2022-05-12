@@ -517,10 +517,23 @@ $$;
 
 
 
+
+
+
+create or replace function import_plaid_holdings(plaid_webhook_history_id integer) 
+  returns void
+  language plpgsql
+ as $$
+
+  begin
+    perform plaid_insert_or_update_accounts(plaid_webhook_history_id);
+  end
+
+$$;
+
 /************************************************************************************************************
 Webook processing
 ************************************************************************************************************/
-
 create or replace function import_plaid_webhook_history_data() 
   returns trigger
   language plpgsql
@@ -546,8 +559,8 @@ create or replace function import_plaid_webhook_history_data()
        perform import_plaid_liabilities(NEW.plaid_webhook_history_id);
     elsif webhooktype = 'TRANSACTIONS' then
        perform import_plaid_transactions(NEW.plaid_webhook_history_id);
-    -- elsif webhooktype = 'HOLDINGS' then
-    --    perform import_plaid_holdings(NEW.plaid_webhook_history_id);
+    elsif webhooktype = 'HOLDINGS' then
+       perform import_plaid_holdings(NEW.plaid_webhook_history_id);
     -- elsif webhooktype = 'INVESTMENTS_TRANSACTIONS' then
     --    perform import_plaid_investment_holdings(NEW.plaid_webhook_history_id);             
     end if;
@@ -600,47 +613,3 @@ $$;
 create or replace trigger plaid_webhook_history_data_trigger
  after insert on plaid_webhook_history_data
    for each row execute procedure import_plaid_webhook_history_data();
-
-
-
-/************************************************************************************************************
-Webook ERROR processing
-************************************************************************************************************/
-create or replace function process_webhook_history_error() 
-  returns trigger
-  language plpgsql
- as $$
-  declare
-    error_type citext;
-    error_code citext;
-    itemid text;
-  begin
-    
-    select pwh.item_id
-         , pwh.error->>'error_type' "error_type"
-         , pwh.error->>'error_code' "error_code"
-      into itemid, error_type, error_code
-      from plaid_webhook_history pwh
-     where id = NEW.id;
-
-    if (error_type = 'ITEM_ERROR' and error_code = 'ITEM_LOGIN_REQUIRED') 
-        or 
-       (error_type = 'ITEM' and error_code = 'PENDING_EXPIRATION')       
-    then
-      update user_institutions
-         set is_login_invalid = true
-       where item_id = itemid;
-       
-    -- elsif a < b then
-    --   RAISE NOTICE 'a is less than b';
-
-    else
-      RAISE NOTICE 'unhandled error: % %', error_type, error_code;
-    END IF;
-
-  end
-$$;
-
-create or replace trigger plaid_webhook_history_error_trigger
- after update of error on plaid_webhook_history
-   for each row execute procedure process_webhook_history_error();    

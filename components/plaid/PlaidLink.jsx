@@ -8,10 +8,16 @@ import { environment } from "appconfig";
 
 // https://plaid.com/docs/link/
 
-const PlaidLink = ({ text, linkToken, onLinkSuccess, products }) => {
+const PlaidLink = ({ text, linkToken, onLinkSuccess, isRefresh }) => {
   //https://plaid.com/docs/link/web/#onsuccess
+
   const onSuccess = useCallback(
     async (public_token, metadata) => {
+      if (isRefresh) {
+        onLinkSuccess?.(null);
+        return;
+      }
+
       await axios.post("/api/plaid/public_token_exchange", {
         public_token,
         metadata,
@@ -19,7 +25,7 @@ const PlaidLink = ({ text, linkToken, onLinkSuccess, products }) => {
 
       onLinkSuccess?.(metadata);
     },
-    [onLinkSuccess]
+    [isRefresh, onLinkSuccess]
   );
 
   const onExit = useCallback(async (error, metadata) => {
@@ -49,6 +55,7 @@ const PlaidLink = ({ text, linkToken, onLinkSuccess, products }) => {
     token: linkToken,
     onSuccess,
     onExit,
+    onEvent,
   };
   const { open, ready, error } = usePlaidLink(config);
 
@@ -68,18 +75,20 @@ const PlaidLink = ({ text, linkToken, onLinkSuccess, products }) => {
 };
 
 export default function PlaidLinkButton({
-  products,
+  products = undefined,
+  access_token = undefined,
   text = "Connect Accounts",
   onLinkSuccess = undefined,
 }) {
   const [linkToken, setLinkToken] = useState(null);
-  if (!products || products?.length === 0) {
-    throw new Error("Must specify one or more products");
-  }
+
+  // if (!products || products?.length === 0) {
+  //   throw new Error("Must specify one or more products");
+  // }
 
   const { error, data } = useApi({
     url: "plaid/create_link_token",
-    payload: { products },
+    payload: { products, access_token },
   });
 
   useEffect(() => {
@@ -120,7 +129,7 @@ export default function PlaidLinkButton({
       onLinkSuccess={onLinkSuccess}
       text={text}
       linkToken={linkToken}
-      products={products}
+      isRefresh={access_token ? true : false}
     />
   );
 }

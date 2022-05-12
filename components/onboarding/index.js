@@ -212,7 +212,7 @@ function DepositoryAccounts({ dispatch }) {
       </OnboardingContentGrid>
       <PlaidLinkButton
         onLinkSuccess={onLinkSuccess}
-        products={["auth", "transactions"]}
+        products={["transactions"]}
       />
       <Button variant="outline" onClick={onNextClicked}>
         Next

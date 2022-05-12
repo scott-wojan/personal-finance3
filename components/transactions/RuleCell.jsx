@@ -1,19 +1,5 @@
-import {
-  Popover,
-  ActionIcon,
-  Group,
-  TextInput,
-  Button,
-  Tooltip,
-  Text,
-  Select,
-} from "@mantine/core";
-import { useSetState } from "@mantine/hooks";
-import axios from "axios";
-import { CategoriesSelect } from "components/categories/CategoriesSelect";
-import { SubCategoriesSelect } from "components/categories/SubCategoriesSelect";
+import { Popover, ActionIcon, Tooltip } from "@mantine/core";
 import React, { useState } from "react";
-import { useMutation } from "react-query";
 import { Bolt } from "tabler-icons-react";
 import { RuleEditor } from "./RuleEditor";
 

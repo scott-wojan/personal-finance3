@@ -21,8 +21,8 @@ export async function getAccessToken(public_token) {
  */
 export async function getLinkToken(request) {
   try {
-    const createTokenResponse = await client.linkTokenCreate(request);
-    return createTokenResponse;
+    const response = await client.linkTokenCreate(request);
+    return response;
   } catch (error) {
     throw error;
   }

@@ -24,7 +24,7 @@
     "moment": "^2.29.1",
     "next": "12.1.0",
     "nouislider-react": "^3.4.1",
-    "npm": "^8.5.5",
+    "npm": "^8.11.0",
     "numeral": "^2.0.6",
     "plaid": "^10.1.0",
     "postgres": "^3.0.0",

@@ -33,7 +33,7 @@
     "react-dom": "17.0.2",
     "react-plaid-link": "^3.3.0",
     "react-query": "^3.34.19",
-    "socket.io": "^4.4.1",
+    "socket.io": "^4.5.3",
     "tabler-icons-react": "^1.42.0"
   },
   "devDependencies": {
